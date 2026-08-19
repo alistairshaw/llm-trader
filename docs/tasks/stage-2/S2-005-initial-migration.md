@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-005
 title: Create and verify the initial persistence migration
 stage: 2
-status: planned
+status: ready
 priority: 860
 type: infrastructure
 depends_on: [S2-004]

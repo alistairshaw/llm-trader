@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S2-004` — Implement canonical persistence converters.
+`S2-005` — Create and verify the initial persistence migration.
 
 ## Ordered Backlog
 
@@ -15,8 +15,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S2-001`](stage-2/S2-001-write-stage-2-gherkin.md) | Write Stage 2 executable Gherkin specifications | Done | 1000 | — |
 | [`S2-002`](stage-2/S2-002-persistence-contracts.md) | Define persistence contracts and results | Done | 920 | `S2-001` |
 | [`S2-003`](stage-2/S2-003-ef-sqlite-infrastructure.md) | Configure EF Core and SQLite infrastructure | Done | 900 | `S2-002` |
-| [`S2-004`](stage-2/S2-004-persistence-converters.md) | Implement canonical persistence converters | Ready | 880 | `S2-003` |
-| [`S2-005`](stage-2/S2-005-initial-migration.md) | Create and verify the initial persistence migration | Planned | 860 | `S2-004` |
+| [`S2-004`](stage-2/S2-004-persistence-converters.md) | Implement canonical persistence converters | Done | 880 | `S2-003` |
+| [`S2-005`](stage-2/S2-005-initial-migration.md) | Create and verify the initial persistence migration | Ready | 860 | `S2-004` |
 | [`S2-006`](stage-2/S2-006-broker-instrument-persistence.md) | Persist Broker and Instrument aggregates | Planned | 820 | `S2-005` |
 | [`S2-007`](stage-2/S2-007-trading-bot-persistence.md) | Persist Trading Bots and configuration versions | Planned | 810 | `S2-005` |
 | [`S2-008`](stage-2/S2-008-portfolio-ledger-persistence.md) | Persist Portfolios, Positions, and ledger entries | Planned | 800 | `S2-006`, `S2-007` |

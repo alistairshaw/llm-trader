@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-004
 title: Implement canonical persistence converters
 stage: 2
-status: ready
+status: done
 priority: 880
 type: feature
 depends_on: [S2-003]
@@ -50,4 +50,23 @@ Follow [Data Model — SQLite Storage Conventions](../../data-model.md#3-sqlite-
 
 ## Completion Notes
 
-Not completed.
+Completed 2026-08-19.
+
+- Added centralized EF Core value converters and immutable value comparers for Stage 2 strongly typed identifiers and value objects.
+- Added canonical exact-decimal storage with the logical `DECIMAL(24,8)` envelope, invariant non-exponent text, normalized zero, and rejection of unsupported integer digits, scale, precision, and provider text.
+- Added strict UTC Unix-millisecond timestamp conversion and canonical enumeration text conversion.
+- Added deterministic, schema-versioned canonical JSON serialization and validated lowercase SHA-256 hashing.
+- Added real-SQLite converter integration tests covering all 25 domain identifier types, every Stage 2 financial value object, decimal boundaries and rejection, timestamp precision and ordering, enums, JSON byte stability, hashes, schema validation, and value comparison.
+
+Validation:
+
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Converters"` — passed, 43 tests.
+- `.\dev.ps1 build` — passed in Release with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — passed: 382 tests; 20 intentionally deferred Stage 2 acceptance scenarios skipped.
+- `.\dev.ps1 format` — passed.
+
+Deviations: none.
+
+Follow-up tasks: none.
+
+ADRs: none.
