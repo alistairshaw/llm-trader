@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 3 has passed its complete local review gate. Stage 4 is not yet approved to begin: exact-revision Windows-hosted CI, Linux-hosted CI, and security workflow evidence remain required.
+Stage 3 is approved and complete. Exact-revision local, Windows-hosted, Linux-hosted, and security validation passed. Stage 4 may begin.
 
 ## Delivered Scope
 
@@ -51,12 +51,13 @@ The Docker smoke host seeded an enabled `ResearchOnly` bot and simulated Portfol
 
 ## Hosted Validation
 
-Pending publication of the local review revision:
-
-- Exact revision: pending.
-- Linux CI job and test artifact: pending.
-- Windows CI job and test artifact: pending.
-- Security workflow: pending.
+- Validated revision: `59b32a578aa158c9094a83841d4583467a11d5a2`.
+- CI workflow: [run 32315032234](https://github.com/alistairshaw/llm-trader/actions/runs/32315032234) — passed.
+- Linux job: [job 96265412476](https://github.com/alistairshaw/llm-trader/actions/runs/32315032234/job/96265412476) — passed; `test-results-Linux` artifact ID `9387767044`, 89,267 bytes, not expired.
+- Windows job: [job 96265412435](https://github.com/alistairshaw/llm-trader/actions/runs/32315032234/job/96265412435) — passed; `test-results-Windows` artifact ID `9387783692`, 89,613 bytes, not expired.
+- Security workflow: [run 32315032334](https://github.com/alistairshaw/llm-trader/actions/runs/32315032334) — passed.
+- Secret scan job: [job 96265412500](https://github.com/alistairshaw/llm-trader/actions/runs/32315032334/job/96265412500) — passed; `gitleaks-results.sarif` artifact ID `9387743432`, 6,772 bytes, not expired.
+- Dependency review job: [job 96265413320](https://github.com/alistairshaw/llm-trader/actions/runs/32315032334/job/96265413320) — skipped as expected for a push event.
 
 ## Defects, Follow-ups, and Decisions
 
@@ -65,4 +66,4 @@ Pending publication of the local review revision:
 - Scope deviations: none.
 - Follow-up task IDs: none.
 - ADRs created or changed: none.
-- Stage 4 commencement: not approved until the hosted gates above pass on the exact published review revision.
+- Stage 4 commencement: approved.

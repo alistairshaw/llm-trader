@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-015
 title: Complete Stage 3 acceptance and review
 stage: 3
-status: review
+status: done
 priority: 1000
 type: acceptance
 depends_on: [S3-001, S3-002, S3-003, S3-004, S3-005, S3-006, S3-007, S3-008, S3-009, S3-010, S3-011, S3-012, S3-013, S3-014]
@@ -59,4 +59,4 @@ Use [Implementation Plan — Stage 3](../../implementation-plan.md#5-stage-3-mul
 
 ## Completion Notes
 
-Local review completed on 2026-08-19. All 14 dependencies were audited as done; all 26 Stage 3 scenarios and the complete 650-test suite passed with zero failures or skips. Locked restore, Release build (0 warnings/0 errors), formatting, focused Core/Data/Engine/Integration/Architecture/migration suites, EF model drift, and deterministic Docker headless smoke passed. The review corrected the stale Acceptance NuGet lock file introduced by its Stage 3 Engine and Host project references. Exact commands, counts, migration identities, smoke identity, audit evidence, and the remaining hosted gates are recorded in `docs/stage-3-review.md`. No scope deviation, follow-up task, or ADR was identified. This task remains in `review`; exact-revision Windows CI, Linux CI, and security results are the sole remaining completion gate.
+Completed on 2026-08-19. All 14 dependencies were audited as done; all 26 Stage 3 scenarios and the complete 650-test suite passed locally with zero failures or skips. Locked restore, Release build (0 warnings/0 errors), formatting, focused Core/Data/Engine/Integration/Architecture/migration suites, EF model drift, and deterministic Docker headless smoke passed. The review corrected the stale Acceptance NuGet lock file introduced by its Stage 3 Engine and Host project references. Reviewed revision `59b32a578aa158c9094a83841d4583467a11d5a2` then passed hosted Linux CI, Windows CI, and security validation. Exact commands, counts, migration identities, smoke identity, audit evidence, hosted run/job/artifact identities, and the Stage 4 approval are recorded in `docs/stage-3-review.md`. No scope deviation, follow-up task, or ADR was identified.
