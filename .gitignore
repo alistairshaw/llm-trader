@@ -6,6 +6,7 @@
 artifacts/
 TestResults/
 *.db
+!tests/Trading.Data.Tests/Fixtures/stage1-empty.db
 *.db-shm
 *.db-wal
 *.log

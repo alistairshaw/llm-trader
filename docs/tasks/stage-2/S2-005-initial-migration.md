@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-005
 title: Create and verify the initial persistence migration
 stage: 2
-status: ready
+status: done
 priority: 860
 type: infrastructure
 depends_on: [S2-004]
@@ -49,4 +49,22 @@ Implement the Stage 2 tables and constraints from [Data Model](../../data-model.
 
 ## Completion Notes
 
-Not completed.
+Completed 2026-08-19.
+
+- Added the complete Stage 2 EF Core model configuration, initial migration, model snapshot, schema metadata version record, and pinned repository-local `dotnet-ef` tool.
+- Added all scoped tables, columns, primary and foreign keys, restricted delete actions, enum and integrity checks, concurrency tokens, unique and query indexes, and partial one-to-one indexes.
+- Added a tracked empty Stage 1 SQLite fixture and migration integration coverage for fresh creation, fixture upgrade, idempotent reapplication, migration history, schema metadata, and exhaustive schema inspection.
+
+Validation:
+
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Migrations"` — passed, 3 tests.
+- `.\dev.ps1 build` — passed in Release with 0 warnings and 0 errors.
+- `docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null && dotnet ef migrations has-pending-model-changes --project src/Trading.Data"` — passed; no pending model changes.
+- `.\dev.ps1 test` — passed: 385 tests; 20 intentionally deferred Stage 2 acceptance scenarios skipped.
+- `.\dev.ps1 format` — passed.
+
+Deviations: none.
+
+Follow-up tasks: none.
+
+ADRs: none.

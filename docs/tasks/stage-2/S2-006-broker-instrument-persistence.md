@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-006
 title: Persist Broker and Instrument aggregates
 stage: 2
-status: planned
+status: ready
 priority: 820
 type: feature
 depends_on: [S2-005]

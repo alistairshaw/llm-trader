@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-007
 title: Persist Trading Bots and configuration versions
 stage: 2
-status: planned
+status: ready
 priority: 810
 type: feature
 depends_on: [S2-005]

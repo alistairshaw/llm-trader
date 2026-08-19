@@ -17,15 +17,6 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
     internal DbSet<PortfolioDecisionSnapshotEntity> PortfolioDecisionSnapshots => Set<PortfolioDecisionSnapshotEntity>();
     internal DbSet<SchemaMetadataEntity> SchemaMetadata => Set<SchemaMetadataEntity>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            entityType.SetTableName(ToSnakeCase(entityType.ClrType.Name.Replace("Entity", string.Empty, StringComparison.Ordinal)));
-            modelBuilder.Entity(entityType.ClrType).Property(nameof(PersistenceEntity.Id)).HasColumnName("id");
-        }
-    }
-
-    private static string ToSnakeCase(string value) => string.Concat(value.Select((character, index) =>
-        index > 0 && char.IsUpper(character) ? $"_{char.ToLowerInvariant(character)}" : char.ToLowerInvariant(character).ToString()));
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(TradingDbContext).Assembly);
 }
