@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-003
 title: Configure EF Core and SQLite infrastructure
 stage: 2
-status: ready
+status: done
 priority: 900
 type: infrastructure
 depends_on: [S2-002]
@@ -51,4 +51,26 @@ Implement [Data Model — SQLite Storage Conventions](../../data-model.md#3-sqli
 
 ## Completion Notes
 
-Not completed.
+Completed 2026-08-19.
+
+- Pinned EF Core SQLite and design-time dependencies at 10.0.10, including patched transitive security pins, and refreshed all affected lock files.
+- Added `TradingDbContext` with explicit Stage 2 `DbSet` declarations, validated database options, a safe context factory, per-connection SQLite configuration, and migration-based initialization.
+- Enforced absolute runtime database paths outside the repository tree and bounded busy-timeout values before filesystem or database access.
+- Added `Trading.Data.Tests` to the solution with a deterministic async temporary-database fixture using a unique real SQLite database for each test.
+- Added infrastructure integration tests for path safety, provider selection, isolation, foreign keys, WAL, busy timeout, migration initialization, and invalid option rejection.
+- Added `-RefreshLocks` to the standard restore wrapper so dependency lock updates remain an explicit Docker workflow operation.
+
+Validation:
+
+- `.\dev.ps1 restore -RefreshLocks` — passed and refreshed affected lock files.
+- `.\dev.ps1 restore` — passed in locked mode.
+- `.\dev.ps1 build` — passed in Release with 0 warnings and 0 errors.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Infrastructure"` — passed, 5 tests.
+- `.\dev.ps1 test` — passed: 339 tests; 20 intentionally deferred Stage 2 scenarios skipped.
+- `.\dev.ps1 format` — passed.
+
+Deviations: none.
+
+Follow-up tasks: none.
+
+ADRs: none.

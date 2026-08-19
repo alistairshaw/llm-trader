@@ -6,7 +6,9 @@ param(
 
     [string] $Project,
 
-    [string] $Filter
+    [string] $Filter,
+
+    [switch] $RefreshLocks
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,6 +17,9 @@ $composeArguments = @('compose', 'run', '--rm', '--no-deps', 'dev')
 switch ($Command) {
     'restore' {
         $toolArguments = @('dotnet', 'restore', 'TradingBot.sln')
+        if ($RefreshLocks) {
+            $toolArguments += @('--force-evaluate', '-p:RestoreLockedMode=false')
+        }
     }
     'build' {
         $toolArguments = @('dotnet', 'build', 'TradingBot.sln', '--configuration', 'Release', '--no-restore')

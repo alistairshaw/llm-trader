@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-004
 title: Implement canonical persistence converters
 stage: 2
-status: planned
+status: ready
 priority: 880
 type: feature
 depends_on: [S2-003]
