@@ -90,6 +90,25 @@ public sealed class BotRuntimeRepositoryTests
         Assert.That(async () => await db.Context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM bot_runs WHERE id = {acquired.Run.Id.ToString()}"), Throws.TypeOf<SqliteException>());
     }
 
+    [Test]
+    public async Task InputRenderingVersionAndHashRoundTripAsRunAuditFacts()
+    {
+        await using var db = await CreateAsync(); var ids = await SeedAsync(db.Context, "one");
+        var repository = new BotRunRepository(db.Context);
+        var acquired = (BotRunLeaseResult.Acquired)await repository.TryClaimAsync(Claim(ids, "host"), default);
+        var hash = new string('a', 64);
+        Assert.That(await repository.StoreInputRenderingAsync(acquired.Run.Id, acquired.Run.Version, "1", hash, default),
+            Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        db.Context.ChangeTracker.Clear();
+        var loaded = await repository.GetAsync(acquired.Run.Id, default);
+        Assert.Multiple(() =>
+        {
+            Assert.That(loaded!.InputRenderingVersion, Is.EqualTo("1"));
+            Assert.That(loaded.InputRenderingHash, Is.EqualTo(hash));
+            Assert.That(loaded.Version, Is.EqualTo(2));
+        });
+    }
+
     private static PendingBotRunTrigger Trigger(TradingBotId bot, DateTimeOffset at, string reason, string? sourceType = null, string? sourceId = null) =>
         new(BotRunTriggerId.New(), bot, BotRunTriggerType.Manual, reason, at, at, sourceType, sourceId);
     private static BotRunClaim Claim(Ids ids, string owner) => new(BotRunId.New(), ids.Bot, ids.Configuration, ids.Snapshot, owner,

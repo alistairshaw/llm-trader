@@ -3,11 +3,12 @@ schema_version: 1
 id: S3-007
 title: Build deterministic Bot Run input
 stage: 3
-status: ready
+status: done
 priority: 820
 type: feature
 depends_on: [S3-004]
 labels: [snapshot, rendering, isolation]
+owner: s3_007
 created: 2026-08-19
 updated: 2026-08-19
 ---
@@ -49,4 +50,23 @@ Implement [Trading Bot — Deterministic Input Snapshot](../../trading-bot.md#6-
 
 ## Completion Notes
 
-Not completed.
+Implemented the version-1 deterministic Bot Run input service. It loads the run's exact pinned Bot,
+configuration version, assigned Portfolio, and immutable Decision Snapshot through strongly typed
+repositories; rejects Bot, configuration, and Portfolio ownership mismatches; renders all Stage 3
+identity, trigger, mandate, policy, schedule, snapshot, freshness, reconciliation, financial, and
+previous-run facts as canonical invariant UTF-8 JSON; and records the rendering version and SHA-256
+hash in the Bot Run audit record. `GetPortfolioSnapshot` resolves only the snapshot ID pinned by the
+run. Added the nullable audit-hash migration and updated the model snapshot without pending drift.
+
+Validation completed on 2026-08-19:
+
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=BotRunInput"` — passed 5, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests` — passed 18, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=BotRuntimePersistence|Category=Stage3Migrations"` — passed 11, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests` — passed 104, failed 0, skipped 0; model drift assertion passed.
+- `.\dev.ps1 build` — succeeded with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — passed 576, failed 0; 26 future Stage 3 acceptance scenarios remained intentionally skipped.
+- `.\dev.ps1 format` — passed with no changes required.
+
+The checked-in SHA-256 golden fixture verifies byte-stable rendering across Windows and Linux CI.
+No scope deviations, follow-up tasks, or ADRs were required.

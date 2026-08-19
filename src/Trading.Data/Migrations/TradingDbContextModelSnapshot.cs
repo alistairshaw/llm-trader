@@ -48,6 +48,10 @@ namespace Trading.Data.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("input_rendering_version");
 
+                    b.Property<string>("InputRenderingHash")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("input_rendering_hash");
+
                     b.Property<long?>("LeaseExpiresAt")
                         .HasColumnType("INTEGER")
                         .HasColumnName("lease_expires_at");

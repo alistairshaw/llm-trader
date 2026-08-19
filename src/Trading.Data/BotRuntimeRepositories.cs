@@ -57,7 +57,7 @@ public sealed class BotRunTriggerRepository(TradingDbContext dbContext) : IBotRu
     private static string? Normalize(string? value) => value is null ? null : Require(value);
 }
 
-public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunRepository
+public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunRepository, IBotRunInputAuditWriter
 {
     private const int UsageSchemaVersion = 1;
 
@@ -152,6 +152,21 @@ public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunReposi
         return await RepositoryWrites.SaveAsync(dbContext, "bot_run_audit", cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<PersistenceWriteResult> StoreInputRenderingAsync(BotRunId runId, long expectedVersion,
+        string renderingVersion, string renderingHash, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(renderingVersion);
+        ArgumentException.ThrowIfNullOrWhiteSpace(renderingHash);
+        var entity = await dbContext.BotRuns.SingleOrDefaultAsync(x => x.Id == runId.ToString(), cancellationToken).ConfigureAwait(false);
+        if (entity is null || entity.Version != expectedVersion)
+            return new PersistenceWriteResult.ConcurrencyConflict(expectedVersion, entity?.Version);
+        if (entity.Status != "PreparingSnapshot") throw new InvalidOperationException("Bot Run input can be recorded only while preparing its snapshot.");
+        entity.InputRenderingVersion = renderingVersion.Trim();
+        entity.InputRenderingHash = renderingHash.Trim().ToLowerInvariant();
+        entity.Version = expectedVersion + 1;
+        return await RepositoryWrites.SaveAsync(dbContext, "bot_run_input", cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<IReadOnlyList<BotRunId>> GetExpiredLeaseRunIdsAsync(DateTimeOffset now, CancellationToken cancellationToken) =>
         await dbContext.BotRuns.AsNoTracking().Where(x => x.LeaseExpiresAt != null && x.LeaseExpiresAt <= UtcUnixMilliseconds.ToProvider(now) &&
             (x.Status == "PreparingSnapshot" || x.Status == "Reasoning" || x.Status == "WaitingForTool"))
@@ -172,7 +187,7 @@ public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunReposi
                 x.Status == "Started" ? ToolInvocationStatus.Running : CanonicalEnumeration.Parse<ToolInvocationStatus>(x.Status), UtcUnixMilliseconds.FromProvider(x.StartedAt),
                 x.CompletedAt is null ? null : UtcUnixMilliseconds.FromProvider(x.CompletedAt.Value), x.ResultJson ?? x.ResultArtifactId, x.ErrorCode ?? x.ErrorDetail,
                 x.UsageJson is null ? null : DeserializeUsage(x.UsageJson))).ToArray(), e.ModelTranscriptSchemaVersion, e.ModelTranscriptJson,
-            e.InputRenderingVersion, e.TerminalReason, e.Version));
+            e.InputRenderingVersion, e.InputRenderingHash, e.TerminalReason, e.Version));
     }
 
     private static void CopyRun(BotRun run, BotRunEntity e)
@@ -183,7 +198,7 @@ public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunReposi
         e.RequestedNextRunAt = run.RequestedNextRunAt is null ? null : UtcUnixMilliseconds.ToProvider(run.RequestedNextRunAt.Value);
         e.RequestedWakeReason = run.FinishResult?.WakeReason; e.AcceptedNextRunAt = run.AcceptedNextRunAt is null ? null : UtcUnixMilliseconds.ToProvider(run.AcceptedNextRunAt.Value);
         e.TerminalReason = run.TerminalReason; e.UsageJson = SerializeUsage(run.Usage); e.ModelTranscriptSchemaVersion = run.ModelTranscriptSchemaVersion;
-        e.ModelTranscriptJson = run.ModelTranscriptJson; e.InputRenderingVersion = run.InputRenderingVersion;
+        e.ModelTranscriptJson = run.ModelTranscriptJson; e.InputRenderingVersion = run.InputRenderingVersion; e.InputRenderingHash = run.InputRenderingHash;
     }
 
     private static BotToolInvocationEntity ToEntity(ToolInvocation tool, int sequence, string runId) { var e = new BotToolInvocationEntity(); CopyTool(tool, e, sequence, runId); return e; }

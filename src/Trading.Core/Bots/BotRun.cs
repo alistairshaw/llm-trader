@@ -45,6 +45,7 @@ public sealed class BotRun : IBotRunScheduler
     public int ModelTranscriptSchemaVersion { get; private set; } = 1;
     public string ModelTranscriptJson { get; private set; } = "{}";
     public string InputRenderingVersion { get; private set; } = "1";
+    public string? InputRenderingHash { get; private set; }
     public string? TerminalReason { get; private set; }
     public long Version { get; private set; }
     public static IReadOnlySet<BotRunStatus> ActiveStatuses { get; } = new HashSet<BotRunStatus>
@@ -70,6 +71,7 @@ public sealed class BotRun : IBotRunScheduler
             ModelTranscriptSchemaVersion = state.ModelTranscriptSchemaVersion,
             ModelTranscriptJson = BotValidation.Required(state.ModelTranscriptJson, nameof(state.ModelTranscriptJson)),
             InputRenderingVersion = BotValidation.Required(state.InputRenderingVersion, nameof(state.InputRenderingVersion)),
+            InputRenderingHash = state.InputRenderingHash,
             TerminalReason = state.TerminalReason,
             Version = state.Version,
         };
@@ -106,6 +108,16 @@ public sealed class BotRun : IBotRunScheduler
     }
 
     public void BeginReasoning() { RequireStatus(BotRunStatus.PreparingSnapshot); Status = BotRunStatus.Reasoning; }
+
+    public void RecordInputRendering(string version, string sha256Hash)
+    {
+        RequireStatus(BotRunStatus.PreparingSnapshot);
+        InputRenderingVersion = BotValidation.Required(version, nameof(version));
+        var normalizedHash = BotValidation.Required(sha256Hash, nameof(sha256Hash));
+        if (normalizedHash.Length != 64 || normalizedHash.Any(character => !Uri.IsHexDigit(character)))
+            throw new ArgumentException("Input rendering hash must be a SHA-256 hexadecimal value.", nameof(sha256Hash));
+        InputRenderingHash = normalizedHash.ToLowerInvariant();
+    }
     public void WaitForTool() { RequireStatus(BotRunStatus.Reasoning); Status = BotRunStatus.WaitingForTool; }
     public void ResumeReasoning() { RequireStatus(BotRunStatus.WaitingForTool); Status = BotRunStatus.Reasoning; }
 
@@ -180,7 +192,7 @@ public sealed record BotRunState(BotRunId Id, TradingBotId TradingBotId,
     BotRunStatus Status, DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt, string? LeaseOwner,
     DateTimeOffset? LeaseExpiresAt, FinishResult? FinishResult, DateTimeOffset? AcceptedNextRunAt,
     Usage Usage, IReadOnlyList<BotRunTriggerState> Triggers, IReadOnlyList<ToolInvocationState> ToolInvocations,
-    int ModelTranscriptSchemaVersion, string ModelTranscriptJson, string InputRenderingVersion,
+    int ModelTranscriptSchemaVersion, string ModelTranscriptJson, string InputRenderingVersion, string? InputRenderingHash,
     string? TerminalReason, long Version);
 public sealed record BotRunTriggerState(int SequenceNumber, BotRunTriggerId Id, BotRunTriggerType Type,
     string Reason, DateTimeOffset OccurredAt, string? SourceId);

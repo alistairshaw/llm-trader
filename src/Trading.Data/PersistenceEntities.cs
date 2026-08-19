@@ -92,6 +92,7 @@ internal sealed class BotRunEntity : PersistenceEntity
     public int ModelTranscriptSchemaVersion { get; set; }
     public string ModelTranscriptJson { get; set; } = string.Empty;
     public string InputRenderingVersion { get; set; } = string.Empty;
+    public string? InputRenderingHash { get; set; }
     public long Version { get; set; }
 }
 internal sealed class BotToolInvocationEntity : PersistenceEntity

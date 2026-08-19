@@ -100,6 +100,12 @@ public interface IPortfolioDecisionSnapshotRepository
     Task<PersistenceWriteResult> PublishAsync(PortfolioDecisionSnapshot snapshot, CancellationToken cancellationToken);
 }
 
+public interface IBotRunInputAuditWriter
+{
+    Task<PersistenceWriteResult> StoreInputRenderingAsync(BotRunId runId, long expectedVersion,
+        string renderingVersion, string renderingHash, CancellationToken cancellationToken);
+}
+
 public sealed record PendingBotRunTrigger(BotRunTriggerId Id, TradingBotId TradingBotId,
     BotRunTriggerType Type, string Reason, DateTimeOffset OccurredAt, DateTimeOffset CreatedAt,
     string? SourceType = null, string? SourceId = null);

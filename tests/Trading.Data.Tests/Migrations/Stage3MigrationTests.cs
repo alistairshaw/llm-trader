@@ -25,7 +25,7 @@ internal sealed class Stage3MigrationTests
         "id", "trading_bot_id", "configuration_version_id", "portfolio_snapshot_id", "status", "lease_owner", "lease_expires_at",
         "started_at", "completed_at", "finish_status", "finish_summary", "requested_next_run_at", "requested_wake_reason",
         "accepted_next_run_at", "terminal_reason", "usage_json", "model_transcript_schema_version", "model_transcript_json",
-        "input_rendering_version", "version"
+        "input_rendering_version", "version", "input_rendering_hash"
     ];
     private static readonly string[] ToolColumns =
     [
@@ -44,7 +44,7 @@ internal sealed class Stage3MigrationTests
 
         Assert.Multiple(async () =>
         {
-            Assert.That(await ScalarAsync<long>(database.Context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(2));
+            Assert.That(await ScalarAsync<long>(database.Context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(3));
             Assert.That(await ScalarAsync<string>(database.Context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("3"));
             Assert.That(await TableNamesAsync(database.Context), Does.Contain("bot_run_triggers"));
             Assert.That(await TableNamesAsync(database.Context), Does.Contain("bot_runs"));
@@ -78,7 +78,7 @@ internal sealed class Stage3MigrationTests
                     Assert.That(after[table], Is.EqualTo(before[table]), table);
                 }
             });
-            Assert.That(await ScalarAsync<long>(context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(2));
+            Assert.That(await ScalarAsync<long>(context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(3));
             Assert.That(await ScalarAsync<string>(context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("3"));
         }
         finally
@@ -173,7 +173,7 @@ internal sealed class Stage3MigrationTests
     }
 
     private static Task InsertRunAsync(TradingDbContext context, string id, string status) => ExecuteAsync(context,
-        $"INSERT INTO bot_runs VALUES ('{id}','{BotId}','{ConfigurationId}','{SnapshotId}','{status}',NULL,NULL,1000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'{{\"schemaVersion\":1}}',1,'{{\"schemaVersion\":1}}','stage3-v1',1)");
+        $"INSERT INTO bot_runs VALUES ('{id}','{BotId}','{ConfigurationId}','{SnapshotId}','{status}',NULL,NULL,1000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'{{\"schemaVersion\":1}}',1,'{{\"schemaVersion\":1}}','stage3-v1',1,NULL)");
 
     private static TradingDbContext CreateContext(string path) => new(TradingDbContextFactory.CreateOptions(new DatabaseOptions { DatabasePath = path }, TestContext.CurrentContext.TestDirectory));
 

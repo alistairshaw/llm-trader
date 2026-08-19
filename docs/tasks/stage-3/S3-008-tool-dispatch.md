@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-008
 title: Implement authorized Stage 3 tool dispatch
 stage: 3
-status: planned
+status: ready
 priority: 800
 type: feature
 depends_on: [S3-002, S3-007]

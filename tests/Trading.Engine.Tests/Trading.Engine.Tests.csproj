@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
   <ItemGroup><ProjectReference Include="..\..\src\Trading.Engine\Trading.Engine.csproj" /></ItemGroup>
+  <ItemGroup><None Include="Fixtures\**" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

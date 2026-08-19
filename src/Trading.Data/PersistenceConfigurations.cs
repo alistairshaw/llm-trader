@@ -144,7 +144,7 @@ internal sealed class BotRunConfiguration : EntityConfiguration<BotRunEntity>
         builder.Property(x => x.Status).IsRequired();
         builder.Property(x => x.UsageJson).IsRequired();
         builder.Property(x => x.ModelTranscriptJson).IsRequired();
-        builder.Property(x => x.InputRenderingVersion).IsRequired();
+        builder.Property(x => x.InputRenderingVersion).IsRequired(); builder.Property(x => x.InputRenderingHash);
         builder.Property(x => x.Version).IsConcurrencyToken();
         builder.HasIndex(x => x.TradingBotId).IsUnique()
             .HasFilter("status IN ('Pending', 'AcquiringLease', 'PreparingSnapshot', 'Reasoning', 'WaitingForTool')");
