@@ -1,0 +1,10 @@
+<Window x:Class="Trading.UI.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Trading Bot" Height="450" Width="800">
+    <Grid>
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="Trading Bot bootstrap is ready." />
+    </Grid>
+</Window>

@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "trading.brokers": {
+        "type": "Project",
+        "dependencies": {
+          "Trading.Core": "[1.0.0, )"
+        }
+      },
+      "trading.core": {
+        "type": "Project"
+      },
+      "trading.data": {
+        "type": "Project",
+        "dependencies": {
+          "Trading.Core": "[1.0.0, )"
+        }
+      },
+      "trading.research": {
+        "type": "Project",
+        "dependencies": {
+          "Trading.Core": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

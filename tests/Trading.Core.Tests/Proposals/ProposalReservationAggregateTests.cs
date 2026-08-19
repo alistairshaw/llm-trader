@@ -1,0 +1,218 @@
+using Trading.Core.FinancialValues;
+using Trading.Core.Identifiers;
+using Trading.Core.Proposals;
+
+namespace Trading.Core.Tests.Proposals;
+
+[Category("ProposalOrReservationAggregates")]
+public sealed class ProposalReservationAggregateTests
+{
+    private static readonly DateTimeOffset Now = new(2026, 8, 19, 12, 0, 0, TimeSpan.Zero);
+
+    [Test]
+    public void ProposalPinsAllAuthorityReferencesAndContentIsImmutable()
+    {
+        var reports = new List<ResearchReportId> { ResearchReportId.New() };
+        var proposal = NewProposal(evidence: reports);
+        reports.Clear();
+        Assert.Multiple(() =>
+        {
+            Assert.That(proposal.TradingBotId, Is.Not.Null);
+            Assert.That(proposal.BotRunId, Is.Not.Null);
+            Assert.That(proposal.PortfolioId, Is.Not.Null);
+            Assert.That(proposal.ConfigurationVersionId, Is.Not.Null);
+            Assert.That(proposal.PortfolioSnapshotId, Is.Not.Null);
+            Assert.That(proposal.EvidenceReportIds, Has.Count.EqualTo(1));
+            Assert.That(typeof(TradeProposal).GetProperty(nameof(TradeProposal.Rationale))!.SetMethod, Is.Null);
+            Assert.That(typeof(TradeProposal).GetProperty(nameof(TradeProposal.RequestedAction))!.SetMethod, Is.Null);
+        });
+    }
+
+    [Test]
+    public void BothProposalFormsAreExplicit()
+    {
+        var direct = NewProposal();
+        var allocation = NewProposal(new TargetAllocationAction(new Percentage(25)));
+        Assert.Multiple(() =>
+        {
+            Assert.That(direct.ProposalType, Is.EqualTo(ProposalType.DirectTrade));
+            Assert.That(direct.RequestedAction, Is.TypeOf<DirectTradeAction>());
+            Assert.That(allocation.ProposalType, Is.EqualTo(ProposalType.TargetAllocation));
+            Assert.That(allocation.RequestedAction, Is.TypeOf<TargetAllocationAction>());
+        });
+    }
+
+    [Test]
+    public void ApprovalRequiresExactVersionAndReviewedSnapshotAndCannotBypassHumanReview()
+    {
+        var proposal = NewProposal();
+        proposal.StartValidation(Now.AddMinutes(1));
+        proposal.RequireHumanApproval(Now.AddMinutes(2));
+        Assert.Multiple(() =>
+        {
+            Assert.That(() => proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.AuthorizedPolicy, "policy", null,
+                Now.AddMinutes(3), proposal.Version, proposal.PortfolioSnapshotId), Throws.InvalidOperationException);
+            Assert.That(() => proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.User, "user-1", null,
+                Now.AddMinutes(3), proposal.Version - 1, proposal.PortfolioSnapshotId), Throws.InvalidOperationException);
+            Assert.That(() => proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.User, "user-1", null,
+                Now.AddMinutes(3), proposal.Version, PortfolioDecisionSnapshotId.New()), Throws.InvalidOperationException);
+        });
+        var reviewedVersion = proposal.Version;
+        var decision = proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.User, "user-1", "reviewed",
+            Now.AddMinutes(3), reviewedVersion, proposal.PortfolioSnapshotId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(proposal.Status, Is.EqualTo(ProposalStatus.Approved));
+            Assert.That(decision.ProposalVersion, Is.EqualTo(reviewedVersion));
+            Assert.That(decision.StateSnapshotId, Is.EqualTo(proposal.PortfolioSnapshotId));
+        });
+    }
+
+    [Test]
+    public void ExpiredProposalCannotBeApproved()
+    {
+        var proposal = NewProposal();
+        proposal.StartValidation(Now.AddMinutes(1));
+        Assert.That(() => proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.AuthorizedPolicy, "policy", null,
+            proposal.ValidUntil, proposal.Version, proposal.PortfolioSnapshotId), Throws.InvalidOperationException);
+    }
+
+    [Test]
+    public void EvaluationAndDecisionHistoryAreAppendOnlyImmutableFacts()
+    {
+        var rules = new List<GuardrailRuleResult> { new("max-position", GuardrailOutcome.Passed, "within limit") };
+        var proposal = NewProposal(); proposal.StartValidation(Now.AddMinutes(1));
+        var evaluation = proposal.RecordEvaluation(GuardrailEvaluationId.New(), "portfolio", "policy-v1",
+            GuardrailOutcome.Passed, rules, Now.AddMinutes(2), proposal.PortfolioSnapshotId);
+        rules.Clear();
+        proposal.Reject(ProposalApprovalId.New(), ApprovalActorType.User, "user-1", "declined", Now.AddMinutes(3),
+            proposal.Version, proposal.PortfolioSnapshotId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(evaluation.RuleResults, Has.Count.EqualTo(1));
+            Assert.That(typeof(GuardrailEvaluation).GetProperties().All(property => property.SetMethod is null), Is.True);
+            Assert.That(typeof(ProposalApproval).GetProperties().All(property => property.SetMethod is null), Is.True);
+            Assert.That(proposal.GuardrailEvaluations, Has.Count.EqualTo(1));
+            Assert.That(proposal.ApprovalHistory, Has.Count.EqualTo(1));
+        });
+    }
+
+    [TestCase(ProposalStatus.Recorded, ProposalStatus.Validating, true)]
+    [TestCase(ProposalStatus.Validating, ProposalStatus.AwaitingHumanApproval, true)]
+    [TestCase(ProposalStatus.AwaitingHumanApproval, ProposalStatus.Approved, true)]
+    [TestCase(ProposalStatus.Approved, ProposalStatus.ConvertedToOrder, true)]
+    [TestCase(ProposalStatus.Recorded, ProposalStatus.ConvertedToOrder, false)]
+    [TestCase(ProposalStatus.Rejected, ProposalStatus.Approved, false)]
+    [TestCase(ProposalStatus.Cancelled, ProposalStatus.Validating, false)]
+    public void ProposalTransitionsAreTableDriven(ProposalStatus from, ProposalStatus to, bool allowed)
+    {
+        var proposal = ProposalIn(from);
+        void Act() => TransitionProposal(proposal, to);
+        if (allowed) Assert.That(Act, Throws.Nothing); else Assert.That(Act, Throws.InvalidOperationException);
+    }
+
+    [TestCase(CapitalReservationStatus.Active, CapitalReservationStatus.Consumed, true)]
+    [TestCase(CapitalReservationStatus.Active, CapitalReservationStatus.Released, true)]
+    [TestCase(CapitalReservationStatus.Active, CapitalReservationStatus.Expired, true)]
+    [TestCase(CapitalReservationStatus.Consumed, CapitalReservationStatus.Released, false)]
+    [TestCase(CapitalReservationStatus.Released, CapitalReservationStatus.Consumed, false)]
+    [TestCase(CapitalReservationStatus.Expired, CapitalReservationStatus.Consumed, false)]
+    public void ReservationTransitionsAreTableDriven(CapitalReservationStatus from, CapitalReservationStatus to, bool allowed)
+    {
+        var reservation = ReservationIn(from);
+        void Act() => TransitionReservation(reservation, to);
+        if (allowed) Assert.That(Act, Throws.Nothing); else Assert.That(Act, Throws.InvalidOperationException);
+    }
+
+    [Test]
+    public void ReservationRequiresPositiveCurrencyExplicitAmountAndTerminalOperationsAreIdempotent()
+    {
+        Assert.That(() => NewReservation(new Money(0, Currency.USD)), Throws.TypeOf<ArgumentOutOfRangeException>());
+        var consumed = NewReservation(new Money(100, Currency.USD));
+        Assert.Multiple(() =>
+        {
+            Assert.That(consumed.Currency, Is.EqualTo(Currency.USD));
+            Assert.That(consumed.Consume(Now.AddMinutes(1)), Is.True);
+            Assert.That(consumed.Consume(Now.AddMinutes(2)), Is.False);
+            Assert.That(() => consumed.Release(Now.AddMinutes(2)), Throws.InvalidOperationException);
+        });
+        var released = NewReservation(new Money(50, Currency.EUR));
+        Assert.Multiple(() =>
+        {
+            Assert.That(released.Release(Now.AddMinutes(1)), Is.True);
+            Assert.That(released.Release(Now.AddMinutes(2)), Is.False);
+            Assert.That(() => released.Consume(Now.AddMinutes(2)), Throws.InvalidOperationException);
+        });
+    }
+
+    [Test]
+    public void ReservationOrderAttachmentIsIdempotentAndCannotBeChanged()
+    {
+        var reservation = NewReservation(new Money(10, Currency.USD));
+        var order = OrderId.New();
+        Assert.Multiple(() =>
+        {
+            Assert.That(reservation.AttachToOrder(order), Is.True);
+            Assert.That(reservation.AttachToOrder(order), Is.False);
+            Assert.That(() => reservation.AttachToOrder(OrderId.New()), Throws.InvalidOperationException);
+        });
+    }
+
+    private static TradeProposal NewProposal(RequestedAction? action = null, IEnumerable<ResearchReportId>? evidence = null) =>
+        new(TradeProposalId.New(), TradingBotId.New(), BotRunId.New(), PortfolioId.New(),
+            TradingBotConfigurationVersionId.New(), PortfolioDecisionSnapshotId.New(), InstrumentId.New(),
+            action ?? new DirectTradeAction(TradeSide.Buy, new Quantity(10, "shares"), "Limit",
+                new Price(25, Currency.USD), "Day"), "Within allocation", HypothesisVersionId.New(),
+            evidence ?? [ResearchReportId.New()], Now, Now.AddHours(1));
+
+    private static CapitalReservation NewReservation(Money amount) =>
+        new(CapitalReservationId.New(), ApprovedProposal(), amount, Now, Now.AddMinutes(10));
+
+    private static TradeProposal ApprovedProposal()
+    {
+        var proposal = NewProposal();
+        proposal.StartValidation(Now);
+        proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.AuthorizedPolicy, "policy", null, Now,
+            proposal.Version, proposal.PortfolioSnapshotId);
+        return proposal;
+    }
+
+    private static TradeProposal ProposalIn(ProposalStatus status)
+    {
+        var proposal = NewProposal();
+        if (status == ProposalStatus.Recorded) return proposal;
+        proposal.StartValidation(Now.AddMinutes(1));
+        if (status == ProposalStatus.Validating) return proposal;
+        if (status == ProposalStatus.AwaitingHumanApproval) { proposal.RequireHumanApproval(Now.AddMinutes(2)); return proposal; }
+        if (status == ProposalStatus.Approved) { proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.AuthorizedPolicy, "policy", null, Now.AddMinutes(2), proposal.Version, proposal.PortfolioSnapshotId); return proposal; }
+        if (status == ProposalStatus.Rejected) { proposal.Reject(ProposalApprovalId.New(), ApprovalActorType.User, "user", "no", Now.AddMinutes(2), proposal.Version, proposal.PortfolioSnapshotId); return proposal; }
+        if (status == ProposalStatus.Cancelled) { proposal.Cancel(Now.AddMinutes(2)); return proposal; }
+        throw new ArgumentOutOfRangeException(nameof(status));
+    }
+
+    private static void TransitionProposal(TradeProposal proposal, ProposalStatus target)
+    {
+        if (target == ProposalStatus.Validating) proposal.StartValidation(Now.AddMinutes(3));
+        else if (target == ProposalStatus.AwaitingHumanApproval) proposal.RequireHumanApproval(Now.AddMinutes(3));
+        else if (target == ProposalStatus.Approved) proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.User, "user", null, Now.AddMinutes(3), proposal.Version, proposal.PortfolioSnapshotId);
+        else if (target == ProposalStatus.ConvertedToOrder) proposal.ConvertToOrder(Now.AddMinutes(3));
+        else throw new ArgumentOutOfRangeException(nameof(target));
+    }
+
+    private static CapitalReservation ReservationIn(CapitalReservationStatus status)
+    {
+        var reservation = NewReservation(new Money(10, Currency.USD));
+        if (status == CapitalReservationStatus.Consumed) reservation.Consume(Now.AddMinutes(11));
+        else if (status == CapitalReservationStatus.Released) reservation.Release(Now.AddMinutes(11));
+        else if (status == CapitalReservationStatus.Expired) reservation.Expire(Now.AddMinutes(11));
+        return reservation;
+    }
+
+    private static void TransitionReservation(CapitalReservation reservation, CapitalReservationStatus target)
+    {
+        if (target == CapitalReservationStatus.Consumed) reservation.Consume(Now.AddMinutes(11));
+        else if (target == CapitalReservationStatus.Released) reservation.Release(Now.AddMinutes(11));
+        else if (target == CapitalReservationStatus.Expired) reservation.Expire(Now.AddMinutes(11));
+        else throw new ArgumentOutOfRangeException(nameof(target));
+    }
+}
