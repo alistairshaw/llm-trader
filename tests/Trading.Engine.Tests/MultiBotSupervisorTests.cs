@@ -99,6 +99,41 @@ public sealed class MultiBotSupervisorTests
         Assert.That(supervisor.TryQueue(Work(Bot(3), "late")).Outcome, Is.EqualTo(BotRunQueueOutcome.Stopping));
     }
 
+    [Test]
+    public async Task ShutdownRejectsAdmissionAndCancelsWorkAfterDeadline()
+    {
+        var executor = new RecordingExecutor();
+        await using var supervisor = Create(executor, 1, 2);
+        var running = supervisor.TryQueue(Work(Bot(1), "running"));
+        var queued = supervisor.TryQueue(Work(Bot(2), "queued"));
+        await executor.OneStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var result = await supervisor.ShutdownAsync(TimeSpan.FromMilliseconds(25));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.CompletedWithinDeadline, Is.False);
+            Assert.That(supervisor.TryQueue(Work(Bot(3), "late")).Outcome, Is.EqualTo(BotRunQueueOutcome.Stopping));
+            Assert.That(running.Completion!.Result.Outcome, Is.EqualTo(BotRunExecutionOutcome.Cancelled));
+            Assert.That(queued.Completion!.Result.Outcome, Is.EqualTo(BotRunExecutionOutcome.Cancelled));
+        });
+    }
+
+    [Test]
+    public async Task ShutdownDrainsCompletedWorkWithinDeadline()
+    {
+        var executor = new RecordingExecutor();
+        await using var supervisor = Create(executor, 1, 1);
+        var queued = supervisor.TryQueue(Work(Bot(1), "running"));
+        executor.ReleaseAll();
+        var result = await supervisor.ShutdownAsync(TimeSpan.FromSeconds(5));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.CompletedWithinDeadline, Is.True);
+            Assert.That(queued.Completion!.Result.Outcome, Is.EqualTo(BotRunExecutionOutcome.Completed));
+        });
+    }
+
     private static MultiBotSupervisor Create(IBotRunExecutor executor, int concurrency, int capacity) =>
         new(new() { GlobalRunConcurrency = concurrency, QueueCapacity = capacity }, executor);
     private static BotRunSupervisorWork Work(TradingBotId bot, string session) =>

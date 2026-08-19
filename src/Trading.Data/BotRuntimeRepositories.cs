@@ -175,6 +175,42 @@ public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunReposi
             (x.Status == "PreparingSnapshot" || x.Status == "Reasoning" || x.Status == "WaitingForTool"))
             .OrderBy(x => x.LeaseExpiresAt).ThenBy(x => x.Id).Select(x => BotRunId.Parse(x.Id)).ToListAsync(cancellationToken).ConfigureAwait(false);
 
+    public async Task<PersistenceWriteResult> RecoverExpiredAsync(BotRun run, long expectedVersion,
+        PendingBotRunTrigger? followUpTrigger, CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+        var saved = await SaveAsync(run, expectedVersion, cancellationToken).ConfigureAwait(false);
+        if (saved is not PersistenceWriteResult.Succeeded)
+        {
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+            return saved;
+        }
+        if (followUpTrigger is not null)
+        {
+            dbContext.BotRunTriggers.Add(new BotRunTriggerEntity
+            {
+                Id = followUpTrigger.Id.ToString(),
+                TradingBotId = followUpTrigger.TradingBotId.ToString(),
+                TriggerType = CanonicalEnumeration.Format(followUpTrigger.Type),
+                Reason = Require(followUpTrigger.Reason),
+                SourceType = followUpTrigger.SourceType,
+                SourceId = followUpTrigger.SourceId,
+                OccurredAt = UtcUnixMilliseconds.ToProvider(followUpTrigger.OccurredAt),
+                CreatedAt = UtcUnixMilliseconds.ToProvider(followUpTrigger.CreatedAt),
+            });
+            try { await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false); }
+            catch (DbUpdateException exception) when (exception.InnerException is SqliteException { SqliteExtendedErrorCode: 1555 or 2067 })
+            {
+                await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                dbContext.ChangeTracker.Clear();
+                return new PersistenceWriteResult.UniquenessConflict("runtime_recovery_trigger");
+            }
+        }
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        dbContext.ChangeTracker.Clear();
+        return saved;
+    }
+
     private static BotRun ToDomain(BotRunEntity e, IReadOnlyList<BotRunTriggerEntity> triggers, IReadOnlyList<BotToolInvocationEntity> tools)
     {
         var finish = e.FinishStatus is null ? null : new FinishResult(CanonicalEnumeration.Parse<FinishStatus>(e.FinishStatus), e.FinishSummary!,

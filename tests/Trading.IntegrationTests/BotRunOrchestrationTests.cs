@@ -86,6 +86,67 @@ public sealed class BotRunOrchestrationTests
     }
 
     [Test]
+    [Category("RuntimeRecoveryOrShutdown")]
+    public async Task ExpiredPreModelLeaseIsTerminalizedOnceAndRetainedForOneFollowUpRun()
+    {
+        await using var database = await Database.CreateAsync(); await using var context = database.Open();
+        var claimClock = new FixedClock(Now);
+        await Ingestion(context, database.Ids, claimClock).IngestAsync(
+            new(database.BotId, BotRunTriggerType.Manual, "recover", Now), default);
+        var runs = new BotRunRepository(context);
+        var claim = await new BotTriggerCoalescingService(new TradingBotRepository(context),
+            new BotRunTriggerRepository(context), runs, database.Ids, claimClock).TryClaimAsync(
+            new(database.BotId, database.ConfigurationId, database.SnapshotId, "dead-host", TimeSpan.FromMinutes(1)), default);
+        var claimed = (TriggerCoalescingResult.Claimed)claim;
+        var recoveryClock = new FixedClock(Now.AddMinutes(1));
+        var service = new RuntimeRecoveryService(runs, database.Ids, recoveryClock);
+
+        var first = await service.RecoverExpiredLeasesAsync(default);
+        var second = await service.RecoverExpiredLeasesAsync(default);
+        var stored = await runs.GetAsync(claimed.Run.Id, default);
+        var pending = await new BotRunTriggerRepository(context).GetPendingAsync(database.BotId, default);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(first, Is.EqualTo(new RecoveryResult(1, 0)));
+            Assert.That(second, Is.EqualTo(new RecoveryResult(0, 0)));
+            Assert.That(stored!.Status, Is.EqualTo(BotRunStatus.Faulted));
+            Assert.That(stored.TerminalReason, Is.EqualTo("recovery_pre_model_checkpoint"));
+            Assert.That(stored.LeaseOwner, Is.Null);
+            Assert.That(pending.Count(x => x.SourceType == "runtime-recovery"), Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    [Category("RuntimeRecoveryOrShutdown")]
+    public async Task ExpiredPostModelLeaseFaultsWithoutImplicitReplay()
+    {
+        await using var database = await Database.CreateAsync(); await using var context = database.Open();
+        var clock = new FixedClock(Now);
+        await Ingestion(context, database.Ids, clock).IngestAsync(new(database.BotId, BotRunTriggerType.Manual, "run", Now), default);
+        var runs = new BotRunRepository(context);
+        var claimed = (TriggerCoalescingResult.Claimed)await new BotTriggerCoalescingService(
+            new TradingBotRepository(context), new BotRunTriggerRepository(context), runs, database.Ids, clock)
+            .TryClaimAsync(new(database.BotId, database.ConfigurationId, database.SnapshotId, "dead-host", TimeSpan.FromMinutes(1)), default);
+        claimed.Run.BeginReasoning();
+        Assert.That(await runs.SaveAsync(claimed.Run, claimed.Run.Version, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        var service = new RuntimeRecoveryService(runs, database.Ids,
+            new FixedClock(Now.AddMinutes(1)));
+
+        var result = await service.RecoverExpiredLeasesAsync(default);
+        var stored = await runs.GetAsync(claimed.Run.Id, default);
+        var pending = await new BotRunTriggerRepository(context).GetPendingAsync(database.BotId, default);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(new RecoveryResult(0, 1)));
+            Assert.That(stored!.Status, Is.EqualTo(BotRunStatus.Faulted));
+            Assert.That(stored.TerminalReason, Is.EqualTo("recovery_model_execution_interrupted"));
+            Assert.That(pending, Is.Empty);
+        });
+    }
+
+    [Test]
     public async Task MissingTriggerDoesNotCreateRun()
     {
         await using var database = await Database.CreateAsync();

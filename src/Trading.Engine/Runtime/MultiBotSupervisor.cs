@@ -44,6 +44,7 @@ public sealed class MultiBotSupervisor : IAsyncDisposable
     private readonly CancellationTokenSource lifetime = new();
     private readonly Task coordinator;
     private int stopping;
+    private int cancelledRuns;
 
     public MultiBotSupervisor(MultiBotSupervisorOptions options, IBotRunExecutor executor)
     {
@@ -110,6 +111,26 @@ public sealed class MultiBotSupervisor : IAsyncDisposable
         await coordinator.WaitAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>Stops admission immediately, drains within the deadline, then cancels active and queued work.</summary>
+    public async Task<ShutdownResult> ShutdownAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout, TimeSpan.Zero);
+        if (Interlocked.Exchange(ref stopping, 1) == 0) work.Writer.TryComplete();
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(timeout);
+        try
+        {
+            await coordinator.WaitAsync(deadline.Token).ConfigureAwait(false);
+            return new(0, true);
+        }
+        catch (OperationCanceledException) when (deadline.IsCancellationRequested)
+        {
+            lifetime.Cancel();
+            try { await coordinator.ConfigureAwait(false); } catch (OperationCanceledException) { }
+            return new(Volatile.Read(ref cancelledRuns), false);
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (Interlocked.Exchange(ref stopping, 1) == 0)
@@ -151,7 +172,7 @@ public sealed class MultiBotSupervisor : IAsyncDisposable
 
                 var inputReady = work.Reader.WaitToReadAsync(lifetime.Token).AsTask();
                 var completionReady = completions.Reader.WaitToReadAsync(lifetime.Token).AsTask();
-                await Task.WhenAny(inputReady, completionReady).ConfigureAwait(false);
+                await await Task.WhenAny(inputReady, completionReady).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested)
@@ -172,6 +193,7 @@ public sealed class MultiBotSupervisor : IAsyncDisposable
         }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested)
         {
+            Interlocked.Increment(ref cancelledRuns);
             queued.Completion.TrySetResult(new(BotRunExecutionOutcome.Cancelled, null, null, "supervisor_stopped"));
         }
         catch (Exception)
@@ -187,6 +209,7 @@ public sealed class MultiBotSupervisor : IAsyncDisposable
 
     private void CompleteCancelled(QueuedWork queued)
     {
+        Interlocked.Increment(ref cancelledRuns);
         queued.Completion.TrySetResult(new(BotRunExecutionOutcome.Cancelled, null, null, "supervisor_stopped"));
         admission.Release();
     }

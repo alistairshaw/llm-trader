@@ -137,6 +137,9 @@ public interface IBotRunRepository
         long expectedVersion, CancellationToken cancellationToken);
     Task<PersistenceWriteResult> SaveAsync(BotRun run, long expectedVersion, CancellationToken cancellationToken);
     Task<IReadOnlyList<BotRunId>> GetExpiredLeaseRunIdsAsync(DateTimeOffset now, CancellationToken cancellationToken);
+    Task<PersistenceWriteResult> RecoverExpiredAsync(BotRun run, long expectedVersion,
+        PendingBotRunTrigger? followUpTrigger, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("This repository does not support atomic runtime recovery.");
 }
 
 public sealed record PortfolioSummary(

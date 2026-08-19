@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-013
 title: Run configured bots through the headless host
 stage: 3
-status: planned
+status: ready
 priority: 700
 type: feature
 depends_on: [S3-012]

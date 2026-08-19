@@ -3,11 +3,12 @@ schema_version: 1
 id: S3-012
 title: Implement lease recovery and graceful shutdown
 stage: 3
-status: ready
+status: done
 priority: 720
 type: feature
 depends_on: [S3-011]
 labels: [recovery, leases, shutdown]
+owner: codex-s3-012
 created: 2026-08-19
 updated: 2026-08-19
 ---
@@ -49,4 +50,9 @@ Follow [Architecture — Runtime Model](../../architecture.md#8-runtime-model), 
 
 ## Completion Notes
 
-Not completed.
+- Added deterministic startup recovery that discovers expired leases, atomically faults the abandoned run and retains one deduplicated follow-up trigger only for pre-model checkpoints. Runs interrupted during reasoning or tool execution are terminalized without implicit replay, while their pinned identities, transcript, usage, trigger, and tool audit remain intact.
+- Added a transactional SQLite recovery repository operation so lease release and follow-up work retention cannot be separated by a process failure. Optimistic version checks prevent recovery from stealing a renewed live lease.
+- Added bounded supervisor shutdown that rejects admission immediately, completes its writer, drains within the configured deadline, propagates cancellation after timeout, completes queued work safely, and reports whether the drain completed.
+- Added deterministic integration coverage for pre-model restart recovery, post-model safe faulting, repeat recovery idempotency, and follow-up retention, plus supervisor drain/deadline/cancellation coverage.
+- Validation: `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=RuntimeRecoveryOrShutdown"` (2 passed); `.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=MultiBotSupervisor"` (7 passed); `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage3Migrations"` (5 passed); `.\dev.ps1 build` (succeeded, 0 warnings/errors); `.\dev.ps1 test` (622 passed, 26 Stage 3 acceptance scenarios pending, 0 failed); `.\dev.ps1 format` (passed); `git diff --check` (passed).
+- Deviations: none. Follow-up tasks: none. ADRs: none.
