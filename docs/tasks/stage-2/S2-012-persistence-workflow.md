@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-012
 title: Implement the restart-safe portfolio persistence workflow
 stage: 2
-status: planned
+status: ready
 priority: 720
 type: feature
 depends_on: [S2-010, S2-011]

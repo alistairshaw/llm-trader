@@ -106,7 +106,10 @@ public sealed record PortfolioSummary(
     PortfolioStatus Status,
     Money CapitalAllocation,
     BrokerAccountId? BrokerAccountId,
-    TradingBotId? AssignedTradingBotId);
+    TradingBotId? AssignedTradingBotId,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    long Version);
 
 public sealed record PositionView(
     PositionId Id,
@@ -129,7 +132,10 @@ public sealed record PortfolioLedgerEntryView(
     decimal? Quantity,
     DateTimeOffset EffectiveAt,
     LedgerSourceType SourceType,
-    string SourceId);
+    string SourceId,
+    DateTimeOffset RecordedAt,
+    PortfolioLedgerEntryId? ReversesEntryId,
+    string? Description);
 
 public sealed record PortfolioDecisionSnapshotSummary(
     PortfolioDecisionSnapshotId Id,
@@ -138,12 +144,50 @@ public sealed record PortfolioDecisionSnapshotSummary(
     TradingBotConfigurationVersionId ConfigurationVersionId,
     DateTimeOffset AsOf,
     ReconciliationStatus ReconciliationStatus,
-    string ContentHash);
+    string ContentHash,
+    DateTimeOffset CreatedAt);
+
+public sealed record BrokerAccountAssociationView(
+    PortfolioId PortfolioId,
+    BrokerAccountId BrokerAccountId,
+    BrokerConnectionId BrokerConnectionId,
+    string ExternalAccountId,
+    string DisplayName,
+    BrokerAccountStatus Status,
+    DateTimeOffset? LastReconciledAt,
+    long Version);
+
+public readonly record struct PageRequest
+{
+    public const int MaximumSize = 100;
+
+    public PageRequest(int offset, int size)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        ArgumentOutOfRangeException.ThrowIfLessThan(size, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(size, MaximumSize);
+        Offset = offset;
+        Size = size;
+    }
+
+    public int Offset { get; }
+    public int Size { get; }
+}
+
+public readonly record struct PortfolioQueryFilter(BrokerAccountId? BrokerAccountId = null, TradingBotId? TradingBotId = null);
+public readonly record struct PositionQueryFilter(PortfolioId? PortfolioId = null, InstrumentId? InstrumentId = null,
+    DateTimeOffset? UpdatedFrom = null, DateTimeOffset? UpdatedTo = null);
+public readonly record struct PortfolioLedgerQueryFilter(PortfolioId? PortfolioId = null, BrokerAccountId? BrokerAccountId = null,
+    TradingBotId? TradingBotId = null, InstrumentId? InstrumentId = null, DateTimeOffset? EffectiveFrom = null, DateTimeOffset? EffectiveTo = null);
+public readonly record struct PortfolioDecisionSnapshotQueryFilter(PortfolioId? PortfolioId = null, TradingBotId? TradingBotId = null,
+    DateTimeOffset? AsOfFrom = null, DateTimeOffset? AsOfTo = null);
 
 public interface IPortfolioQueries
 {
     Task<PortfolioSummary?> GetSummaryAsync(PortfolioId id, CancellationToken cancellationToken);
-    Task<IReadOnlyList<PositionView>> GetPositionsAsync(PortfolioId portfolioId, CancellationToken cancellationToken);
-    Task<IReadOnlyList<PortfolioLedgerEntryView>> GetLedgerAsync(PortfolioId portfolioId, DateTimeOffset? effectiveFrom, CancellationToken cancellationToken);
-    Task<IReadOnlyList<PortfolioDecisionSnapshotSummary>> GetDecisionSnapshotsAsync(PortfolioId portfolioId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PortfolioSummary>> GetPortfoliosAsync(PortfolioQueryFilter filter, PageRequest page, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PositionView>> GetPositionsAsync(PositionQueryFilter filter, PageRequest page, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PortfolioLedgerEntryView>> GetLedgerAsync(PortfolioLedgerQueryFilter filter, PageRequest page, CancellationToken cancellationToken);
+    Task<BrokerAccountAssociationView?> GetBrokerAccountAssociationAsync(PortfolioId portfolioId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PortfolioDecisionSnapshotSummary>> GetDecisionSnapshotsAsync(PortfolioDecisionSnapshotQueryFilter filter, PageRequest page, CancellationToken cancellationToken);
 }

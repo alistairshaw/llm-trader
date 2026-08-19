@@ -109,10 +109,10 @@ public sealed class PersistenceContractArchitectureTests
             Assert.That(projectionTypes, Is.EquivalentTo(new[]
             {
                 typeof(PortfolioSummary), typeof(PositionView), typeof(PortfolioLedgerEntryView),
-                typeof(PortfolioDecisionSnapshotSummary),
+                typeof(PortfolioDecisionSnapshotSummary), typeof(BrokerAccountAssociationView),
             }));
             Assert.That(mutableProperties, Is.Empty);
-            Assert.That(typeof(IPortfolioQueries).GetMethods().Where(method => method.Name != "GetSummaryAsync"),
+            Assert.That(typeof(IPortfolioQueries).GetMethods().Where(method => method.Name is not "GetSummaryAsync" and not "GetBrokerAccountAssociationAsync"),
                 Has.All.Matches<MethodInfo>(method => EnumerateTypeGraph(method.ReturnType)
                     .Any(type => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>))));
         });

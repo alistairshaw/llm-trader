@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-011
 title: Implement no-tracking portfolio read models
 stage: 2
-status: ready
+status: done
 priority: 740
 type: feature
 depends_on: [S2-009]
@@ -48,4 +48,14 @@ Follow [Data Model — Read Models](../../data-model.md#18-read-models), [Initia
 
 ## Completion Notes
 
-Not completed.
+Implemented EF Core no-tracking query services and immutable provider-neutral projections for Portfolio summaries, Positions, ledger history, Broker Account associations, and Decision Snapshot history. Added bounded offset pagination, deterministic timestamp-and-identity ordering, and Portfolio, Broker Account, Trading Bot, Instrument, and inclusive UTC time-range filters. Existing Stage 2 indexes satisfied the primary query plans without schema changes.
+
+Validation performed on 2026-08-19:
+
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=PortfolioReadModels"` — passed 4 tests.
+- `.\dev.ps1 test -Project tests/Trading.Architecture.Tests` — passed 11 tests.
+- `.\dev.ps1 build` — succeeded in Release with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — passed 426 tests: Core 275, Data 92, Architecture 11, and Acceptance 48; 20 explicitly deferred Stage 2 acceptance scenarios were skipped.
+- `.\dev.ps1 format` — passed with no changes required.
+
+No deviations, follow-up tasks, or ADR changes.
