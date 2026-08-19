@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 2 is locally approved and ready for exact-revision hosted validation. Stage 3 may begin after the review revision passes the repository's Windows and Linux hosted CI workflows. Hosted validation is the sole remaining Stage 2 gate.
+Stage 2 is approved and complete. Exact-revision local, Windows-hosted, Linux-hosted, and security validation passed. Stage 3 may begin.
 
 ## Delivered Scope
 
@@ -44,7 +44,11 @@ The reloaded state retained portfolio `01J5QH8M000000000000000005`, exact capita
 
 ## Hosted Validation
 
-Pending publication of the review revision. Record the exact Git revision and successful Windows and Linux workflow URLs here before changing `S2-013` to `done`.
+- Validated revision: `eb2eff0bcc4a726bae482369264449073c0e8d59`
+- CI workflow: [run 32279052481](https://github.com/alistairshaw/llm-trader/actions/runs/32279052481) — passed.
+- Linux job: [job 96153219013](https://github.com/alistairshaw/llm-trader/actions/runs/32279052481/job/96153219013) — passed; `test-results-Linux` artifact ID `9375128752`, 71,751 bytes.
+- Windows job: [job 96153219267](https://github.com/alistairshaw/llm-trader/actions/runs/32279052481/job/96153219267) — passed; `test-results-Windows` artifact ID `9375162635`, 72,180 bytes.
+- Security workflow: [run 32279052419](https://github.com/alistairshaw/llm-trader/actions/runs/32279052419) — passed.
 
 ## Defects, Follow-ups, and Decisions
 
@@ -52,4 +56,4 @@ Pending publication of the review revision. Record the exact Git revision and su
 - Scope deviations: none.
 - Follow-up task IDs: none.
 - ADRs created or changed: none.
-- Stage 3 commencement: approved after exact-revision hosted Windows and Linux CI passes.
+- Stage 3 commencement: approved.

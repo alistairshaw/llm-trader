@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-No task is locally actionable. `S2-013` awaits exact-revision hosted Windows and Linux CI evidence.
+No Stage 2 tasks remain. Stage 3 commencement is approved.
 
 ## Ordered Backlog
 
@@ -24,7 +24,7 @@ No task is locally actionable. `S2-013` awaits exact-revision hosted Windows and
 | [`S2-010`](stage-2/S2-010-concurrency-transactions.md) | Implement concurrency and transaction boundaries | Done | 760 | `S2-008`, `S2-009` |
 | [`S2-011`](stage-2/S2-011-portfolio-read-models.md) | Implement no-tracking portfolio read models | Done | 740 | `S2-009` |
 | [`S2-012`](stage-2/S2-012-persistence-workflow.md) | Implement the restart-safe portfolio persistence workflow | Done | 720 | `S2-010`, `S2-011` |
-| [`S2-013`](stage-2/S2-013-stage-2-acceptance-review.md) | Complete Stage 2 acceptance and review | Review | 1000 | `S2-001`–`S2-012` |
+| [`S2-013`](stage-2/S2-013-stage-2-acceptance-review.md) | Complete Stage 2 acceptance and review | Done | 1000 | `S2-001`–`S2-012` |
 
 ## Stage Exit Gate
 
@@ -38,4 +38,4 @@ No task is locally actionable. `S2-013` awaits exact-revision hosted Windows and
 
 ## Completion Summary
 
-All implementation and local validation are complete. `S2-013` is in review pending successful hosted Windows and Linux CI on the exact published revision.
+Stage 2 is complete. All 13 tasks are done; all 20 Stage 2 scenarios passed locally and in hosted Windows and Linux CI with zero pending or skipped results; migration, formatting, architecture, integration, full-suite, and security gates passed. The Stage 2 Review Record approves beginning Stage 3.
