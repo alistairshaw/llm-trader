@@ -3,7 +3,7 @@ schema_version: 1
 id: S1-015
 title: Complete BDD bindings and Stage 1 acceptance review
 stage: 1
-status: in_progress
+status: done
 priority: 1000
 type: acceptance
 depends_on: [S1-009, S1-010, S1-011, S1-012, S1-013, S1-014]
@@ -57,4 +57,13 @@ Confirm equivalent Linux CI results for every non-WPF project and `@stage1` scen
 
 ## Completion Notes
 
-In progress.
+Completed 2026-08-19.
+
+- Added thin, scenario-scoped Stage 1 bindings backed by direct domain behavior and deterministic repository inspection; removed all five justified feature-level `@ignore` tags.
+- Added the acceptance-to-Core project reference and refreshed the committed lock file. No external provider dependency or runtime integration was introduced.
+- Added the [Stage 1 Review Record](../../stage-1-review.md), including traceability, migration applicability, evidence, limitations, follow-ups, ADRs, and the remaining approval condition.
+- Validation passed: `./dev.ps1 restore`; `./dev.ps1 build` (Release, zero warnings/errors); `./dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage1"` (48 passed, zero skipped); `./dev.ps1 test` (275 Core, 6 architecture, 48 acceptance; zero failed/skipped); and `./dev.ps1 format`.
+- Hosted validation passed for exact public `main` revision `facd9652303dffddc4875f719c6b673c7de516a4` in [CI run 32264483096](https://github.com/alistairshaw/llm-trader/actions/runs/32264483096): Windows and Linux validation succeeded, native WPF built on Windows, and unexpired TRX artifacts were retained as `test-results-Windows` (`9369645877`, 71,313 bytes) and `test-results-Linux` (`9369632187`, 70,803 bytes).
+- [Security run 32264481275](https://github.com/alistairshaw/llm-trader/actions/runs/32264481275) succeeded with secret scanning and SARIF artifact `9369590494`; dependency review was correctly skipped for the push event.
+- Every dependency is `done`, every criterion passes, and the Stage Review Record approves beginning Stage 2.
+- Deviations: none. Follow-up tasks: none. ADRs: none. Migration version: not applicable.

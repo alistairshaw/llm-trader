@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S1-015` is in progress. No later Stage 1 task is defined.
+None. Stage 1 is complete; no Stage 2 task index has been defined in the repository.
 
 ## Ordered Backlog
 
@@ -26,7 +26,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S1-012`](stage-1/S1-012-proposal-reservation-aggregates.md) | Implement Proposal and Capital Reservation aggregates | Done | 730 | `S1-007`, `S1-008` |
 | [`S1-013`](stage-1/S1-013-order-aggregate.md) | Implement the Order aggregate and state machine | Done | 720 | `S1-007` |
 | [`S1-014`](stage-1/S1-014-ci-pipeline.md) | Add Windows and Linux CI | Done | 700 | `S1-005` |
-| [`S1-015`](stage-1/S1-015-stage-1-acceptance-review.md) | Complete BDD bindings and Stage 1 acceptance review | In Progress | 1000 | `S1-009`–`S1-014` |
+| [`S1-015`](stage-1/S1-015-stage-1-acceptance-review.md) | Complete BDD bindings and Stage 1 acceptance review | Done | 1000 | `S1-009`–`S1-014` |
 
 ## Stage Exit Gate
 
@@ -38,4 +38,10 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Not started.
+Completed 2026-08-19.
+
+- All fifteen Stage 1 tasks are `done`, with dependency order and acceptance traceability current.
+- All 48 Stage 1 Reqnroll cases pass with zero skipped, pending, or undefined steps.
+- The complete local suite passes: 275 Core tests, 6 architecture tests, and 48 acceptance tests. Locked restore, Release build with zero warnings, and formatting verification pass through the Docker workflow.
+- Exact public revision `facd9652303dffddc4875f719c6b673c7de516a4` passed Windows and Linux validation in [CI run 32264483096](https://github.com/alistairshaw/llm-trader/actions/runs/32264483096), including native WPF build on Windows and retained TRX artifacts. [Security run 32264481275](https://github.com/alistairshaw/llm-trader/actions/runs/32264481275) also passed.
+- The [Stage 1 Review Record](../stage-1-review.md) approves beginning Stage 2. No persistence migration applies to Stage 1, and no follow-up task or ADR remains open.
