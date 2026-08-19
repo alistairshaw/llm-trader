@@ -515,11 +515,31 @@ public partial class InitialStage2Persistence : Migration
                 SELECT RAISE(ABORT, 'published trading bot configuration content is immutable');
             END;
             """);
+
+        migrationBuilder.Sql(
+            """
+            CREATE TRIGGER portfolio_decision_snapshots_immutable_update
+            BEFORE UPDATE ON portfolio_decision_snapshots
+            BEGIN
+                SELECT RAISE(ABORT, 'portfolio decision snapshots are immutable');
+            END;
+            """);
+
+        migrationBuilder.Sql(
+            """
+            CREATE TRIGGER portfolio_decision_snapshots_immutable_delete
+            BEFORE DELETE ON portfolio_decision_snapshots
+            BEGIN
+                SELECT RAISE(ABORT, 'portfolio decision snapshots are immutable');
+            END;
+            """);
     }
 
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.Sql("DROP TRIGGER IF EXISTS portfolio_decision_snapshots_immutable_delete;");
+        migrationBuilder.Sql("DROP TRIGGER IF EXISTS portfolio_decision_snapshots_immutable_update;");
         migrationBuilder.Sql("DROP TRIGGER IF EXISTS trading_bot_configuration_versions_immutable_content;");
         migrationBuilder.DropForeignKey(
             name: "FK_trading_bots_trading_bot_configuration_versions_active_configuration_version_id",

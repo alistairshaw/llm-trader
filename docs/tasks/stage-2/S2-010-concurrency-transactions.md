@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-010
 title: Implement concurrency and transaction boundaries
 stage: 2
-status: planned
+status: ready
 priority: 760
 type: feature
 depends_on: [S2-008, S2-009]

@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-011
 title: Implement no-tracking portfolio read models
 stage: 2
-status: planned
+status: ready
 priority: 740
 type: feature
 depends_on: [S2-009]

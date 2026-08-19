@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-009
 title: Persist immutable Portfolio Decision Snapshots
 stage: 2
-status: ready
+status: done
 priority: 790
 type: feature
 depends_on: [S2-008]
@@ -48,4 +48,14 @@ Follow [Domain Model — PortfolioDecisionSnapshot](../../domain.md#53-portfolio
 
 ## Completion Notes
 
-Not completed.
+Implemented the schema-versioned canonical Portfolio Decision Snapshot document, deterministic collection ordering and financial rendering, lowercase SHA-256 hashing, exact whole-artifact reconstruction, relational ownership validation, and an append-only repository. Database triggers reject updates and deletes of published snapshots.
+
+Validation completed on 2026-08-19:
+
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=DecisionSnapshots"` — 5 passed.
+- `.\dev.ps1 build` — succeeded with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — 410 passed across projects: 275 Core, 76 Data, 11 Architecture, and 48 Acceptance; 20 Stage 2 acceptance scenarios intentionally remain skipped pending their implementation tasks.
+- `.\dev.ps1 format` — passed.
+- EF Core `HasPendingModelChanges()` — false against real SQLite.
+
+No deviations, follow-up tasks, or ADRs.
