@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-007
 title: Persist Trading Bots and configuration versions
 stage: 2
-status: ready
+status: done
 priority: 810
 type: feature
 depends_on: [S2-005]
@@ -49,4 +49,13 @@ Follow [Domain Model — TradingBot Aggregate](../../domain.md#41-tradingbot-agg
 
 ## Completion Notes
 
-Not completed.
+Implemented the Trading Bot repository, aggregate reconstruction, canonical policy JSON persistence, stable configuration content hashing, atomic initial bot/configuration creation, version-aware updates, and explicit uniqueness and concurrency results. The initial migration now creates a SQLite trigger that permits activation/supersession metadata changes while rejecting updates to published configuration content. Added real-SQLite integration coverage for round trips, stable hashes, the initial insertion cycle, rollback on uniqueness conflicts, monotonically increasing versions, single-active-version behavior, immutable content, stale writes, and migration/model agreement.
+
+Validation completed on 2026-08-19:
+
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=TradingBotPersistence"` — passed, 7 tests.
+- `.\dev.ps1 build` — passed in Release with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — passed: 400 tests; 20 Stage 2 acceptance scenarios remain intentionally pending until their implementing tasks.
+- `.\dev.ps1 format` — passed with no changes required.
+
+No scope deviations, follow-up tasks, or ADRs.

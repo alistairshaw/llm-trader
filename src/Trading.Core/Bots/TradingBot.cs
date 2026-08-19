@@ -26,6 +26,10 @@ public sealed class TradingBot
     public TradingBotConfigurationVersionId? ActiveConfigurationVersionId { get; private set; }
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset UpdatedAt { get; private set; }
+    public DateTimeOffset? RequestedNextRunAt { get; private set; }
+    public DateTimeOffset? AcceptedNextRunAt { get; private set; }
+    public BotRunId? LastCompletedRunId { get; private set; }
+    public long Version { get; private set; }
     public IReadOnlyList<TradingBotConfigurationVersion> ConfigurationVersions => _configurations.AsReadOnly();
 
     public TradingBotConfigurationVersion AddConfiguration(
@@ -105,6 +109,31 @@ public sealed class TradingBot
 
     public bool CanRun => Status == TradingBotStatus.Enabled && ActiveConfigurationVersionId is not null && PortfolioId is not null;
 
+    public static TradingBot Rehydrate(TradingBotId id, string name, TradingBotStatus status,
+        PortfolioId? portfolioId, TradingBotConfigurationVersionId? activeConfigurationVersionId,
+        DateTimeOffset? requestedNextRunAt, DateTimeOffset? acceptedNextRunAt, BotRunId? lastCompletedRunId,
+        DateTimeOffset createdAt, DateTimeOffset updatedAt, long version,
+        IEnumerable<TradingBotConfigurationVersionState> configurations)
+    {
+        ArgumentNullException.ThrowIfNull(configurations);
+        var bot = new TradingBot(id, name, createdAt)
+        {
+            Status = status,
+            PortfolioId = portfolioId,
+            RequestedNextRunAt = requestedNextRunAt,
+            AcceptedNextRunAt = acceptedNextRunAt,
+            LastCompletedRunId = lastCompletedRunId,
+            UpdatedAt = BotValidation.Utc(updatedAt, nameof(updatedAt)),
+            Version = version,
+        };
+        foreach (var state in configurations.OrderBy(x => x.VersionNumber))
+        {
+            bot._configurations.Add(TradingBotConfigurationVersion.Rehydrate(state));
+        }
+        bot.ActiveConfigurationVersionId = activeConfigurationVersionId;
+        return bot;
+    }
+
     private TradingBotConfigurationVersion AddVersion(TradingBotConfigurationVersionId id, InvestmentMandate mandate,
         RiskPolicy risk, ToolPolicy tools, RunBudget budget, SchedulingPolicy schedule, ExecutionMode mode,
         ModelConfiguration model, string promptVersion, DateTimeOffset createdAt)
@@ -179,7 +208,25 @@ public sealed class TradingBotConfigurationVersion
         if (at < ActivatedAt) throw new ArgumentException("Supersession cannot precede activation.", nameof(at));
         SupersededAt = at;
     }
+
+    internal static TradingBotConfigurationVersion Rehydrate(TradingBotConfigurationVersionState state)
+    {
+        var version = new TradingBotConfigurationVersion(state.Id, state.VersionNumber, state.InvestmentMandate,
+            state.RiskPolicy, state.ToolPolicy, state.RunBudget, state.SchedulingPolicy, state.ExecutionMode,
+            state.ModelConfiguration, state.PromptVersion, state.CreatedAt)
+        {
+            ActivatedAt = state.ActivatedAt,
+            SupersededAt = state.SupersededAt,
+        };
+        return version;
+    }
 }
+
+public sealed record TradingBotConfigurationVersionState(
+    TradingBotConfigurationVersionId Id, int VersionNumber, InvestmentMandate InvestmentMandate,
+    RiskPolicy RiskPolicy, ToolPolicy ToolPolicy, RunBudget RunBudget, SchedulingPolicy SchedulingPolicy,
+    ExecutionMode ExecutionMode, ModelConfiguration ModelConfiguration, string PromptVersion,
+    DateTimeOffset CreatedAt, DateTimeOffset? ActivatedAt, DateTimeOffset? SupersededAt);
 
 internal static class BotValidation
 {

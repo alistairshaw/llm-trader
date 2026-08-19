@@ -513,11 +513,24 @@ public partial class InitialStage2Persistence : Migration
             principalTable: "trading_bots",
             principalColumn: "id",
             onDelete: ReferentialAction.Restrict);
+
+        migrationBuilder.Sql(
+            """
+            CREATE TRIGGER trading_bot_configuration_versions_immutable_content
+            BEFORE UPDATE OF trading_bot_id, version_number, investment_mandate_json, risk_policy_json,
+                tool_policy_json, run_budget_json, scheduling_policy_json, execution_mode,
+                model_configuration_json, prompt_version, content_hash, created_at
+            ON trading_bot_configuration_versions
+            BEGIN
+                SELECT RAISE(ABORT, 'published trading bot configuration content is immutable');
+            END;
+            """);
     }
 
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.Sql("DROP TRIGGER IF EXISTS trading_bot_configuration_versions_immutable_content;");
         migrationBuilder.DropForeignKey(
             name: "FK_trading_bots_trading_bot_configuration_versions_active_configuration_version_id",
             table: "trading_bots");

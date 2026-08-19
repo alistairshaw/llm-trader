@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-008
 title: Persist Portfolios, Positions, and ledger entries
 stage: 2
-status: planned
+status: ready
 priority: 800
 type: feature
 depends_on: [S2-006, S2-007]

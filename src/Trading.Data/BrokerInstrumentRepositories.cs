@@ -133,7 +133,7 @@ internal static class RepositoryWrites
             return new PersistenceWriteResult.Succeeded();
         }
         catch (DbUpdateException exception) when (exception.InnerException is SqliteException
-               { SqliteExtendedErrorCode: 1555 or 2067 })
+        { SqliteExtendedErrorCode: 1555 or 2067 })
         {
             context.ChangeTracker.Clear();
             return new PersistenceWriteResult.UniquenessConflict(constraint);

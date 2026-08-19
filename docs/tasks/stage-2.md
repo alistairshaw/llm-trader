@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S2-007` — Persist Trading Bots and configuration versions.
+`S2-008` — Persist Portfolios, Positions, and ledger entries.
 
 ## Ordered Backlog
 
@@ -18,8 +18,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S2-004`](stage-2/S2-004-persistence-converters.md) | Implement canonical persistence converters | Done | 880 | `S2-003` |
 | [`S2-005`](stage-2/S2-005-initial-migration.md) | Create and verify the initial persistence migration | Done | 860 | `S2-004` |
 | [`S2-006`](stage-2/S2-006-broker-instrument-persistence.md) | Persist Broker and Instrument aggregates | Done | 820 | `S2-005` |
-| [`S2-007`](stage-2/S2-007-trading-bot-persistence.md) | Persist Trading Bots and configuration versions | Ready | 810 | `S2-005` |
-| [`S2-008`](stage-2/S2-008-portfolio-ledger-persistence.md) | Persist Portfolios, Positions, and ledger entries | Planned | 800 | `S2-006`, `S2-007` |
+| [`S2-007`](stage-2/S2-007-trading-bot-persistence.md) | Persist Trading Bots and configuration versions | Done | 810 | `S2-005` |
+| [`S2-008`](stage-2/S2-008-portfolio-ledger-persistence.md) | Persist Portfolios, Positions, and ledger entries | Ready | 800 | `S2-006`, `S2-007` |
 | [`S2-009`](stage-2/S2-009-decision-snapshot-persistence.md) | Persist immutable Portfolio Decision Snapshots | Planned | 790 | `S2-008` |
 | [`S2-010`](stage-2/S2-010-concurrency-transactions.md) | Implement concurrency and transaction boundaries | Planned | 760 | `S2-008`, `S2-009` |
 | [`S2-011`](stage-2/S2-011-portfolio-read-models.md) | Implement no-tracking portfolio read models | Planned | 740 | `S2-009` |
