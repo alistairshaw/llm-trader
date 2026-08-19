@@ -2,13 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Reqnroll.NUnit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Trading.Core\Trading.Core.csproj" />
     <ProjectReference Include="..\..\src\Trading.Data\Trading.Data.csproj" />
   </ItemGroup>
 </Project>

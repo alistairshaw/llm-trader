@@ -1,4 +1,4 @@
-@stage2 @acceptance @persistence @cross-platform @ignore
+@stage2 @acceptance @persistence @cross-platform
 Feature: Persisted aggregate round trips
   Stage 2 aggregates retain their domain state across a complete application restart.
 
@@ -31,4 +31,3 @@ Feature: Persisted aggregate round trips
     When the records are committed and reloaded in timestamp order
     Then every timestamp should retain millisecond precision in UTC
     And their chronological order should be unchanged
-

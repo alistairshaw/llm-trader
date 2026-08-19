@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Persistence
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Application-facing persistence boundaries")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage2")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("persistence")]
@@ -34,8 +33,7 @@ namespace Trading.AcceptanceTests.Features.Persistence
                 "stage2",
                 "acceptance",
                 "persistence",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Persistence", "Application-facing persistence boundaries", "  Application code observes domain aggregates and immutable read projections with" +
                 "out persistence implementation types.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

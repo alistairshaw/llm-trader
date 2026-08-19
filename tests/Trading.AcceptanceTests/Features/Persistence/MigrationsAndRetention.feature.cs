@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Persistence
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Migration and retention safety")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage2")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("persistence")]
@@ -36,8 +35,7 @@ namespace Trading.AcceptanceTests.Features.Persistence
                 "acceptance",
                 "persistence",
                 "migration",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Persistence", "Migration and retention safety", "  The Stage 2 schema is reproducible and protects retained financial and audit hi" +
                 "story.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

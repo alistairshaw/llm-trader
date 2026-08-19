@@ -11,7 +11,7 @@ using Trading.Core.Proposals;
 namespace Trading.AcceptanceTests.Steps;
 
 [Binding]
-public sealed class Stage1FoundationSteps(Stage1ScenarioState state)
+public sealed class Stage1FoundationSteps(Stage1ScenarioState state, Stage2PersistenceDriver stage2)
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 19, 12, 0, 0, TimeSpan.Zero);
     private static readonly string Root = FindRoot();
@@ -29,6 +29,7 @@ public sealed class Stage1FoundationSteps(Stage1ScenarioState state)
     private void Dispatch(string text)
     {
         if (HandleFinancial(text) || HandleIdentities(text) || HandleAggregates(text) || HandleRepository(text)) return;
+        if (stage2.Handles(text)) { stage2.Execute(text); return; }
         Assert.Fail($"No Stage 1 driver handles step: {text}");
     }
 

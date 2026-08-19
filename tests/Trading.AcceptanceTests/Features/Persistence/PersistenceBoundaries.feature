@@ -1,4 +1,4 @@
-@stage2 @acceptance @persistence @cross-platform @ignore
+@stage2 @acceptance @persistence @cross-platform
 Feature: Application-facing persistence boundaries
   Application code observes domain aggregates and immutable read projections without persistence implementation types.
 
@@ -19,4 +19,3 @@ Feature: Application-facing persistence boundaries
     When repository and transaction scenarios execute
     Then they should use the real SQLite provider
     And no scenario should use the EF in-memory provider
-

@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Persistence
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Immutable portfolio decision snapshots")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage2")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("persistence")]
@@ -34,8 +33,7 @@ namespace Trading.AcceptanceTests.Features.Persistence
                 "stage2",
                 "acceptance",
                 "persistence",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Persistence", "Immutable portfolio decision snapshots", "  A Trading Bot receives a reproducible point-in-time record of reconciled portfo" +
                 "lio state.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

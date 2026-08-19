@@ -1,4 +1,4 @@
-@stage2 @acceptance @persistence @migration @cross-platform @ignore
+@stage2 @acceptance @persistence @migration @cross-platform
 Feature: Migration and retention safety
   The Stage 2 schema is reproducible and protects retained financial and audit history.
 
@@ -19,4 +19,3 @@ Feature: Migration and retention safety
     When deletion of a referenced Portfolio is attempted
     Then the deletion should be rejected
     And all financial and audit history should remain unchanged
-

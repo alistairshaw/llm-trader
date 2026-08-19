@@ -1,4 +1,4 @@
-@stage2 @acceptance @persistence @cross-platform @ignore
+@stage2 @acceptance @persistence @cross-platform
 Feature: Durable portfolio ledger history
   Portfolio accounting facts are append-only and idempotent by source identity.
 
@@ -14,4 +14,3 @@ Feature: Durable portfolio ledger history
     Then the original fee entry should remain unchanged
     And a compensating entry for 5 USD should reference the original entry
     And the ledger history should contain both accounting facts
-

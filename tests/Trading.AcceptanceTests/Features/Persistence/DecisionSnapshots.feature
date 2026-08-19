@@ -1,4 +1,4 @@
-@stage2 @acceptance @persistence @cross-platform @ignore
+@stage2 @acceptance @persistence @cross-platform
 Feature: Immutable portfolio decision snapshots
   A Trading Bot receives a reproducible point-in-time record of reconciled portfolio state.
 
@@ -18,4 +18,3 @@ Feature: Immutable portfolio decision snapshots
     Given a Decision Snapshot contains cash, buying power, reserved capital, positions, risk utilization, cash flows, and freshness
     When the snapshot is committed and the application restarts
     Then the snapshot should retain its exact content, ownership links, reconciliation state, timestamps, schema version, and hash
-

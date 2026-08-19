@@ -1,4 +1,4 @@
-@stage2 @acceptance @persistence @cross-platform @ignore
+@stage2 @acceptance @persistence @cross-platform
 Feature: Exclusive portfolio ownership
   Active ownership relationships remain unambiguous at the persistence boundary.
 
@@ -13,4 +13,3 @@ Feature: Exclusive portfolio ownership
     When another active Portfolio is associated with the same Broker Account
     Then the association should be rejected with an ownership conflict
     And the original association should remain unchanged
-

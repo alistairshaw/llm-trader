@@ -1,4 +1,4 @@
-@stage2 @acceptance @persistence @cross-platform @ignore
+@stage2 @acceptance @persistence @cross-platform
 Feature: Concurrency and transaction integrity
   Persistence conflicts and failures leave committed financial state consistent.
 
@@ -14,4 +14,3 @@ Feature: Concurrency and transaction integrity
     And a deterministic failure occurs after the Position write
     When the application attempts to commit the transaction
     Then no Position change, applied-fill marker, or ledger entry from the transaction should persist
-

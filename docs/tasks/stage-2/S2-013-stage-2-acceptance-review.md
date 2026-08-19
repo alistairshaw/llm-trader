@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-013
 title: Complete Stage 2 acceptance and review
 stage: 2
-status: planned
+status: ready
 priority: 1000
 type: acceptance
 depends_on: [S2-001, S2-002, S2-003, S2-004, S2-005, S2-006, S2-007, S2-008, S2-009, S2-010, S2-011, S2-012]
