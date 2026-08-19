@@ -1,4 +1,4 @@
-@stage1 @acceptance @ignore
+@stage1 @acceptance
 Feature: Safe construction of financial values
   Financial values must preserve exact decimal meaning and reject values
   that do not satisfy the rules of their type.

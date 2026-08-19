@@ -1,4 +1,4 @@
-@stage1 @acceptance @ignore
+@stage1 @acceptance
 Feature: Aggregate lifecycle transitions
   Material lifecycle changes must follow the domain state machines and
   preserve aggregate invariants.

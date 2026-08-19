@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Foundation
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Aggregate lifecycle transitions")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage1")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     public partial class AggregateLifecycleTransitionsFeature
@@ -30,8 +29,7 @@ namespace Trading.AcceptanceTests.Features.Foundation
         
         private static string[] featureTags = new string[] {
                 "stage1",
-                "acceptance",
-                "ignore"};
+                "acceptance"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Foundation", "Aggregate lifecycle transitions", "  Material lifecycle changes must follow the domain state machines and\n  preserve" +
                 " aggregate invariants.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

@@ -1,4 +1,4 @@
-@stage1 @acceptance @ignore
+@stage1 @acceptance
 Feature: Cross-platform architecture boundaries
   Domain rules and cross-platform behavior must remain independent of
   infrastructure, external providers, and Windows-only technology.

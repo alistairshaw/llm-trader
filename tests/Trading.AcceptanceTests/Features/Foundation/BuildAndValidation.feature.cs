@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Foundation
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Stage 1 build and validation")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage1")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     public partial class Stage1BuildAndValidationFeature
@@ -30,8 +29,7 @@ namespace Trading.AcceptanceTests.Features.Foundation
         
         private static string[] featureTags = new string[] {
                 "stage1",
-                "acceptance",
-                "ignore"};
+                "acceptance"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Foundation", "Stage 1 build and validation", "  The solution foundation must be reproducible on supported platforms\n  and have " +
                 "one deterministic validation entry point.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

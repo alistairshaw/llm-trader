@@ -1,4 +1,4 @@
-@stage1 @acceptance @ignore
+@stage1 @acceptance
 Feature: Stage 1 build and validation
   The solution foundation must be reproducible on supported platforms
   and have one deterministic validation entry point.

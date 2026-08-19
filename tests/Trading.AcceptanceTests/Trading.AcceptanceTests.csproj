@@ -6,4 +6,8 @@
   <ItemGroup>
     <PackageReference Include="Reqnroll.NUnit" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Trading.Core\Trading.Core.csproj" />
+  </ItemGroup>
 </Project>

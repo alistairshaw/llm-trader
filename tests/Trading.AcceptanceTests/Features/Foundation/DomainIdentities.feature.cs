@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Foundation
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Strongly typed domain identities")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage1")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     public partial class StronglyTypedDomainIdentitiesFeature
@@ -30,8 +29,7 @@ namespace Trading.AcceptanceTests.Features.Foundation
         
         private static string[] featureTags = new string[] {
                 "stage1",
-                "acceptance",
-                "ignore"};
+                "acceptance"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Foundation", "Strongly typed domain identities", "  An identity for one domain concept must not be accepted as the identity\n  of a " +
                 "different domain concept.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

@@ -3,7 +3,7 @@ schema_version: 1
 id: S1-015
 title: Complete BDD bindings and Stage 1 acceptance review
 stage: 1
-status: ready
+status: in_progress
 priority: 1000
 type: acceptance
 depends_on: [S1-009, S1-010, S1-011, S1-012, S1-013, S1-014]
@@ -57,4 +57,4 @@ Confirm equivalent Linux CI results for every non-WPF project and `@stage1` scen
 
 ## Completion Notes
 
-Not completed.
+In progress.

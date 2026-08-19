@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S1-015` — Complete BDD bindings and Stage 1 acceptance review.
+`S1-015` is in progress. No later Stage 1 task is defined.
 
 ## Ordered Backlog
 
@@ -26,7 +26,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S1-012`](stage-1/S1-012-proposal-reservation-aggregates.md) | Implement Proposal and Capital Reservation aggregates | Done | 730 | `S1-007`, `S1-008` |
 | [`S1-013`](stage-1/S1-013-order-aggregate.md) | Implement the Order aggregate and state machine | Done | 720 | `S1-007` |
 | [`S1-014`](stage-1/S1-014-ci-pipeline.md) | Add Windows and Linux CI | Done | 700 | `S1-005` |
-| [`S1-015`](stage-1/S1-015-stage-1-acceptance-review.md) | Complete BDD bindings and Stage 1 acceptance review | Ready | 1000 | `S1-009`–`S1-014` |
+| [`S1-015`](stage-1/S1-015-stage-1-acceptance-review.md) | Complete BDD bindings and Stage 1 acceptance review | In Progress | 1000 | `S1-009`–`S1-014` |
 
 ## Stage Exit Gate
 

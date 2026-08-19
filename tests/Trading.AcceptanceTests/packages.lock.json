@@ -163,6 +163,9 @@
         "type": "Transitive",
         "resolved": "3.3.4",
         "contentHash": "atTwejJRcKgUcJCofp4uSPKNXBav6ZITHtuD6dhByg1ubyVJirjz5TkcVCR9oFnHAEbZvOdd4cYCJNPO9rSAsQ=="
+      },
+      "trading.core": {
+        "type": "Project"
       }
     }
   }

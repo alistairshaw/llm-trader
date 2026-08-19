@@ -1,4 +1,4 @@
-@stage1 @acceptance @ignore
+@stage1 @acceptance
 Feature: Strongly typed domain identities
   An identity for one domain concept must not be accepted as the identity
   of a different domain concept.
