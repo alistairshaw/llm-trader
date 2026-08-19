@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Trading.Brokers\Trading.Brokers.csproj" />
+    <ProjectReference Include="..\Trading.Core\Trading.Core.csproj" />
+    <ProjectReference Include="..\Trading.Data\Trading.Data.csproj" />
+    <ProjectReference Include="..\Trading.Research\Trading.Research.csproj" />
+  </ItemGroup>
+</Project>

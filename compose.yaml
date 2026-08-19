@@ -1,0 +1,24 @@
+services:
+  dev:
+    build:
+      context: .
+      target: development
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - nuget-packages:/root/.nuget/packages
+    profiles: [tools]
+
+  trading-host:
+    build:
+      context: .
+      target: headless-runtime
+    environment:
+      Trading__Mode: Simulated
+      Trading__DataDirectory: /data
+    volumes:
+      - trading-data:/data
+
+volumes:
+  nuget-packages:
+  trading-data:

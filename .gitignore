@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+.idea/
+.vs/
+.vscode/
+artifacts/
+TestResults/
+*.db
+*.db-shm
+*.db-wal
+*.log
+.env
+.env.*
+secrets/

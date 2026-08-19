@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+
+jobs:
+  validate:
+    name: ${{ matrix.name }} validation
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-latest
+          - name: Windows
+            os: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: Restore locked dependencies
+        run: dotnet restore TradingBot.sln --locked-mode
+
+      - name: Build solution in Release
+        id: build
+        run: dotnet build TradingBot.sln --configuration Release --no-restore
+
+      - name: Verify formatting
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: dotnet format TradingBot.sln --verify-no-changes --no-restore
+
+      - name: Run unit tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: >-
+          dotnet test tests/Trading.Core.Tests/Trading.Core.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=unit.trx"
+          --results-directory artifacts/test-results/unit
+
+      - name: Run architecture tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: >-
+          dotnet test tests/Trading.Architecture.Tests/Trading.Architecture.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=architecture.trx"
+          --results-directory artifacts/test-results/architecture
+
+      - name: Run Stage 1 non-UI acceptance tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: >-
+          dotnet test tests/Trading.AcceptanceTests/Trading.AcceptanceTests.csproj
+          --configuration Release
+          --no-build
+          --filter "TestCategory=stage1&TestCategory!=windows"
+          --logger "trx;LogFileName=stage1-acceptance.trx"
+          --results-directory artifacts/test-results/stage1-acceptance
+
+      - name: Build WPF natively on Windows
+        if: ${{ !cancelled() && matrix.os == 'windows-latest' && steps.build.outcome == 'success' }}
+        run: >-
+          dotnet build src/Trading.UI.Wpf/Trading.UI.Wpf.csproj
+          --configuration Release
+          --no-restore
+
+      - name: Publish test results and diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.name }}
+          path: |
+            artifacts/test-results/**/*.trx
+            **/TestResults/**
+          if-no-files-found: warn
+          retention-days: 14
+
