@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-010
 title: Orchestrate one complete Trading Bot run
 stage: 3
-status: ready
+status: done
 priority: 760
 type: feature
 depends_on: [S3-006, S3-009]
@@ -50,4 +50,16 @@ Implement [Trading Bot — Run Workflow](../../trading-bot.md#7-run-workflow) th
 
 ## Completion Notes
 
-Not completed.
+Implemented `BotRunOrchestrationService` to select the active configuration and latest matching decision snapshot, atomically claim eligible triggers and a per-Bot lease, persist deterministic pinned input, renew and verify lease ownership, execute the bounded model loop outside persistence calls, evaluate requested wake times after terminal persistence, and durably retain requested/accepted schedule facts. Safe pre-reasoning and active-run failure handling releases owned leases, while ownership loss stops before model or tool execution. EF runtime repositories now clear tracked state after direct input-audit and lease updates so subsequent optimistic writes use authoritative versions.
+
+Validation completed on 2026-08-19:
+
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=BotRunOrchestration"` — passed 9, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests` — passed 45, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests` — passed 105, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests` — passed 14, failed 0, skipped 0.
+- `.\dev.ps1 build` — Release build succeeded with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — passed 613, failed 0, with 26 pending Stage 3 acceptance scenarios.
+- `.\dev.ps1 format` — passed with no formatter or analyzer findings (required host Docker-config access).
+
+No persistence schema changed, so migration drift validation was not applicable. No scope deviations, follow-up tasks, or ADR changes.

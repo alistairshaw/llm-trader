@@ -131,6 +131,7 @@ public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunReposi
             (x.Status == "PreparingSnapshot" || x.Status == "Reasoning" || x.Status == "WaitingForTool"))
             .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.LeaseExpiresAt, expiry).SetProperty(x => x.Version, expectedVersion + 1), cancellationToken)
             .ConfigureAwait(false);
+        dbContext.ChangeTracker.Clear();
         return rows == 1;
     }
 
@@ -164,7 +165,9 @@ public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunReposi
         entity.InputRenderingVersion = renderingVersion.Trim();
         entity.InputRenderingHash = renderingHash.Trim().ToLowerInvariant();
         entity.Version = expectedVersion + 1;
-        return await RepositoryWrites.SaveAsync(dbContext, "bot_run_input", cancellationToken).ConfigureAwait(false);
+        var result = await RepositoryWrites.SaveAsync(dbContext, "bot_run_input", cancellationToken).ConfigureAwait(false);
+        dbContext.ChangeTracker.Clear();
+        return result;
     }
 
     public async Task<IReadOnlyList<BotRunId>> GetExpiredLeaseRunIdsAsync(DateTimeOffset now, CancellationToken cancellationToken) =>
