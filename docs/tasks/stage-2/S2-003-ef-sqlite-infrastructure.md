@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-003
 title: Configure EF Core and SQLite infrastructure
 stage: 2
-status: planned
+status: ready
 priority: 900
 type: infrastructure
 depends_on: [S2-002]

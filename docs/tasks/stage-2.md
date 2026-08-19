@@ -6,15 +6,15 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S2-002` — Define persistence contracts and results.
+`S2-003` — Configure EF Core and SQLite infrastructure.
 
 ## Ordered Backlog
 
 | ID | Task | Status | Priority | Depends on |
 | --- | --- | --- | ---: | --- |
 | [`S2-001`](stage-2/S2-001-write-stage-2-gherkin.md) | Write Stage 2 executable Gherkin specifications | Done | 1000 | — |
-| [`S2-002`](stage-2/S2-002-persistence-contracts.md) | Define persistence contracts and results | Ready | 920 | `S2-001` |
-| [`S2-003`](stage-2/S2-003-ef-sqlite-infrastructure.md) | Configure EF Core and SQLite infrastructure | Planned | 900 | `S2-002` |
+| [`S2-002`](stage-2/S2-002-persistence-contracts.md) | Define persistence contracts and results | Done | 920 | `S2-001` |
+| [`S2-003`](stage-2/S2-003-ef-sqlite-infrastructure.md) | Configure EF Core and SQLite infrastructure | Ready | 900 | `S2-002` |
 | [`S2-004`](stage-2/S2-004-persistence-converters.md) | Implement canonical persistence converters | Planned | 880 | `S2-003` |
 | [`S2-005`](stage-2/S2-005-initial-migration.md) | Create and verify the initial persistence migration | Planned | 860 | `S2-004` |
 | [`S2-006`](stage-2/S2-006-broker-instrument-persistence.md) | Persist Broker and Instrument aggregates | Planned | 820 | `S2-005` |

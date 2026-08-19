@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-002
 title: Define persistence contracts and results
 stage: 2
-status: ready
+status: done
 priority: 920
 type: feature
 depends_on: [S2-001]
@@ -48,4 +48,24 @@ Follow [Data Model — Repository Contracts](../../data-model.md#12-repository-c
 
 ## Completion Notes
 
-Not completed.
+Completed 2026-08-19.
+
+- Added intent-oriented repository contracts for all eight Stage 2 aggregate roots, including expected-version parameters on mutable writes.
+- Added provider-neutral success, uniqueness-conflict, and concurrency-conflict results plus the application-facing unit-of-work contract.
+- Added immutable portfolio, position, ledger, and decision-snapshot projections and their query-service contract.
+- Added architecture tests covering aggregate contract completeness, expected-version writes, explicit results, immutable read projections, and exclusion of EF Core, `Trading.Data`, `DbSet`, and `IQueryable` types.
+- Corrected the existing Stage 1 acceptance inspection to scan the Stage 1 `Foundation` features after Stage 2 specifications introduced intentionally ignored scenarios in a separate directory.
+
+Validation:
+
+- `.\dev.ps1 test -Project tests/Trading.Architecture.Tests` — passed, 11 tests.
+- `.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter 'Name=RunTheStage1ExecutableSpecificationsOnTheCurrentSupportedPlatform'` — passed, 1 test.
+- `.\dev.ps1 build` — passed in Release with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — passed: 334 tests; 20 intentionally deferred Stage 2 scenarios skipped.
+- `.\dev.ps1 format` — passed.
+
+Deviations: none.
+
+Follow-up tasks: none.
+
+ADRs: none.
