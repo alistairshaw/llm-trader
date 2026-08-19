@@ -4,7 +4,7 @@ namespace Trading.Core.Tests;
 public sealed class ControlledCiFailureTests
 {
     [Test]
-    public void Controlled_failure_proves_CI_rejects_a_failing_test()
+    public void ControlledFailureProvesCiRejectsAFailingTest()
     {
         Assert.That(
             Environment.GetEnvironmentVariable("GITHUB_ACTIONS"),
