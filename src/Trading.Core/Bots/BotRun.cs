@@ -3,7 +3,7 @@ using Trading.Core.Policies;
 
 namespace Trading.Core.Bots;
 
-public enum BotRunStatus { Pending, Running, Completed, TimedOut, BudgetExceeded, Cancelled, Faulted }
+public enum BotRunStatus { Pending, AcquiringLease, PreparingSnapshot, Reasoning, WaitingForTool, Completed, TimedOut, BudgetExceeded, Cancelled, Faulted }
 public enum BotRunTriggerType { Manual, BaselineSchedule, AcceptedNextRun, ResearchCompleted, ResearchFailed, PortfolioEvent, RiskOrReconciliation }
 public enum ToolInvocationStatus { Running, Completed, Failed }
 
@@ -42,7 +42,12 @@ public sealed class BotRun : IBotRunScheduler
     public Usage Usage { get; private set; }
     public IReadOnlyList<BotRunTrigger> Triggers => _triggers.AsReadOnly();
     public IReadOnlyList<ToolInvocation> ToolInvocations => _toolInvocations.AsReadOnly();
-    public bool IsTerminal => Status is not BotRunStatus.Pending and not BotRunStatus.Running;
+    public static IReadOnlySet<BotRunStatus> ActiveStatuses { get; } = new HashSet<BotRunStatus>
+    {
+        BotRunStatus.Pending, BotRunStatus.AcquiringLease, BotRunStatus.PreparingSnapshot,
+        BotRunStatus.Reasoning, BotRunStatus.WaitingForTool,
+    };
+    public bool IsTerminal => !ActiveStatuses.Contains(Status);
 
     public void AddTrigger(BotRunTriggerId id, BotRunTriggerType type, string reason, DateTimeOffset occurredAt, string? sourceId = null)
     {
@@ -51,19 +56,33 @@ public sealed class BotRun : IBotRunScheduler
         _triggers.Add(new BotRunTrigger(id, type, reason, occurredAt, sourceId));
     }
 
-    public void Start(string leaseOwner, DateTimeOffset startedAt, DateTimeOffset leaseExpiresAt)
+    public void BeginLeaseAcquisition(DateTimeOffset startedAt)
     {
         RequireStatus(BotRunStatus.Pending);
-        LeaseOwner = BotValidation.Required(leaseOwner, nameof(leaseOwner));
         StartedAt = BotValidation.Utc(startedAt, nameof(startedAt));
+        Status = BotRunStatus.AcquiringLease;
+    }
+
+    public void LeaseAcquired(string leaseOwner, DateTimeOffset leaseExpiresAt)
+    {
+        RequireStatus(BotRunStatus.AcquiringLease);
+        LeaseOwner = BotValidation.Required(leaseOwner, nameof(leaseOwner));
+        if (StartedAt is null) throw new InvalidOperationException("Run start time is required.");
+        LeaseExpiresAt = BotValidation.Utc(leaseExpiresAt, nameof(leaseExpiresAt));
+        var startedAt = StartedAt.Value;
         LeaseExpiresAt = BotValidation.Utc(leaseExpiresAt, nameof(leaseExpiresAt));
         if (leaseExpiresAt <= startedAt) throw new ArgumentException("Lease expiry must follow start time.", nameof(leaseExpiresAt));
-        Status = BotRunStatus.Running;
+        Status = BotRunStatus.PreparingSnapshot;
     }
+
+    public void BeginReasoning() { RequireStatus(BotRunStatus.PreparingSnapshot); Status = BotRunStatus.Reasoning; }
+    public void WaitForTool() { RequireStatus(BotRunStatus.Reasoning); Status = BotRunStatus.WaitingForTool; }
+    public void ResumeReasoning() { RequireStatus(BotRunStatus.WaitingForTool); Status = BotRunStatus.Reasoning; }
 
     public void RenewLease(string leaseOwner, DateTimeOffset leaseExpiresAt)
     {
-        RequireStatus(BotRunStatus.Running);
+        if (Status is not BotRunStatus.PreparingSnapshot and not BotRunStatus.Reasoning and not BotRunStatus.WaitingForTool)
+            throw new InvalidOperationException("A lease can be renewed only while an acquired run is active.");
         if (!string.Equals(LeaseOwner, leaseOwner, StringComparison.Ordinal)) throw new InvalidOperationException("Only the lease owner can renew the lease.");
         BotValidation.Utc(leaseExpiresAt, nameof(leaseExpiresAt));
         if (leaseExpiresAt <= LeaseExpiresAt) throw new ArgumentException("A renewed lease must extend the current lease.", nameof(leaseExpiresAt));
@@ -72,7 +91,7 @@ public sealed class BotRun : IBotRunScheduler
 
     public ToolInvocation StartToolInvocation(ToolInvocationId id, string toolName, string arguments, DateTimeOffset startedAt)
     {
-        RequireStatus(BotRunStatus.Running);
+        RequireStatus(BotRunStatus.WaitingForTool);
         if (_toolInvocations.Any(invocation => invocation.Id == id)) throw new InvalidOperationException("Tool invocation identity already exists.");
         var invocation = new ToolInvocation(id, toolName, arguments, startedAt);
         _toolInvocations.Add(invocation);
@@ -94,11 +113,20 @@ public sealed class BotRun : IBotRunScheduler
 
     private void Finish(BotRunStatus terminalStatus, FinishResult? result, Usage usage, DateTimeOffset completedAt)
     {
-        RequireStatus(BotRunStatus.Running);
+        if (!ActiveStatuses.Contains(Status)) throw new InvalidOperationException("A terminal run cannot transition again.");
+        var terminalAllowed = Status switch
+        {
+            BotRunStatus.Pending => terminalStatus is BotRunStatus.Cancelled or BotRunStatus.Faulted,
+            BotRunStatus.AcquiringLease or BotRunStatus.PreparingSnapshot =>
+                terminalStatus is BotRunStatus.TimedOut or BotRunStatus.Cancelled or BotRunStatus.Faulted,
+            BotRunStatus.Reasoning or BotRunStatus.WaitingForTool => true,
+            _ => false,
+        };
+        if (!terminalAllowed) throw new InvalidOperationException($"Transition from {Status} to {terminalStatus} is forbidden.");
         if (_toolInvocations.Any(invocation => invocation.Status == ToolInvocationStatus.Running))
             throw new InvalidOperationException("A run cannot finish while a tool invocation is active.");
         BotValidation.Utc(completedAt, nameof(completedAt));
-        if (completedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.", nameof(completedAt));
+        if (StartedAt is not null && completedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.", nameof(completedAt));
         FinishResult = result;
         Usage = usage ?? throw new ArgumentNullException(nameof(usage));
         CompletedAt = completedAt;

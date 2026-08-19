@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-002
 title: Define runtime, model, and tool contracts
 stage: 3
-status: ready
+status: done
 priority: 930
 type: feature
 depends_on: [S3-001]
@@ -52,4 +52,9 @@ Follow [Trading Bot — Authority Boundary](../../trading-bot.md#2-authority-bou
 
 ## Completion Notes
 
-Not completed.
+- Added provider-neutral immutable runtime, model-session, tool-dispatch, scheduling, budget, lease, trigger, shutdown, and recovery contracts in `Trading.Engine`, including injectable UTC time, delay, host identity, and typed runtime identifier generation.
+- Defined the exact Stage 3 production tools as `GetPortfolioSnapshot` and `Finish`, with versioned canonical calls/results and normalized timeout, malformed-response, provider-failure, and cancellation outcomes.
+- Expanded `BotRun` to the five active persistence states (`Pending`, `AcquiringLease`, `PreparingSnapshot`, `Reasoning`, and `WaitingForTool`) plus the five terminal states, with exhaustive allowed/forbidden transition coverage.
+- Added the locked `Trading.Engine.Tests` NUnit project and extended architecture enforcement for runtime contracts and cancellation.
+- Validation passed: `./dev.ps1 restore -RefreshLocks`; `./dev.ps1 build` (zero warnings/errors); focused Core lifecycle selection (106 passed); `./dev.ps1 test -Project tests/Trading.Architecture.Tests` (14 passed); `./dev.ps1 test` (542 passed, 26 Stage 3 scenarios intentionally pending); and `./dev.ps1 format`.
+- No deviations, follow-up tasks, or ADRs.

@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trading.Data.Tests", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trading.IntegrationTests", "tests\Trading.IntegrationTests\Trading.IntegrationTests.csproj", "{A0000012-0000-4000-8000-000000000012}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trading.Engine.Tests", "tests\Trading.Engine.Tests\Trading.Engine.Tests.csproj", "{A0000013-0000-4000-8000-000000000013}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,5 +82,9 @@ Global
 		{A0000012-0000-4000-8000-000000000012}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0000012-0000-4000-8000-000000000012}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0000012-0000-4000-8000-000000000012}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0000013-0000-4000-8000-000000000013}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0000013-0000-4000-8000-000000000013}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0000013-0000-4000-8000-000000000013}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0000013-0000-4000-8000-000000000013}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

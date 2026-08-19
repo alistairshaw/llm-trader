@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-005
 title: Implement deterministic scheduling policy
 stage: 3
-status: planned
+status: ready
 priority: 860
 type: feature
 depends_on: [S3-002]

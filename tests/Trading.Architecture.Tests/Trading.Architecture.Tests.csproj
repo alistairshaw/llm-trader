@@ -4,6 +4,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Trading.Engine\Trading.Engine.csproj" />
     <ProjectReference Include="..\..\src\Trading.Core\Trading.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-003
 title: Add Bot Run persistence migration
 stage: 3
-status: planned
+status: ready
 priority: 910
 type: infrastructure
 depends_on: [S3-002]

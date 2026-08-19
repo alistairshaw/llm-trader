@@ -68,13 +68,13 @@ public sealed class BotAggregateTests
     [TestCase(BotRunStatus.Faulted)]
     public void EveryTerminalRunRejectsResumeAndNewFacts(BotRunStatus terminal)
     {
-        var run = StartedRun();
+        var run = ReasoningRun();
         Finish(run, terminal);
 
         Assert.Multiple(() =>
         {
             Assert.That(run.IsTerminal, Is.True);
-            Assert.That(() => run.Start("worker", Now.AddHours(1), Now.AddHours(2)), Throws.InvalidOperationException);
+            Assert.That(() => run.BeginLeaseAcquisition(Now.AddHours(1)), Throws.InvalidOperationException);
             Assert.That(() => run.AddTrigger(BotRunTriggerId.New(), BotRunTriggerType.Manual, "late", Now.AddHours(1)), Throws.InvalidOperationException);
             Assert.That(() => run.StartToolInvocation(ToolInvocationId.New(), "GetQuote", "{}", Now.AddHours(1)), Throws.InvalidOperationException);
         });
@@ -85,12 +85,12 @@ public sealed class BotAggregateTests
     [TestCase("finish_with_active_tool")]
     public void ForbiddenRunTransitionsAreRejected(string transition)
     {
-        var run = transition == "finish_pending" ? NewRun() : StartedRun();
-        if (transition == "finish_with_active_tool") run.StartToolInvocation(ToolInvocationId.New(), "GetQuote", "{}", Now.AddMinutes(1));
+        var run = transition == "finish_pending" ? NewRun() : ReasoningRun();
+        if (transition == "finish_with_active_tool") { run.WaitForTool(); run.StartToolInvocation(ToolInvocationId.New(), "GetQuote", "{}", Now.AddMinutes(1)); }
 
         Action action = transition switch
         {
-            "start_twice" => () => run.Start("worker", Now.AddMinutes(1), Now.AddMinutes(10)),
+            "start_twice" => () => run.BeginLeaseAcquisition(Now.AddMinutes(1)),
             _ => () => run.Complete(new FinishResult(FinishStatus.Completed, "done"), ZeroUsage(), Now.AddMinutes(2)),
         };
         Assert.That(action, Throws.InvalidOperationException);
@@ -99,7 +99,7 @@ public sealed class BotAggregateTests
     [Test]
     public void LeaseCanOnlyBeExtendedByOwnerWhileRunning()
     {
-        var run = StartedRun();
+        var run = ReasoningRun();
         Assert.That(() => run.RenewLease("other", Now.AddMinutes(20)), Throws.InvalidOperationException);
         Assert.That(() => run.RenewLease("worker", Now.AddMinutes(5)), Throws.ArgumentException);
         run.RenewLease("worker", Now.AddMinutes(20));
@@ -110,7 +110,8 @@ public sealed class BotAggregateTests
     [TestCase(false)]
     public void ToolInvocationsHaveValidTerminalTransitionsAndBecomeAppendOnly(bool succeeds)
     {
-        var run = StartedRun();
+        var run = ReasoningRun();
+        run.WaitForTool();
         var invocation = run.StartToolInvocation(ToolInvocationId.New(), "GetQuote", "{\"symbol\":\"ABC\"}", Now.AddMinutes(1));
         if (succeeds) invocation.Complete("quote:1", ZeroUsage(), Now.AddMinutes(2));
         else invocation.Fail("unavailable", ZeroUsage(), Now.AddMinutes(2));
@@ -126,7 +127,7 @@ public sealed class BotAggregateTests
     [Test]
     public void OnlySchedulerFacingContractAcceptsRequestedNextRun()
     {
-        var run = StartedRun();
+        var run = ReasoningRun();
         var requested = Now.AddDays(1);
         run.Complete(new FinishResult(FinishStatus.Completed, "wait", requested, "event"), ZeroUsage(), Now.AddMinutes(2));
         Assert.That(typeof(BotRun).GetMethod(nameof(IBotRunScheduler.AcceptNextRun)), Is.Null);
@@ -145,10 +146,12 @@ public sealed class BotAggregateTests
 
     private static BotRun NewRun(TradingBotConfigurationVersionId? configurationId = null, PortfolioDecisionSnapshotId? snapshotId = null) =>
         new(BotRunId.New(), TradingBotId.New(), configurationId ?? TradingBotConfigurationVersionId.New(), snapshotId ?? PortfolioDecisionSnapshotId.New(), ZeroUsage());
-    private static BotRun StartedRun()
+    private static BotRun ReasoningRun()
     {
         var run = NewRun();
-        run.Start("worker", Now, Now.AddMinutes(10));
+        run.BeginLeaseAcquisition(Now);
+        run.LeaseAcquired("worker", Now.AddMinutes(10));
+        run.BeginReasoning();
         return run;
     }
     private static Usage ZeroUsage() => new(TimeSpan.Zero, 0, new Money(0m, Currency.USD), 0, 0, 0);

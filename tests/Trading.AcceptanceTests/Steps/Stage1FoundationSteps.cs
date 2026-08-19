@@ -83,7 +83,7 @@ public sealed class Stage1FoundationSteps(Stage1ScenarioState state, Stage2Persi
             case "the Bot Run should become terminal": Assert.That(((BotRun)state.Subject!).IsTerminal); return true;
             case "its completion should be recorded": Assert.That(((BotRun)state.Subject!).CompletedAt, Is.EqualTo(Now.AddMinutes(2))); return true;
             case "a completed Bot Run": var run = StartedRun(); run.Complete(new FinishResult(FinishStatus.Completed, "done"), ZeroUsage(), Now.AddMinutes(2)); state.Subject = run; return true;
-            case "an attempt is made to resume it": state.Error = Catch(() => ((BotRun)state.Subject!).Start("worker", Now.AddMinutes(3), Now.AddMinutes(4))); return true;
+            case "an attempt is made to resume it": state.Error = Catch(() => ((BotRun)state.Subject!).BeginLeaseAcquisition(Now.AddMinutes(3))); return true;
             case "the Bot Run should remain completed": Assert.That(((BotRun)state.Subject!).Status, Is.EqualTo(BotRunStatus.Completed)); return true;
             case "a recorded Trade Proposal for its assigned Portfolio": state.Subject = NewProposal(); return true;
             case "the Proposal has not expired": Assert.That(((TradeProposal)state.Subject!).ValidUntil, Is.GreaterThan(Now)); return true;
@@ -171,7 +171,7 @@ public sealed class Stage1FoundationSteps(Stage1ScenarioState state, Stage2Persi
     private static Money ParseMoney(string value) { var p = value.Split(' '); return new Money(decimal.Parse(p[0], System.Globalization.CultureInfo.InvariantCulture), new Currency(p[1])); }
     private static Exception? Catch(Action action) { try { action(); return null; } catch (Exception ex) { return ex; } }
     private static Usage ZeroUsage() => new(TimeSpan.Zero, 0, new Money(0, Currency.USD), 0, 0, 0);
-    private static BotRun StartedRun() { var r = new BotRun(BotRunId.New(), TradingBotId.New(), TradingBotConfigurationVersionId.New(), PortfolioDecisionSnapshotId.New(), ZeroUsage()); r.Start("worker", Now, Now.AddMinutes(10)); return r; }
+    private static BotRun StartedRun() { var r = new BotRun(BotRunId.New(), TradingBotId.New(), TradingBotConfigurationVersionId.New(), PortfolioDecisionSnapshotId.New(), ZeroUsage()); r.BeginLeaseAcquisition(Now); r.LeaseAcquired("worker", Now.AddMinutes(10)); r.BeginReasoning(); return r; }
     private static TradeProposal NewProposal() => new(TradeProposalId.New(), TradingBotId.New(), BotRunId.New(), PortfolioId.New(), TradingBotConfigurationVersionId.New(), PortfolioDecisionSnapshotId.New(), InstrumentId.New(), new DirectTradeAction(TradeSide.Buy, new Quantity(10, "shares"), "Limit", new Price(25, Currency.USD), "Day"), "rationale", HypothesisVersionId.New(), [ResearchReportId.New()], Now, Now.AddHours(1));
     private static void Approve(TradeProposal p) { p.StartValidation(Now.AddMinutes(1)); p.Approve(ProposalApprovalId.New(), ApprovalActorType.AuthorizedPolicy, "policy", null, Now.AddMinutes(2), p.Version, p.PortfolioSnapshotId); }
     private static CapitalReservation NewReservation() { var p = NewProposal(); Approve(p); return new(CapitalReservationId.New(), p, new Money(100, Currency.USD), Now, Now.AddMinutes(10)); }
