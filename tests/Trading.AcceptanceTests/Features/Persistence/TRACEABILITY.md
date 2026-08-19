@@ -1,6 +1,6 @@
 # Stage 2 Acceptance-Criteria Traceability
 
-All Stage 2 scenarios are tagged `@stage2`, `@acceptance`, `@persistence`, and `@cross-platform`. Migration scenarios additionally use `@migration`. The temporary `@ignore` tag makes implementation-dependent cases explicitly pending until `S2-012` binds and activates the complete feature set. Scenario names are unique within Stage 2.
+All Stage 2 scenarios are tagged `@stage2`, `@acceptance`, `@persistence`, and `@cross-platform`. Migration scenarios additionally use `@migration`. Every scenario is bound and active. Scenario names are unique within Stage 2.
 
 Run the discoverable Stage 2 specifications with:
 

@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-013
 title: Complete Stage 2 acceptance and review
 stage: 2
-status: ready
+status: review
 priority: 1000
 type: acceptance
 depends_on: [S2-001, S2-002, S2-003, S2-004, S2-005, S2-006, S2-007, S2-008, S2-009, S2-010, S2-011, S2-012]
@@ -56,4 +56,8 @@ Use [Implementation Plan — Stage 2](../../implementation-plan.md#4-stage-2-per
 
 ## Completion Notes
 
-Not completed.
+Audited every Stage 2 task, acceptance criterion, and scenario; expanded the restart-safe integration demonstration to cover the complete persisted portfolio slice including Trading Bot configuration, immutable Decision Snapshot, canonical hash, and no-tracking query reload. Created `docs/stage-2-review.md` with migration identity, criterion traceability, exact local commands and counts, restart/hash evidence, defects, follow-ups, ADRs, and the conditional Stage 3 decision.
+
+Local validation passed: locked restore; Release build with 0 warnings and 0 errors; formatting; Data 92/92; Integration 1/1; Stage 2 acceptance 20/20 with zero skipped; Architecture 11/11; migration tests 3/3; EF migration-model drift check; and full suite 447/447 with zero skipped. The demonstrated snapshot hash is `8cfd7f682511c8b68fe8491b4c801c3734b72d4d300f01af954feaa8509813c2` under migration `20260819154728_InitialStage2Persistence`.
+
+No scope deviations, follow-up tasks, ADR changes, or known critical/high defects. The sole remaining gate is successful hosted Windows and Linux CI on the exact published review revision. The task remains `review` until that evidence is recorded.

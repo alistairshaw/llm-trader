@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S2-012` — Implement the restart-safe portfolio persistence workflow.
+No task is locally actionable. `S2-013` awaits exact-revision hosted Windows and Linux CI evidence.
 
 ## Ordered Backlog
 
@@ -24,7 +24,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S2-010`](stage-2/S2-010-concurrency-transactions.md) | Implement concurrency and transaction boundaries | Done | 760 | `S2-008`, `S2-009` |
 | [`S2-011`](stage-2/S2-011-portfolio-read-models.md) | Implement no-tracking portfolio read models | Done | 740 | `S2-009` |
 | [`S2-012`](stage-2/S2-012-persistence-workflow.md) | Implement the restart-safe portfolio persistence workflow | Done | 720 | `S2-010`, `S2-011` |
-| [`S2-013`](stage-2/S2-013-stage-2-acceptance-review.md) | Complete Stage 2 acceptance and review | Ready | 1000 | `S2-001`–`S2-012` |
+| [`S2-013`](stage-2/S2-013-stage-2-acceptance-review.md) | Complete Stage 2 acceptance and review | Review | 1000 | `S2-001`–`S2-012` |
 
 ## Stage Exit Gate
 
@@ -38,4 +38,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Not started.
+All implementation and local validation are complete. `S2-013` is in review pending successful hosted Windows and Linux CI on the exact published revision.
