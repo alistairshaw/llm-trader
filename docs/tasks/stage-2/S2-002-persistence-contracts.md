@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-002
 title: Define persistence contracts and results
 stage: 2
-status: planned
+status: ready
 priority: 920
 type: feature
 depends_on: [S2-001]

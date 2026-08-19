@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-001
 title: Write Stage 2 executable Gherkin specifications
 stage: 2
-status: ready
+status: done
 priority: 1000
 type: acceptance
 depends_on: []
@@ -48,4 +48,11 @@ Use [Implementation Plan — Stage 2](../../implementation-plan.md#4-stage-2-per
 
 ## Completion Notes
 
-Not completed.
+Completed on 2026-08-19.
+
+- Added seven Stage 2 feature files containing 20 unique, deterministic scenarios for aggregate round trips, exact decimals, UTC timestamps, typed identifiers, ownership constraints, ledger idempotency and corrections, immutable snapshots, optimistic concurrency, rollback, repository boundaries, no-tracking projections, real SQLite use, migrations, and restricted deletion.
+- Tagged every scenario for Stage 2 acceptance, persistence, and cross-platform execution; migration scenarios also carry `@migration`. Applied the acceptance harness's temporary `@ignore` tag so all implementation-dependent tests are explicitly pending until `S2-012` binds and activates them.
+- Added a traceability matrix mapping every Stage 2 acceptance criterion to named scenarios and implementing tasks, with the documented Stage 2 filter command.
+- Generated and committed the Reqnroll/NUnit test cases for discoverability.
+- Validation: `.\dev.ps1 build` passed with 0 warnings and 0 errors. `.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage2"` discovered 20 tests and reported all 20 explicitly skipped/pending, with 0 failures.
+- Deviations: none. Follow-up tasks: none. ADRs: none.
