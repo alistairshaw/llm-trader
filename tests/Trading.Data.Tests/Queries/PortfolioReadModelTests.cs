@@ -128,7 +128,8 @@ public sealed class PortfolioReadModelTests
             INSERT INTO broker_accounts VALUES ('{{Account}}','{{Connection}}','paper-1','Primary','Margin','USD','Restricted',{{reconciled}},'{}',{{earlier}},{{now}},3);
             INSERT INTO instruments VALUES ('{{Instrument1}}','Equity','AAA','AAA Corp','USD','NYSE',4,8,'Active',{{earlier}},{{now}},1);
             INSERT INTO instruments VALUES ('{{Instrument2}}','Equity','BBB','BBB Corp','USD','NYSE',4,8,'Active',{{earlier}},{{now}},1);
-            INSERT INTO trading_bots VALUES ('{{Bot}}','Owner','Enabled',NULL,NULL,NULL,NULL,{{earlier}},{{now}},4);
+            INSERT INTO trading_bots (id,name,status,active_configuration_version_id,requested_next_run_at,accepted_next_run_at,last_completed_run_id,created_at,updated_at,version)
+            VALUES ('{{Bot}}','Owner','Enabled',NULL,NULL,NULL,NULL,{{earlier}},{{now}},4);
             INSERT INTO trading_bot_configuration_versions VALUES ('{{Configuration}}','{{Bot}}',1,'{}','{}','{}','{}','{}','PaperTrading','{}','v1','{{new string('b', 64)}}',{{earlier}},{{earlier}},NULL);
             UPDATE trading_bots SET active_configuration_version_id = '{{Configuration}}' WHERE id = '{{Bot}}';
             INSERT INTO portfolios VALUES ('{{Portfolio1}}','Alpha','USD','{{Account}}','{{Bot}}','Active','1234.5678','{}',{{earlier}},{{now}},7);

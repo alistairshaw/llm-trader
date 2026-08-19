@@ -9,5 +9,6 @@
 
   <ItemGroup>
     <None Include="Fixtures\stage1-empty.db" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fixtures\stage2-completed.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-003
 title: Add Bot Run persistence migration
 stage: 3
-status: ready
+status: done
 priority: 910
 type: infrastructure
 depends_on: [S3-002]
@@ -51,4 +51,9 @@ Implement [Data Model — Bot Management Tables](../../data-model.md#5-bot-manag
 
 ## Completion Notes
 
-Not completed.
+- Added explicitly mapped `bot_run_triggers`, `bot_runs`, and `bot_tool_invocations` persistence entities with canonical transcript/input-rendering audit fields, ordered invocation payloads, lease and lifecycle state, schedule/finish/usage data, and application-managed run concurrency versions.
+- Added the `AddStage3BotRuntime` migration and updated model snapshot, including the five-state active-run partial unique index, sourced-trigger and tool-sequence uniqueness, scheduler indexes, validation checks, restricted audit foreign keys, and data-format version 3.
+- Added a populated completed-Stage-2 SQLite fixture and migration tests that verify fresh creation, idempotent reapplication, semantic preservation of every Stage 2 table row and both content hashes, exact Stage 3 schema, constraint enforcement, restricted deletion, and model drift.
+- Updated existing migration/schema assertions and the read-model SQL seed to account for the SQLite table rebuild required by the new restricted `last_completed_run_id` relationship.
+- Validation passed: `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage3Migrations"` (5 passed); `.\dev.ps1 build` (zero warnings/errors); `.\dev.ps1 test` (547 passed, 26 intentionally pending Stage 3 scenarios skipped); `.\dev.ps1 format`; and `dotnet ef migrations has-pending-model-changes` through the repository Docker environment (no pending model changes).
+- No deviations, follow-up tasks, or ADRs.

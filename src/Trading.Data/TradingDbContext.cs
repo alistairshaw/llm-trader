@@ -10,6 +10,9 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
     internal DbSet<InstrumentBrokerMappingEntity> InstrumentBrokerMappings => Set<InstrumentBrokerMappingEntity>();
     internal DbSet<TradingBotEntity> TradingBots => Set<TradingBotEntity>();
     internal DbSet<TradingBotConfigurationVersionEntity> TradingBotConfigurationVersions => Set<TradingBotConfigurationVersionEntity>();
+    internal DbSet<BotRunTriggerEntity> BotRunTriggers => Set<BotRunTriggerEntity>();
+    internal DbSet<BotRunEntity> BotRuns => Set<BotRunEntity>();
+    internal DbSet<BotToolInvocationEntity> BotToolInvocations => Set<BotToolInvocationEntity>();
     internal DbSet<PortfolioEntity> Portfolios => Set<PortfolioEntity>();
     internal DbSet<PositionEntity> Positions => Set<PositionEntity>();
     internal DbSet<PositionAppliedFillEntity> PositionAppliedFills => Set<PositionAppliedFillEntity>();

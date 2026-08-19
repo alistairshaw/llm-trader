@@ -15,8 +15,11 @@ internal sealed class InitialMigrationTests
             ["broker_accounts"] = ["id", "broker_connection_id", "external_account_id", "display_name", "account_type", "base_currency", "status", "last_reconciled_at", "capabilities_json", "created_at", "updated_at", "version"],
             ["instruments"] = ["id", "instrument_type", "primary_symbol", "display_name", "currency", "exchange", "price_precision", "quantity_precision", "status", "created_at", "updated_at", "version"],
             ["instrument_broker_mappings"] = ["id", "instrument_id", "broker_connection_id", "external_instrument_id", "symbol", "exchange", "effective_from", "effective_to", "metadata_json"],
-            ["trading_bots"] = ["id", "name", "status", "active_configuration_version_id", "requested_next_run_at", "accepted_next_run_at", "last_completed_run_id", "created_at", "updated_at", "version"],
+            ["trading_bots"] = ["id", "accepted_next_run_at", "active_configuration_version_id", "created_at", "last_completed_run_id", "name", "requested_next_run_at", "status", "updated_at", "version"],
             ["trading_bot_configuration_versions"] = ["id", "trading_bot_id", "version_number", "investment_mandate_json", "risk_policy_json", "tool_policy_json", "run_budget_json", "scheduling_policy_json", "execution_mode", "model_configuration_json", "prompt_version", "content_hash", "created_at", "activated_at", "superseded_at"],
+            ["bot_run_triggers"] = ["id", "trading_bot_id", "trigger_type", "reason", "source_type", "source_id", "occurred_at", "consumed_by_run_id", "created_at"],
+            ["bot_runs"] = ["id", "trading_bot_id", "configuration_version_id", "portfolio_snapshot_id", "status", "lease_owner", "lease_expires_at", "started_at", "completed_at", "finish_status", "finish_summary", "requested_next_run_at", "requested_wake_reason", "accepted_next_run_at", "terminal_reason", "usage_json", "model_transcript_schema_version", "model_transcript_json", "input_rendering_version", "version"],
+            ["bot_tool_invocations"] = ["id", "bot_run_id", "sequence_number", "tool_name", "tool_schema_version", "arguments_json", "status", "started_at", "completed_at", "result_json", "result_artifact_id", "error_code", "error_detail", "usage_json"],
             ["portfolios"] = ["id", "name", "base_currency", "broker_account_id", "assigned_trading_bot_id", "status", "capital_allocation_amount", "cash_reserve_policy_json", "created_at", "updated_at", "version"],
             ["positions"] = ["id", "portfolio_id", "instrument_id", "quantity_unit", "quantity", "average_cost_amount", "average_cost_currency", "realized_pnl_amount", "realized_pnl_currency", "opened_at", "updated_at", "closed_at", "version"],
             ["position_applied_fills"] = ["position_id", "fill_id", "applied_at"],
@@ -34,8 +37,8 @@ internal sealed class InitialMigrationTests
         await initializer.InitializeAsync();
         await initializer.InitializeAsync();
 
-        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(1));
-        Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("2"));
+        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(2));
+        Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("3"));
     }
 
     [Test]
@@ -55,7 +58,7 @@ internal sealed class InitialMigrationTests
             await new DatabaseInitializer(context).InitializeAsync();
 
             Assert.That(await TableNamesAsync(context.Database.GetDbConnection()), Does.Contain("portfolios"));
-            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(1));
+            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(2));
         }
         finally
         {
@@ -109,11 +112,11 @@ internal sealed class InitialMigrationTests
             foreignKeys.AddRange(await ForeignKeysAsync(connection, table));
         }
 
-        Assert.That(foreignKeys, Has.Count.EqualTo(16));
+        Assert.That(foreignKeys, Has.Count.EqualTo(23));
         Assert.That(foreignKeys.Select(key => key.DeleteAction), Is.All.EqualTo("RESTRICT"));
         Assert.That(foreignKeys, Does.Contain(("portfolio_ledger_entries", "portfolio_ledger_entries", "RESTRICT")));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history"), Does.EndWith("_InitialStage2Persistence"));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("2"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_AddStage3BotRuntime"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("3"));
     }
 
     private static async Task<string[]> TableNamesAsync(DbConnection connection) =>

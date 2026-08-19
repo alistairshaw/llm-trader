@@ -61,6 +61,55 @@ internal sealed class TradingBotConfigurationVersionEntity : PersistenceEntity
     public long? ActivatedAt { get; set; }
     public long? SupersededAt { get; set; }
 }
+internal sealed class BotRunTriggerEntity : PersistenceEntity
+{
+    public string TradingBotId { get; set; } = string.Empty;
+    public string TriggerType { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+    public string? SourceType { get; set; }
+    public string? SourceId { get; set; }
+    public long OccurredAt { get; set; }
+    public string? ConsumedByRunId { get; set; }
+    public long CreatedAt { get; set; }
+}
+internal sealed class BotRunEntity : PersistenceEntity
+{
+    public string TradingBotId { get; set; } = string.Empty;
+    public string ConfigurationVersionId { get; set; } = string.Empty;
+    public string? PortfolioSnapshotId { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? LeaseOwner { get; set; }
+    public long? LeaseExpiresAt { get; set; }
+    public long StartedAt { get; set; }
+    public long? CompletedAt { get; set; }
+    public string? FinishStatus { get; set; }
+    public string? FinishSummary { get; set; }
+    public long? RequestedNextRunAt { get; set; }
+    public string? RequestedWakeReason { get; set; }
+    public long? AcceptedNextRunAt { get; set; }
+    public string? TerminalReason { get; set; }
+    public string UsageJson { get; set; } = string.Empty;
+    public int ModelTranscriptSchemaVersion { get; set; }
+    public string ModelTranscriptJson { get; set; } = string.Empty;
+    public string InputRenderingVersion { get; set; } = string.Empty;
+    public long Version { get; set; }
+}
+internal sealed class BotToolInvocationEntity : PersistenceEntity
+{
+    public string BotRunId { get; set; } = string.Empty;
+    public int SequenceNumber { get; set; }
+    public string ToolName { get; set; } = string.Empty;
+    public int ToolSchemaVersion { get; set; }
+    public string ArgumentsJson { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public long StartedAt { get; set; }
+    public long? CompletedAt { get; set; }
+    public string? ResultJson { get; set; }
+    public string? ResultArtifactId { get; set; }
+    public string? ErrorCode { get; set; }
+    public string? ErrorDetail { get; set; }
+    public string? UsageJson { get; set; }
+}
 internal sealed class PortfolioEntity : PersistenceEntity
 {
     public string Name { get; set; } = string.Empty; public string BaseCurrency { get; set; } = string.Empty;

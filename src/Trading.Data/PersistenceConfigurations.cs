@@ -90,6 +90,7 @@ internal sealed class TradingBotConfiguration : EntityConfiguration<TradingBotEn
         builder.Property(x => x.Name).IsRequired(); builder.Property(x => x.Status).IsRequired(); builder.Property(x => x.Version).IsConcurrencyToken();
         builder.HasIndex(x => x.Name).IsUnique(); builder.HasIndex(x => new { x.Status, x.AcceptedNextRunAt });
         builder.HasOne<TradingBotConfigurationVersionEntity>().WithMany().HasForeignKey(x => x.ActiveConfigurationVersionId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<BotRunEntity>().WithMany().HasForeignKey(x => x.LastCompletedRunId).OnDelete(DeleteBehavior.Restrict);
         builder.ToTable(t => t.HasCheckConstraint("ck_trading_bots_status", "status IN ('Enabled', 'Paused', 'Retired')"));
     }
 }
@@ -108,6 +109,80 @@ internal sealed class TradingBotConfigurationVersionConfiguration : EntityConfig
         builder.HasIndex(x => new { x.TradingBotId, x.ContentHash }).IsUnique();
         builder.HasOne<TradingBotEntity>().WithMany().HasForeignKey(x => x.TradingBotId).OnDelete(DeleteBehavior.Restrict);
         builder.ToTable(t => { t.HasCheckConstraint("ck_trading_bot_configuration_versions_number", "version_number > 0"); t.HasCheckConstraint("ck_trading_bot_configuration_versions_execution_mode", "execution_mode IN ('ResearchOnly', 'HumanApproval', 'PaperTrading', 'LiveTrading')"); t.HasCheckConstraint("ck_trading_bot_configuration_versions_hash", "length(content_hash) = 64 AND content_hash = lower(content_hash)"); });
+    }
+}
+
+internal sealed class BotRunTriggerConfiguration : EntityConfiguration<BotRunTriggerEntity>
+{
+    public BotRunTriggerConfiguration() : base("bot_run_triggers") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<BotRunTriggerEntity> builder)
+    {
+        builder.Property(x => x.TradingBotId).IsRequired();
+        builder.Property(x => x.TriggerType).IsRequired();
+        builder.Property(x => x.Reason).IsRequired();
+        builder.HasIndex(x => new { x.TradingBotId, x.SourceType, x.SourceId }).IsUnique()
+            .HasFilter("source_id IS NOT NULL");
+        builder.HasIndex(x => new { x.TradingBotId, x.ConsumedByRunId, x.OccurredAt });
+        builder.HasOne<TradingBotEntity>().WithMany().HasForeignKey(x => x.TradingBotId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<BotRunEntity>().WithMany().HasForeignKey(x => x.ConsumedByRunId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_bot_run_triggers_type", "trigger_type IN ('Manual', 'BaselineSchedule', 'AcceptedNextRun', 'ResearchCompleted', 'ResearchFailed', 'PortfolioEvent', 'RiskOrReconciliation')");
+            t.HasCheckConstraint("ck_bot_run_triggers_source", "(source_type IS NULL AND source_id IS NULL) OR (source_type IS NOT NULL AND source_id IS NOT NULL)");
+            t.HasCheckConstraint("ck_bot_run_triggers_reason", "length(reason) > 0");
+        });
+    }
+}
+
+internal sealed class BotRunConfiguration : EntityConfiguration<BotRunEntity>
+{
+    public BotRunConfiguration() : base("bot_runs") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<BotRunEntity> builder)
+    {
+        builder.Property(x => x.TradingBotId).IsRequired();
+        builder.Property(x => x.ConfigurationVersionId).IsRequired();
+        builder.Property(x => x.Status).IsRequired();
+        builder.Property(x => x.UsageJson).IsRequired();
+        builder.Property(x => x.ModelTranscriptJson).IsRequired();
+        builder.Property(x => x.InputRenderingVersion).IsRequired();
+        builder.Property(x => x.Version).IsConcurrencyToken();
+        builder.HasIndex(x => x.TradingBotId).IsUnique()
+            .HasFilter("status IN ('Pending', 'AcquiringLease', 'PreparingSnapshot', 'Reasoning', 'WaitingForTool')");
+        builder.HasIndex(x => new { x.TradingBotId, x.StartedAt }).IsDescending(false, true);
+        builder.HasIndex(x => new { x.Status, x.LeaseExpiresAt });
+        builder.HasOne<TradingBotEntity>().WithMany().HasForeignKey(x => x.TradingBotId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<TradingBotConfigurationVersionEntity>().WithMany().HasForeignKey(x => x.ConfigurationVersionId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<PortfolioDecisionSnapshotEntity>().WithMany().HasForeignKey(x => x.PortfolioSnapshotId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_bot_runs_status", "status IN ('Pending', 'AcquiringLease', 'PreparingSnapshot', 'Reasoning', 'WaitingForTool', 'Completed', 'TimedOut', 'BudgetExceeded', 'Cancelled', 'Faulted')");
+            t.HasCheckConstraint("ck_bot_runs_lease", "(lease_owner IS NULL AND lease_expires_at IS NULL) OR (lease_owner IS NOT NULL AND lease_expires_at IS NOT NULL)");
+            t.HasCheckConstraint("ck_bot_runs_completion", "(status IN ('Pending', 'AcquiringLease', 'PreparingSnapshot', 'Reasoning', 'WaitingForTool') AND completed_at IS NULL) OR (status IN ('Completed', 'TimedOut', 'BudgetExceeded', 'Cancelled', 'Faulted') AND completed_at IS NOT NULL)");
+            t.HasCheckConstraint("ck_bot_runs_transcript_schema", "model_transcript_schema_version > 0");
+            t.HasCheckConstraint("ck_bot_runs_rendering_version", "length(input_rendering_version) > 0");
+            t.HasCheckConstraint("ck_bot_runs_version", "version > 0");
+        });
+    }
+}
+
+internal sealed class BotToolInvocationConfiguration : EntityConfiguration<BotToolInvocationEntity>
+{
+    public BotToolInvocationConfiguration() : base("bot_tool_invocations") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<BotToolInvocationEntity> builder)
+    {
+        builder.Property(x => x.BotRunId).IsRequired();
+        builder.Property(x => x.ToolName).IsRequired();
+        builder.Property(x => x.ArgumentsJson).IsRequired();
+        builder.Property(x => x.Status).IsRequired();
+        builder.HasIndex(x => new { x.BotRunId, x.SequenceNumber }).IsUnique();
+        builder.HasOne<BotRunEntity>().WithMany().HasForeignKey(x => x.BotRunId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_bot_tool_invocations_sequence", "sequence_number > 0");
+            t.HasCheckConstraint("ck_bot_tool_invocations_schema", "tool_schema_version > 0");
+            t.HasCheckConstraint("ck_bot_tool_invocations_status", "status IN ('Started', 'Completed', 'Failed', 'Cancelled')");
+            t.HasCheckConstraint("ck_bot_tool_invocations_completion", "(status = 'Started' AND completed_at IS NULL) OR (status IN ('Completed', 'Failed', 'Cancelled') AND completed_at IS NOT NULL)");
+        });
     }
 }
 
@@ -195,6 +270,6 @@ internal sealed class SchemaMetadataConfiguration : IEntityTypeConfiguration<Sch
         builder.ToTable("schema_metadata"); builder.HasKey(x => x.Key);
         builder.Property(x => x.Key).HasColumnName("key"); builder.Property(x => x.Value).HasColumnName("value").IsRequired();
         builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
-        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "2", UpdatedAt = 0 });
+        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "3", UpdatedAt = 0 });
     }
 }

@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S3-003` — Add Bot Run persistence migration. `S3-005` is also dependency-ready.
+`S3-004` — Implement durable Bot Run, trigger, and lease repositories. `S3-005` is also dependency-ready.
 
 ## Ordered Backlog
 
@@ -14,8 +14,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | --- | --- | --- | ---: | --- |
 | [`S3-001`](stage-3/S3-001-write-stage-3-gherkin.md) | Write Stage 3 executable Gherkin specifications | Done | 1000 | — |
 | [`S3-002`](stage-3/S3-002-runtime-contracts.md) | Define runtime, model, and tool contracts | Done | 930 | `S3-001` |
-| [`S3-003`](stage-3/S3-003-runtime-migration.md) | Add Bot Run persistence migration | Ready | 910 | `S3-002` |
-| [`S3-004`](stage-3/S3-004-run-trigger-repositories.md) | Implement durable Bot Run, trigger, and lease repositories | Planned | 890 | `S3-003` |
+| [`S3-003`](stage-3/S3-003-runtime-migration.md) | Add Bot Run persistence migration | Done | 910 | `S3-002` |
+| [`S3-004`](stage-3/S3-004-run-trigger-repositories.md) | Implement durable Bot Run, trigger, and lease repositories | Ready | 890 | `S3-003` |
 | [`S3-005`](stage-3/S3-005-scheduling-policy.md) | Implement deterministic scheduling policy | Ready | 860 | `S3-002` |
 | [`S3-006`](stage-3/S3-006-trigger-coalescing.md) | Implement durable trigger ingestion and coalescing | Planned | 840 | `S3-004`, `S3-005` |
 | [`S3-007`](stage-3/S3-007-run-input.md) | Build deterministic Bot Run input | Planned | 820 | `S3-004` |

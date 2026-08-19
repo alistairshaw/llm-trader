@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-004
 title: Implement durable Bot Run, trigger, and lease repositories
 stage: 3
-status: planned
+status: ready
 priority: 890
 type: feature
 depends_on: [S3-003]
