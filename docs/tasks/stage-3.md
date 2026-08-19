@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S3-008` — Implement authorized Stage 3 tool dispatch.
+`S3-009` — Implement the scripted bounded model loop.
 
 ## Ordered Backlog
 
@@ -19,8 +19,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S3-005`](stage-3/S3-005-scheduling-policy.md) | Implement deterministic scheduling policy | Done | 860 | `S3-002` |
 | [`S3-006`](stage-3/S3-006-trigger-coalescing.md) | Implement durable trigger ingestion and coalescing | Done | 840 | `S3-004`, `S3-005` |
 | [`S3-007`](stage-3/S3-007-run-input.md) | Build deterministic Bot Run input | Done | 820 | `S3-004` |
-| [`S3-008`](stage-3/S3-008-tool-dispatch.md) | Implement authorized Stage 3 tool dispatch | Ready | 800 | `S3-002`, `S3-007` |
-| [`S3-009`](stage-3/S3-009-scripted-model-loop.md) | Implement the scripted bounded model loop | Planned | 780 | `S3-008` |
+| [`S3-008`](stage-3/S3-008-tool-dispatch.md) | Implement authorized Stage 3 tool dispatch | Done | 800 | `S3-002`, `S3-007` |
+| [`S3-009`](stage-3/S3-009-scripted-model-loop.md) | Implement the scripted bounded model loop | Ready | 780 | `S3-008` |
 | [`S3-010`](stage-3/S3-010-run-orchestration.md) | Orchestrate one complete Trading Bot run | Planned | 760 | `S3-006`, `S3-009` |
 | [`S3-011`](stage-3/S3-011-multi-bot-supervisor.md) | Implement isolated multi-bot supervision | Planned | 740 | `S3-010` |
 | [`S3-012`](stage-3/S3-012-recovery-shutdown.md) | Implement lease recovery and graceful shutdown | Planned | 720 | `S3-011` |

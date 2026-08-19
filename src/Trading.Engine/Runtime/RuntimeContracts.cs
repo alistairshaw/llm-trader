@@ -31,7 +31,7 @@ public static class StageThreeTools
 
 public sealed record ToolDefinition(string Name, int SchemaVersion, string CanonicalSchema);
 public sealed record GetPortfolioSnapshotArguments(PortfolioDecisionSnapshotId SnapshotId);
-public sealed record FinishArguments(string Summary, DateTimeOffset? RequestedNextRunAt);
+public sealed record FinishArguments(FinishStatus Status, string Summary, DateTimeOffset? RequestedNextRunAt, string? WakeReason);
 public enum ToolAuthorizationOutcome { Authorized, UnknownTool, Disallowed, InvalidArguments, UnsupportedSchemaVersion }
 public enum ToolExecutionOutcome { Succeeded, Rejected, Failed }
 public sealed record ToolAuthorizationResult(ToolAuthorizationOutcome Outcome, string Reason);

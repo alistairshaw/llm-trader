@@ -109,6 +109,29 @@ public sealed class BotRuntimeRepositoryTests
         });
     }
 
+    [Test]
+    public async Task ToolInvocationStartAndTerminalFactsRoundTripCanonically()
+    {
+        await using var db = await CreateAsync(); var ids = await SeedAsync(db.Context, "one");
+        var repository = new BotRunRepository(db.Context);
+        var run = ((BotRunLeaseResult.Acquired)await repository.TryClaimAsync(Claim(ids, "host"), default)).Run;
+        run.BeginReasoning(); run.WaitForTool();
+        var invocation = run.StartToolInvocation(ToolInvocationId.New(), "Finish",
+            "{\"status\":\"Completed\",\"summary\":\"done\"}", Now.AddSeconds(1));
+        Assert.That(await repository.SaveAsync(run, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        var usage = new Usage(TimeSpan.FromMilliseconds(12), 0, Money.Zero(Currency.USD), 1, 0, 0);
+        invocation.Complete("{\"accepted\":true,\"status\":\"Completed\"}", usage, Now.AddSeconds(2));
+        Assert.That(await repository.SaveAsync(run, 2, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        db.Context.ChangeTracker.Clear(); var loaded = await repository.GetAsync(run.Id, default);
+        Assert.Multiple(() =>
+        {
+            Assert.That(loaded!.ToolInvocations, Has.Count.EqualTo(1));
+            Assert.That(loaded.ToolInvocations[0].Arguments, Is.EqualTo("{\"status\":\"Completed\",\"summary\":\"done\"}"));
+            Assert.That(loaded.ToolInvocations[0].ResultReference, Is.EqualTo("{\"accepted\":true,\"status\":\"Completed\"}"));
+            Assert.That(loaded.ToolInvocations[0].Usage, Is.EqualTo(usage));
+        });
+    }
+
     private static PendingBotRunTrigger Trigger(TradingBotId bot, DateTimeOffset at, string reason, string? sourceType = null, string? sourceId = null) =>
         new(BotRunTriggerId.New(), bot, BotRunTriggerType.Manual, reason, at, at, sourceType, sourceId);
     private static BotRunClaim Claim(Ids ids, string owner) => new(BotRunId.New(), ids.Bot, ids.Configuration, ids.Snapshot, owner,

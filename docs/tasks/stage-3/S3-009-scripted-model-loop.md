@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-009
 title: Implement the scripted bounded model loop
 stage: 3
-status: planned
+status: ready
 priority: 780
 type: feature
 depends_on: [S3-008]

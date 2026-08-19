@@ -3,11 +3,12 @@ schema_version: 1
 id: S3-008
 title: Implement authorized Stage 3 tool dispatch
 stage: 3
-status: ready
+status: done
 priority: 800
 type: feature
 depends_on: [S3-002, S3-007]
 labels: [tools, authorization, schemas]
+owner: s3_008
 created: 2026-08-19
 updated: 2026-08-19
 ---
@@ -49,4 +50,26 @@ Follow [Trading Bot — Tool Contract](../../trading-bot.md#8-tool-contract), [F
 
 ## Completion Notes
 
-Not completed.
+Implemented the version-1 Stage 3 tool registry and authorized dispatcher for exactly
+`GetPortfolioSnapshot` and `Finish`. The dispatcher loads the run's pinned configuration,
+enforces run and snapshot identity, cancellation, per-tool and total call budgets, strict
+canonical JSON schemas, unknown-field rejection, and bounded arguments. It returns stable
+result codes for every validation and authorization outcome, executes only the pinned snapshot
+service, and records a one-shot typed `FinishResult` without creating financial actions.
+
+Every attempted invocation made while the run is accepting a tool is persisted first and then
+completed with canonical bounded results, cumulative usage, elapsed duration, or a normalized
+redacted error code. Oversized payloads are replaced with a bounded audit marker. Added Engine
+coverage for registry contents, successful execution, all validation and policy denials,
+cancellation, budgets, identity isolation, redaction, repeat/post-finish handling, and audit
+facts, plus a SQLite repository round-trip test for invocation start and terminal facts.
+
+Validation completed on 2026-08-19:
+
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=ToolDispatch"` — passed 11, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=BotRuntimePersistence|Category=Stage3Migrations"` — passed 12, failed 0, skipped 0; migration/model-drift coverage passed.
+- `.\dev.ps1 build` — succeeded with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — passed 588, failed 0; 26 later Stage 3 acceptance scenarios remain intentionally skipped.
+- `.\dev.ps1 format` — passed with no changes required.
+
+No scope deviations, follow-up tasks, or ADRs were required.
