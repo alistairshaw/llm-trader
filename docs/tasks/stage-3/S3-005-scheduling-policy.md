@@ -3,11 +3,12 @@ schema_version: 1
 id: S3-005
 title: Implement deterministic scheduling policy
 stage: 3
-status: ready
+status: done
 priority: 860
 type: feature
 depends_on: [S3-002]
 labels: [scheduling, policy, clock]
+owner: s3_005
 created: 2026-08-19
 updated: 2026-08-19
 ---
@@ -50,4 +51,20 @@ Implement [Trading Bot — Triggers and Scheduling](../../trading-bot.md#5-trigg
 
 ## Completion Notes
 
-Not completed.
+Completed on 2026-08-19.
+
+- Added immutable, ordered, non-overlapping UTC weekly windows to `SchedulingPolicy`, including explicit same-day boundaries and full-week migration behavior for persisted policies created before windows were introduced.
+- Added deterministic baseline and requested-wake scheduling with injected UTC time, lifecycle suppression, minimum and maximum bounds, window movement, earlier-of-baseline selection, immutable policy inputs, and stable reason codes.
+- Added paused and retired bot lifecycle handling and table-driven boundary coverage for UTC, future-time, minimum, maximum, inclusive opening, exclusive closing, baseline advancement, and missing requests.
+- Added canonical persistence coverage proving legacy scheduling-policy JSON loads with the current explicit policy schema version.
+
+Validation:
+
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=SchedulingPolicy"` — passed 12, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.Core.Tests` — passed 367, failed 0, skipped 0.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests` — passed 103, failed 0, skipped 0; includes the model-drift assertion.
+- `.\dev.ps1 build` — succeeded with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — passed 566, failed 0; 26 future Stage 3 acceptance scenarios remained intentionally skipped.
+- `.\dev.ps1 format` — passed with no formatter changes required.
+
+No scope deviations, follow-up tasks, or ADRs were required.

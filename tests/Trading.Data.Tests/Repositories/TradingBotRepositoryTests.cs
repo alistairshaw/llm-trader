@@ -116,6 +116,19 @@ public sealed class TradingBotRepositoryTests
         Assert.That(database.Context.Database.HasPendingModelChanges(), Is.False);
     }
 
+    [Test]
+    public void LegacySchedulingPolicyJsonLoadsAsVersionedFullWeekPolicy()
+    {
+        const string legacy = "{\"content\":{\"baselineCadence\":\"01:00:00\",\"maximumRequestedWakeDelay\":\"1.00:00:00\",\"minimumRequestedWakeDelay\":\"00:05:00\"},\"schemaVersion\":1}";
+        var policy = CanonicalJsonSerializer.Deserialize<SchedulingPolicy>(1, legacy);
+        Assert.Multiple(() =>
+        {
+            Assert.That(policy.SchemaVersion, Is.EqualTo(SchedulingPolicy.CurrentSchemaVersion));
+            Assert.That(policy.Windows, Has.Count.EqualTo(7));
+            Assert.That(policy.Windows, Has.All.Matches<UtcWeeklyWindow>(window => window.StartTime == TimeSpan.Zero && window.EndTime == TimeSpan.FromDays(1)));
+        });
+    }
+
     private static TradingBot NewConfiguredBot(string name)
     {
         var bot = new TradingBot(TradingBotId.New(), name, CreatedAt);

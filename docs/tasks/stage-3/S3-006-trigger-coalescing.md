@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-006
 title: Implement durable trigger ingestion and coalescing
 stage: 3
-status: planned
+status: ready
 priority: 840
 type: feature
 depends_on: [S3-004, S3-005]

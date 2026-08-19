@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S3-005` — Implement deterministic scheduling policy. `S3-007` is also dependency-ready.
+`S3-006` — Implement durable trigger ingestion and coalescing. `S3-007` is also dependency-ready.
 
 ## Ordered Backlog
 
@@ -16,8 +16,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S3-002`](stage-3/S3-002-runtime-contracts.md) | Define runtime, model, and tool contracts | Done | 930 | `S3-001` |
 | [`S3-003`](stage-3/S3-003-runtime-migration.md) | Add Bot Run persistence migration | Done | 910 | `S3-002` |
 | [`S3-004`](stage-3/S3-004-run-trigger-repositories.md) | Implement durable Bot Run, trigger, and lease repositories | Done | 890 | `S3-003` |
-| [`S3-005`](stage-3/S3-005-scheduling-policy.md) | Implement deterministic scheduling policy | Ready | 860 | `S3-002` |
-| [`S3-006`](stage-3/S3-006-trigger-coalescing.md) | Implement durable trigger ingestion and coalescing | Planned | 840 | `S3-004`, `S3-005` |
+| [`S3-005`](stage-3/S3-005-scheduling-policy.md) | Implement deterministic scheduling policy | Done | 860 | `S3-002` |
+| [`S3-006`](stage-3/S3-006-trigger-coalescing.md) | Implement durable trigger ingestion and coalescing | Ready | 840 | `S3-004`, `S3-005` |
 | [`S3-007`](stage-3/S3-007-run-input.md) | Build deterministic Bot Run input | Ready | 820 | `S3-004` |
 | [`S3-008`](stage-3/S3-008-tool-dispatch.md) | Implement authorized Stage 3 tool dispatch | Planned | 800 | `S3-002`, `S3-007` |
 | [`S3-009`](stage-3/S3-009-scripted-model-loop.md) | Implement the scripted bounded model loop | Planned | 780 | `S3-008` |

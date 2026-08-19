@@ -1,8 +1,41 @@
+using System.Text.Json.Serialization;
+
 namespace Trading.Core.Policies;
+
+public sealed record UtcWeeklyWindow
+{
+    public UtcWeeklyWindow(DayOfWeek dayOfWeek, TimeSpan startTime, TimeSpan endTime)
+    {
+        if (!Enum.IsDefined(dayOfWeek)) throw new ArgumentOutOfRangeException(nameof(dayOfWeek));
+        if (startTime < TimeSpan.Zero || startTime >= TimeSpan.FromDays(1)) throw new ArgumentOutOfRangeException(nameof(startTime));
+        if (endTime <= TimeSpan.Zero || endTime > TimeSpan.FromDays(1)) throw new ArgumentOutOfRangeException(nameof(endTime));
+        if (endTime <= startTime) throw new ArgumentException("Window end must be after its start; split overnight availability into two windows.", nameof(endTime));
+        DayOfWeek = dayOfWeek;
+        StartTime = startTime;
+        EndTime = endTime;
+    }
+
+    public DayOfWeek DayOfWeek { get; }
+    public TimeSpan StartTime { get; }
+    public TimeSpan EndTime { get; }
+}
 
 public sealed record SchedulingPolicy
 {
     public SchedulingPolicy(TimeSpan baselineCadence, TimeSpan minimumRequestedWakeDelay, TimeSpan maximumRequestedWakeDelay)
+        : this(baselineCadence, minimumRequestedWakeDelay, maximumRequestedWakeDelay, null, 0)
+    {
+    }
+
+    public SchedulingPolicy(TimeSpan baselineCadence, TimeSpan minimumRequestedWakeDelay, TimeSpan maximumRequestedWakeDelay,
+        IEnumerable<UtcWeeklyWindow> windows)
+        : this(baselineCadence, minimumRequestedWakeDelay, maximumRequestedWakeDelay, windows?.ToArray(), CurrentSchemaVersion)
+    {
+    }
+
+    [JsonConstructor]
+    public SchedulingPolicy(TimeSpan baselineCadence, TimeSpan minimumRequestedWakeDelay, TimeSpan maximumRequestedWakeDelay,
+        IReadOnlyList<UtcWeeklyWindow>? windows, int schemaVersion)
     {
         if (baselineCadence <= TimeSpan.Zero)
         {
@@ -16,14 +49,48 @@ public sealed record SchedulingPolicy
             throw new ArgumentException("Maximum requested-wake delay cannot be less than the minimum.", nameof(maximumRequestedWakeDelay));
         }
 
+        if (schemaVersion is not (0 or CurrentSchemaVersion)) throw new ArgumentException("Scheduling policy schema version is unsupported.", nameof(schemaVersion));
+
+        var normalizedWindows = (windows ?? FullWeek).OrderBy(x => x.DayOfWeek).ThenBy(x => x.StartTime).ToArray();
+        if (normalizedWindows.Length == 0) throw new ArgumentException("At least one UTC scheduling window is required.", nameof(windows));
+        for (var index = 1; index < normalizedWindows.Length; index++)
+        {
+            var previous = normalizedWindows[index - 1];
+            var current = normalizedWindows[index];
+            if (previous.DayOfWeek == current.DayOfWeek && current.StartTime < previous.EndTime)
+                throw new ArgumentException("UTC scheduling windows cannot overlap.", nameof(windows));
+        }
+
         BaselineCadence = baselineCadence;
         MinimumRequestedWakeDelay = minimumRequestedWakeDelay;
         MaximumRequestedWakeDelay = maximumRequestedWakeDelay;
+        Windows = Array.AsReadOnly(normalizedWindows);
+        SchemaVersion = CurrentSchemaVersion;
     }
 
+    public const int CurrentSchemaVersion = 1;
     public TimeSpan BaselineCadence { get; }
     public TimeSpan MinimumRequestedWakeDelay { get; }
     public TimeSpan MaximumRequestedWakeDelay { get; }
+    public IReadOnlyList<UtcWeeklyWindow> Windows { get; }
+    public int SchemaVersion { get; }
+
+    public bool Equals(SchedulingPolicy? other) => other is not null &&
+        BaselineCadence == other.BaselineCadence &&
+        MinimumRequestedWakeDelay == other.MinimumRequestedWakeDelay &&
+        MaximumRequestedWakeDelay == other.MaximumRequestedWakeDelay &&
+        Windows.SequenceEqual(other.Windows);
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(BaselineCadence); hash.Add(MinimumRequestedWakeDelay); hash.Add(MaximumRequestedWakeDelay);
+        foreach (var window in Windows) hash.Add(window);
+        return hash.ToHashCode();
+    }
+
+    private static readonly UtcWeeklyWindow[] FullWeek = Enum.GetValues<DayOfWeek>()
+        .Select(day => new UtcWeeklyWindow(day, TimeSpan.Zero, TimeSpan.FromDays(1))).ToArray();
 }
 
 public sealed record ModelConfiguration

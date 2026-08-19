@@ -103,6 +103,23 @@ public sealed class PolicyValueObjectTests
     }
 
     [Test]
+    public void SchedulingPolicyOwnsValidatedNonOverlappingUtcWindows()
+    {
+        var source = new[] { new UtcWeeklyWindow(DayOfWeek.Monday, TimeSpan.FromHours(9), TimeSpan.FromHours(17)) };
+        var policy = new SchedulingPolicy(TimeSpan.FromHours(1), TimeSpan.Zero, TimeSpan.FromDays(1), source);
+        source[0] = new UtcWeeklyWindow(DayOfWeek.Tuesday, TimeSpan.Zero, TimeSpan.FromHours(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(policy.Windows.Single().DayOfWeek, Is.EqualTo(DayOfWeek.Monday));
+            Assert.That(policy.SchemaVersion, Is.EqualTo(SchedulingPolicy.CurrentSchemaVersion));
+            Assert.That(() => new SchedulingPolicy(TimeSpan.FromHours(1), TimeSpan.Zero, TimeSpan.FromDays(1), []), Throws.ArgumentException);
+            Assert.That(() => new UtcWeeklyWindow(DayOfWeek.Monday, TimeSpan.FromHours(22), TimeSpan.FromHours(2)), Throws.ArgumentException);
+            Assert.That(() => new SchedulingPolicy(TimeSpan.FromHours(1), TimeSpan.Zero, TimeSpan.FromDays(1),
+                [new UtcWeeklyWindow(DayOfWeek.Monday, TimeSpan.Zero, TimeSpan.FromHours(2)), new UtcWeeklyWindow(DayOfWeek.Monday, TimeSpan.FromHours(1), TimeSpan.FromHours(3))]), Throws.ArgumentException);
+        });
+    }
+
+    [Test]
     public void ModelConfigurationIsProviderNeutralAndContainsNoSecretField()
     {
         var configuration = new ModelConfiguration("provider", "model-v1", 0.2m, 2048);

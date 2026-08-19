@@ -3,7 +3,7 @@ using Trading.Core.Policies;
 
 namespace Trading.Core.Bots;
 
-public enum TradingBotStatus { Enabled, Paused }
+public enum TradingBotStatus { Enabled, Paused, Retired }
 public enum ExecutionMode { ResearchOnly, HumanApproval, PaperTrading, LiveTrading }
 
 public sealed class TradingBot
@@ -104,6 +104,12 @@ public sealed class TradingBot
     public void Pause(DateTimeOffset changedAt)
     {
         Status = TradingBotStatus.Paused;
+        Touch(changedAt);
+    }
+
+    public void Retire(DateTimeOffset changedAt)
+    {
+        Status = TradingBotStatus.Retired;
         Touch(changedAt);
     }
 
