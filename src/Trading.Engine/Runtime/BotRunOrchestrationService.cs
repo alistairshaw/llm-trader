@@ -35,7 +35,7 @@ public sealed class BotRunOrchestrationService(
     IBotRunInputService inputs,
     IModelLoop modelLoop,
     DeterministicSchedulingPolicy scheduling,
-    IUtcClock clock)
+    IUtcClock clock) : IBotRunExecutor
 {
     public async Task<BotRunExecutionResult> ExecuteAsync(BotRunExecutionRequest request,
         CancellationToken cancellationToken)

@@ -106,8 +106,12 @@ public sealed class BotRunOrchestrationTests
         var result = await Create(context, database.Ids, clock).ExecuteAsync(new(database.BotId, "host", TimeSpan.FromMinutes(5),
             new ScriptedLlmClient([new ScriptedModelStep.Response(response)], new NoDelay())), default);
         var run = await new BotRunRepository(context).GetAsync(result.RunId!, default);
-        Assert.Multiple(() => { Assert.That(result.Outcome, Is.EqualTo(BotRunExecutionOutcome.BudgetExceeded));
-            Assert.That(run!.Status, Is.EqualTo(BotRunStatus.BudgetExceeded)); Assert.That(run.LeaseOwner, Is.Null); });
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Outcome, Is.EqualTo(BotRunExecutionOutcome.BudgetExceeded));
+            Assert.That(run!.Status, Is.EqualTo(BotRunStatus.BudgetExceeded));
+            Assert.That(run.LeaseOwner, Is.Null);
+        });
     }
 
     [Test]
@@ -125,8 +129,12 @@ public sealed class BotRunOrchestrationTests
             input, new BoundedModelLoop(rejecting, new StageThreeToolDispatcher(rejecting, bots, input, clock), clock),
             new DeterministicSchedulingPolicy(clock), clock);
         var result = await service.ExecuteAsync(new(database.BotId, "host", TimeSpan.FromMinutes(5), session), default);
-        Assert.Multiple(() => { Assert.That(result.Outcome, Is.EqualTo(BotRunExecutionOutcome.LostLease));
-            Assert.That(session.Requests, Is.Empty); Assert.That(session.ToolResults, Is.Empty); });
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Outcome, Is.EqualTo(BotRunExecutionOutcome.LostLease));
+            Assert.That(session.Requests, Is.Empty);
+            Assert.That(session.ToolResults, Is.Empty);
+        });
     }
 
     private static BotRunOrchestrationService Create(TradingDbContext context, TestIds ids, FixedClock clock)

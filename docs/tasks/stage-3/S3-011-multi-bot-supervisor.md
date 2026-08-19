@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-011
 title: Implement isolated multi-bot supervision
 stage: 3
-status: planned
+status: done
 priority: 740
 type: feature
 depends_on: [S3-010]
@@ -50,4 +50,18 @@ Implement [Trading Bot — Isolation and Concurrency](../../trading-bot.md#12-is
 
 ## Completion Notes
 
-Not completed.
+- Added validated supervisor options, bounded channel admission, global execution capacity, deterministic
+  per-Bot partition dispatch, and observable queue/completion outcomes.
+- Preserved durable trigger safety by admitting work before invoking the one-run service; saturated work is
+  rejected without claiming a trigger. Supervisor cancellation safely completes queued work.
+- Added deterministic gated tests for cross-Bot concurrency, per-Bot serialization, global limits, identity-
+  scoped model sessions, fault containment, saturation, and lifecycle behavior.
+- Validation passed:
+  - `.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=MultiBotSupervisor"` — 5 passed.
+  - `.\dev.ps1 test -Project tests/Trading.Engine.Tests` — 50 passed.
+  - `.\dev.ps1 test -Project tests/Trading.IntegrationTests` — 14 passed.
+  - `.\dev.ps1 build` — succeeded with zero warnings and zero errors.
+  - `.\dev.ps1 format` — passed.
+  - `.\dev.ps1 test` — 618 passed, 26 expected Stage 3 acceptance scenarios skipped, zero failed.
+- Deviation: corrected formatter violations in the S3-010 orchestration test while running the required formatter.
+- Follow-up tasks: none. ADRs: none.

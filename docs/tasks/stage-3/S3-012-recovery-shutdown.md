@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-012
 title: Implement lease recovery and graceful shutdown
 stage: 3
-status: planned
+status: ready
 priority: 720
 type: feature
 depends_on: [S3-011]
