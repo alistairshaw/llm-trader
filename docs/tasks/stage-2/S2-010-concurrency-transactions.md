@@ -3,11 +3,12 @@ schema_version: 1
 id: S2-010
 title: Implement concurrency and transaction boundaries
 stage: 2
-status: ready
+status: done
 priority: 760
 type: feature
 depends_on: [S2-008, S2-009]
 labels: [concurrency, transactions, unit-of-work]
+owner: s2_010
 created: 2026-08-19
 updated: 2026-08-19
 ---
@@ -50,4 +51,14 @@ Implement [Data Model — Unit of Work and Transactions](../../data-model.md#13-
 
 ## Completion Notes
 
-Not completed.
+Implemented `EfUnitOfWork`, provider-neutral concurrency and scoped uniqueness translation, and explicit short transaction operations for bot/configuration creation, ownership assignment, Position/fill-marker updates, ledger append/correction, and decision snapshot creation. Test-only failpoints cover the post-write and pre-commit boundaries and prove rollback of all material Stage 2 state. Concurrent-context coverage proves that only one writer can commit an expected version and that every successful mutable write increments the stored version exactly once.
+
+Validation completed on 2026-08-19:
+
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=ConcurrencyOrTransactions"` — 12 passed, 0 failed, 0 skipped.
+- `.\dev.ps1 build` — succeeded with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — Trading.Core.Tests 275 passed; Trading.Architecture.Tests 11 passed; Trading.Data.Tests 88 passed; Trading.AcceptanceTests 48 passed and 20 Stage 2 scenarios intentionally pending implementation in later tasks.
+- `.\dev.ps1 format` — passed.
+- Existing runtime model-drift coverage passed; no migration change was required.
+
+No scope deviations, follow-up tasks, or ADR changes.

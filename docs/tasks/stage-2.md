@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S2-010` — Implement concurrency and transaction boundaries.
+`S2-011` — Implement no-tracking portfolio read models.
 
 ## Ordered Backlog
 
@@ -21,7 +21,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S2-007`](stage-2/S2-007-trading-bot-persistence.md) | Persist Trading Bots and configuration versions | Done | 810 | `S2-005` |
 | [`S2-008`](stage-2/S2-008-portfolio-ledger-persistence.md) | Persist Portfolios, Positions, and ledger entries | Done | 800 | `S2-006`, `S2-007` |
 | [`S2-009`](stage-2/S2-009-decision-snapshot-persistence.md) | Persist immutable Portfolio Decision Snapshots | Done | 790 | `S2-008` |
-| [`S2-010`](stage-2/S2-010-concurrency-transactions.md) | Implement concurrency and transaction boundaries | Ready | 760 | `S2-008`, `S2-009` |
+| [`S2-010`](stage-2/S2-010-concurrency-transactions.md) | Implement concurrency and transaction boundaries | Done | 760 | `S2-008`, `S2-009` |
 | [`S2-011`](stage-2/S2-011-portfolio-read-models.md) | Implement no-tracking portfolio read models | Ready | 740 | `S2-009` |
 | [`S2-012`](stage-2/S2-012-persistence-workflow.md) | Implement the restart-safe portfolio persistence workflow | Planned | 720 | `S2-010`, `S2-011` |
 | [`S2-013`](stage-2/S2-013-stage-2-acceptance-review.md) | Complete Stage 2 acceptance and review | Planned | 1000 | `S2-001`–`S2-012` |

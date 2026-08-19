@@ -23,7 +23,10 @@ public sealed class TradingBotRepository(TradingDbContext dbContext) : ITradingB
     public async Task<PersistenceWriteResult> AddAsync(TradingBot bot, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(bot);
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+        var ownsTransaction = dbContext.Database.CurrentTransaction is null;
+        await using var transaction = ownsTransaction
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false)
+            : null;
         try
         {
             var activeId = bot.ActiveConfigurationVersionId;
@@ -33,13 +36,13 @@ public sealed class TradingBotRepository(TradingDbContext dbContext) : ITradingB
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             entity.ActiveConfigurationVersionId = activeId?.ToString();
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            if (transaction is not null) await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
             return new PersistenceWriteResult.Succeeded();
         }
         catch (DbUpdateException exception) when (exception.InnerException is SqliteException
         { SqliteExtendedErrorCode: 1555 or 2067 })
         {
-            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+            if (transaction is not null) await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
             dbContext.ChangeTracker.Clear();
             return new PersistenceWriteResult.UniquenessConflict("trading_bot_name_or_configuration_version");
         }

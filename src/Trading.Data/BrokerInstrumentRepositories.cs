@@ -132,6 +132,15 @@ internal static class RepositoryWrites
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return new PersistenceWriteResult.Succeeded();
         }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            var expected = exception.Entries.Select(entry => entry.OriginalValues.Properties
+                .Where(property => property.Name == "Version")
+                .Select(property => (long?)entry.OriginalValues[property])
+                .SingleOrDefault()).FirstOrDefault() ?? 0;
+            context.ChangeTracker.Clear();
+            return new PersistenceWriteResult.ConcurrencyConflict(expected, null);
+        }
         catch (DbUpdateException exception) when (exception.InnerException is SqliteException
         { SqliteExtendedErrorCode: 1555 or 2067 })
         {

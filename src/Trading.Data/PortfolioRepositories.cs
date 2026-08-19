@@ -20,7 +20,7 @@ public sealed class PortfolioRepository(TradingDbContext dbContext) : IPortfolio
     {
         ArgumentNullException.ThrowIfNull(portfolio);
         dbContext.Portfolios.Add(PortfolioMapper.ToEntity(portfolio));
-        return await SaveAsync(cancellationToken).ConfigureAwait(false);
+        return await RepositoryWrites.SaveAsync(dbContext, "active_portfolio_ownership", cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<PersistenceWriteResult> UpdateAsync(Portfolio portfolio, long expectedVersion, CancellationToken cancellationToken)
@@ -29,14 +29,7 @@ public sealed class PortfolioRepository(TradingDbContext dbContext) : IPortfolio
         var entity = await dbContext.Portfolios.SingleOrDefaultAsync(x => x.Id == portfolio.Id.ToString(), cancellationToken).ConfigureAwait(false);
         if (entity is null || entity.Version != expectedVersion) return new PersistenceWriteResult.ConcurrencyConflict(expectedVersion, entity?.Version);
         PortfolioMapper.Copy(portfolio, entity); entity.Version = expectedVersion + 1;
-        return await SaveAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task<PersistenceWriteResult> SaveAsync(CancellationToken cancellationToken)
-    {
-        try { await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false); return new PersistenceWriteResult.Succeeded(); }
-        catch (DbUpdateException exception) when (exception.InnerException is SqliteException { SqliteExtendedErrorCode: 1555 or 2067 })
-        { dbContext.ChangeTracker.Clear(); return new PersistenceWriteResult.UniquenessConflict("active_portfolio_ownership"); }
+        return await RepositoryWrites.SaveAsync(dbContext, "active_portfolio_ownership", cancellationToken).ConfigureAwait(false);
     }
 }
 
@@ -59,7 +52,7 @@ public sealed class PositionRepository(TradingDbContext dbContext) : IPositionRe
         ArgumentNullException.ThrowIfNull(position);
         dbContext.Positions.Add(PositionMapper.ToEntity(position));
         dbContext.PositionAppliedFills.AddRange(position.AppliedSources.Select(x => new PositionAppliedFillEntity { PositionId = position.Id.ToString(), FillId = x, AppliedAt = UtcUnixMilliseconds.ToProvider(position.UpdatedAt) }));
-        return await SaveAsync(cancellationToken).ConfigureAwait(false);
+        return await RepositoryWrites.SaveAsync(dbContext, "portfolio_instrument_or_applied_fill", cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<PersistenceWriteResult> UpdateAsync(Position position, long expectedVersion, CancellationToken cancellationToken)
@@ -70,14 +63,7 @@ public sealed class PositionRepository(TradingDbContext dbContext) : IPositionRe
         PositionMapper.Copy(position, entity);
         var stored = await dbContext.PositionAppliedFills.Where(x => x.PositionId == entity.Id).Select(x => x.FillId).ToListAsync(cancellationToken).ConfigureAwait(false);
         dbContext.PositionAppliedFills.AddRange(position.AppliedSources.Except(stored, StringComparer.Ordinal).Select(x => new PositionAppliedFillEntity { PositionId = entity.Id, FillId = x, AppliedAt = UtcUnixMilliseconds.ToProvider(position.UpdatedAt) }));
-        return await SaveAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task<PersistenceWriteResult> SaveAsync(CancellationToken cancellationToken)
-    {
-        try { await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false); return new PersistenceWriteResult.Succeeded(); }
-        catch (DbUpdateException exception) when (exception.InnerException is SqliteException { SqliteExtendedErrorCode: 1555 or 2067 })
-        { dbContext.ChangeTracker.Clear(); return new PersistenceWriteResult.UniquenessConflict("portfolio_instrument_or_applied_fill"); }
+        return await RepositoryWrites.SaveAsync(dbContext, "portfolio_instrument_or_applied_fill", cancellationToken).ConfigureAwait(false);
     }
 }
 
