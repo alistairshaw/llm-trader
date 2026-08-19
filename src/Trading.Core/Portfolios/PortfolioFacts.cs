@@ -43,8 +43,9 @@ public sealed class PortfolioDecisionSnapshot
 public sealed class PortfolioLedgerEntry
 {
     public PortfolioLedgerEntry(PortfolioLedgerEntryId id, PortfolioId portfolioId, PortfolioLedgerEntryType entryType,
-        Money amount, InstrumentId? instrumentId, decimal? quantity, DateTimeOffset effectiveAt, LedgerSourceType sourceType, string sourceId)
-    { Id = id ?? throw new ArgumentNullException(nameof(id)); PortfolioId = portfolioId ?? throw new ArgumentNullException(nameof(portfolioId)); EntryType = entryType; Amount = amount ?? throw new ArgumentNullException(nameof(amount)); InstrumentId = instrumentId; Quantity = quantity; EffectiveAt = PortfolioValidation.Utc(effectiveAt, nameof(effectiveAt)); SourceType = sourceType; SourceId = PortfolioValidation.Required(sourceId, nameof(sourceId)); if ((instrumentId is null) != (quantity is null)) throw new ArgumentException("Instrument and quantity must be supplied together."); }
+        Money amount, InstrumentId? instrumentId, decimal? quantity, DateTimeOffset effectiveAt, LedgerSourceType sourceType, string sourceId,
+        DateTimeOffset? recordedAt = null, PortfolioLedgerEntryId? reversesEntryId = null, string? description = null, string? metadataJson = null)
+    { Id = id ?? throw new ArgumentNullException(nameof(id)); PortfolioId = portfolioId ?? throw new ArgumentNullException(nameof(portfolioId)); EntryType = entryType; Amount = amount ?? throw new ArgumentNullException(nameof(amount)); InstrumentId = instrumentId; Quantity = quantity; EffectiveAt = PortfolioValidation.Utc(effectiveAt, nameof(effectiveAt)); SourceType = sourceType; SourceId = PortfolioValidation.Required(sourceId, nameof(sourceId)); RecordedAt = PortfolioValidation.Utc(recordedAt ?? effectiveAt, nameof(recordedAt)); ReversesEntryId = reversesEntryId; Description = description; MetadataJson = metadataJson; if ((instrumentId is null) != (quantity is null)) throw new ArgumentException("Instrument and quantity must be supplied together."); if ((entryType == PortfolioLedgerEntryType.ManualCorrection) != (reversesEntryId is not null)) throw new ArgumentException("Corrections must reference the entry they reverse."); }
     public PortfolioLedgerEntryId Id { get; }
     public PortfolioId PortfolioId { get; }
     public PortfolioLedgerEntryType EntryType { get; }
@@ -54,4 +55,8 @@ public sealed class PortfolioLedgerEntry
     public DateTimeOffset EffectiveAt { get; }
     public LedgerSourceType SourceType { get; }
     public string SourceId { get; }
+    public DateTimeOffset RecordedAt { get; }
+    public PortfolioLedgerEntryId? ReversesEntryId { get; }
+    public string? Description { get; }
+    public string? MetadataJson { get; }
 }

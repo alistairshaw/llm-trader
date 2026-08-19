@@ -230,6 +230,7 @@ public partial class InitialStage2Persistence : Migration
                 id = table.Column<string>(type: "TEXT", nullable: false),
                 portfolio_id = table.Column<string>(type: "TEXT", nullable: false),
                 instrument_id = table.Column<string>(type: "TEXT", nullable: false),
+                quantity_unit = table.Column<string>(type: "TEXT", nullable: false),
                 quantity = table.Column<string>(type: "TEXT", nullable: false),
                 average_cost_amount = table.Column<string>(type: "TEXT", nullable: false),
                 average_cost_currency = table.Column<string>(type: "TEXT", nullable: false),
@@ -272,12 +273,6 @@ public partial class InitialStage2Persistence : Migration
                     name: "FK_position_applied_fills_positions_position_id",
                     column: x => x.position_id,
                     principalTable: "positions",
-                    principalColumn: "id",
-                    onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "FK_position_applied_fills_fills_fill_id",
-                    column: x => x.fill_id,
-                    principalTable: "fills",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Restrict);
             });
@@ -341,11 +336,6 @@ public partial class InitialStage2Persistence : Migration
             table: "schema_metadata",
             columns: new[] { "key", "updated_at", "value" },
             values: new object[] { "application_data_format_version", 0L, "2" });
-
-        migrationBuilder.CreateIndex(
-            name: "IX_position_applied_fills_fill_id",
-            table: "position_applied_fills",
-            column: "fill_id");
 
         migrationBuilder.CreateIndex(
             name: "IX_broker_accounts_broker_connection_id_external_account_id",
@@ -418,14 +408,14 @@ public partial class InitialStage2Persistence : Migration
             table: "portfolios",
             column: "assigned_trading_bot_id",
             unique: true,
-            filter: "assigned_trading_bot_id IS NOT NULL");
+            filter: "assigned_trading_bot_id IS NOT NULL AND status = 'Active'");
 
         migrationBuilder.CreateIndex(
             name: "IX_portfolios_broker_account_id",
             table: "portfolios",
             column: "broker_account_id",
             unique: true,
-            filter: "broker_account_id IS NOT NULL");
+            filter: "broker_account_id IS NOT NULL AND status = 'Active'");
 
         migrationBuilder.CreateIndex(
             name: "IX_positions_instrument_id",

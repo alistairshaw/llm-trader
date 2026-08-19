@@ -74,6 +74,7 @@ internal sealed class PortfolioEntity : PersistenceEntity
 internal sealed class PositionEntity : PersistenceEntity
 {
     public string PortfolioId { get; set; } = string.Empty; public string InstrumentId { get; set; } = string.Empty;
+    public string QuantityUnit { get; set; } = string.Empty;
     public string Quantity { get; set; } = string.Empty; public string AverageCostAmount { get; set; } = string.Empty;
     public string AverageCostCurrency { get; set; } = string.Empty; public string RealizedPnlAmount { get; set; } = string.Empty;
     public string RealizedPnlCurrency { get; set; } = string.Empty; public long OpenedAt { get; set; }

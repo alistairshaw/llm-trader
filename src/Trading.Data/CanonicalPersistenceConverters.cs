@@ -106,6 +106,12 @@ public static class CanonicalDecimal
     }
 }
 
+internal static class ExactDecimalText
+{
+    public static string ToProvider(decimal value) => CanonicalDecimal.Format(value);
+    public static decimal FromProvider(string value) => CanonicalDecimal.Parse(value);
+}
+
 public static class UtcUnixMilliseconds
 {
     public static long ToProvider(DateTimeOffset value)

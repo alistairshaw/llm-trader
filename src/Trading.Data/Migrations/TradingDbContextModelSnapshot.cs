@@ -406,11 +406,11 @@ namespace Trading.Data.Migrations
 
                     b.HasIndex("AssignedTradingBotId")
                         .IsUnique()
-                        .HasFilter("assigned_trading_bot_id IS NOT NULL");
+                        .HasFilter("assigned_trading_bot_id IS NOT NULL AND status = 'Active'");
 
                     b.HasIndex("BrokerAccountId")
                         .IsUnique()
-                        .HasFilter("broker_account_id IS NOT NULL");
+                        .HasFilter("broker_account_id IS NOT NULL AND status = 'Active'");
 
                     b.ToTable("portfolios", null, t =>
                         {
@@ -556,6 +556,11 @@ namespace Trading.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("quantity");
+
+                    b.Property<string>("QuantityUnit")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("quantity_unit");
 
                     b.Property<string>("RealizedPnlAmount")
                         .IsRequired()

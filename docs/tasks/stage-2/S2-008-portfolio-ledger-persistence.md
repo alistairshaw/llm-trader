@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-008
 title: Persist Portfolios, Positions, and ledger entries
 stage: 2
-status: ready
+status: done
 priority: 800
 type: feature
 depends_on: [S2-006, S2-007]
@@ -51,4 +51,13 @@ Follow [Domain Model — Portfolio](../../domain.md#5-portfolio) and [Data Model
 
 ## Completion Notes
 
-Not completed.
+Implemented explicit EF Core mappings and repositories for portfolios, positions, durable applied-source markers, and append-only portfolio ledger entries. Persistence reconstructs exact aggregate state, enforces expected versions, retains zero-quantity positions, applies active ownership and portfolio/instrument uniqueness indexes, makes duplicate source appends idempotent, and validates compensating corrections while preserving original entries. The initial migration and model snapshot were reconciled with the position quantity unit and active-only ownership indexes.
+
+Validation completed on 2026-08-19:
+
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=PortfolioPersistence"` — 5 passed.
+- `.\dev.ps1 build` — succeeded with 0 warnings and 0 errors.
+- `.\dev.ps1 test` — 357 passed; 20 Stage 2 acceptance scenarios intentionally remain skipped pending their implementation tasks.
+- `.\dev.ps1 format` — passed.
+
+No deviations, follow-up tasks, or ADRs.

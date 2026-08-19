@@ -24,6 +24,7 @@ public sealed class Position
     public DateTimeOffset OpenedAt { get; }
     public DateTimeOffset UpdatedAt { get; private set; }
     public DateTimeOffset? ClosedAt { get; private set; }
+    public IReadOnlyCollection<string> AppliedSources => _appliedSources;
 
     public bool ApplyChange(decimal quantityDelta, Money averageCost, Money realizedProfitLossDelta,
         PositionChangeSource sourceType, string sourceId, DateTimeOffset changedAt)
@@ -38,5 +39,22 @@ public sealed class Position
         if (nextQuantity < 0) throw new InvalidOperationException("Position quantity cannot be negative.");
         Quantity = nextQuantity; AverageCost = nextQuantity == 0 ? Money.Zero(AverageCost.Currency) : averageCost;
         RealizedProfitLoss += realizedProfitLossDelta; UpdatedAt = changedAt; ClosedAt = nextQuantity == 0 ? changedAt : null; Version++; _appliedSources.Add(source); return true;
+    }
+
+    public static Position Rehydrate(PositionId id, PortfolioId portfolioId, InstrumentId instrumentId, string quantityUnit,
+        decimal quantity, Money averageCost, Money realizedProfitLoss, long version, DateTimeOffset openedAt,
+        DateTimeOffset updatedAt, DateTimeOffset? closedAt, IEnumerable<string> appliedSources)
+    {
+        var position = new Position(id, portfolioId, instrumentId, quantityUnit, averageCost.Currency, openedAt)
+        {
+            Quantity = quantity,
+            AverageCost = averageCost,
+            RealizedProfitLoss = realizedProfitLoss,
+            Version = version,
+            UpdatedAt = PortfolioValidation.Utc(updatedAt, nameof(updatedAt)),
+            ClosedAt = closedAt is null ? null : PortfolioValidation.Utc(closedAt.Value, nameof(closedAt))
+        };
+        foreach (var source in appliedSources) position._appliedSources.Add(PortfolioValidation.Required(source, nameof(appliedSources)));
+        return position;
     }
 }

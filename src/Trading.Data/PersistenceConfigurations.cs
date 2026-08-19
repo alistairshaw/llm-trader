@@ -119,8 +119,8 @@ internal sealed class PortfolioConfiguration : EntityConfiguration<PortfolioEnti
         builder.Property(x => x.Name).IsRequired(); builder.Property(x => x.BaseCurrency).IsRequired();
         builder.Property(x => x.Status).IsRequired(); builder.Property(x => x.CapitalAllocationAmount).IsRequired().HasColumnType("TEXT");
         builder.Property(x => x.CashReservePolicyJson).IsRequired(); builder.Property(x => x.Version).IsConcurrencyToken();
-        builder.HasIndex(x => x.BrokerAccountId).IsUnique().HasFilter("broker_account_id IS NOT NULL");
-        builder.HasIndex(x => x.AssignedTradingBotId).IsUnique().HasFilter("assigned_trading_bot_id IS NOT NULL");
+        builder.HasIndex(x => x.BrokerAccountId).IsUnique().HasFilter("broker_account_id IS NOT NULL AND status = 'Active'");
+        builder.HasIndex(x => x.AssignedTradingBotId).IsUnique().HasFilter("assigned_trading_bot_id IS NOT NULL AND status = 'Active'");
         builder.HasOne<BrokerAccountEntity>().WithMany().HasForeignKey(x => x.BrokerAccountId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<TradingBotEntity>().WithMany().HasForeignKey(x => x.AssignedTradingBotId).OnDelete(DeleteBehavior.Restrict);
         builder.ToTable(t => t.HasCheckConstraint("ck_portfolios_status", "status IN ('Active', 'Paused', 'Closed')"));
@@ -133,6 +133,7 @@ internal sealed class PositionConfiguration : EntityConfiguration<PositionEntity
     protected override void ConfigureEntity(EntityTypeBuilder<PositionEntity> builder)
     {
         builder.Property(x => x.PortfolioId).IsRequired(); builder.Property(x => x.InstrumentId).IsRequired();
+        builder.Property(x => x.QuantityUnit).IsRequired();
         builder.Property(x => x.Quantity).IsRequired().HasColumnType("TEXT"); builder.Property(x => x.AverageCostAmount).IsRequired().HasColumnType("TEXT");
         builder.Property(x => x.AverageCostCurrency).IsRequired(); builder.Property(x => x.RealizedPnlAmount).IsRequired().HasColumnType("TEXT");
         builder.Property(x => x.RealizedPnlCurrency).IsRequired(); builder.Property(x => x.Version).IsConcurrencyToken();

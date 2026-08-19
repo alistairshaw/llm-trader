@@ -18,7 +18,7 @@ internal sealed class InitialMigrationTests
             ["trading_bots"] = ["id", "name", "status", "active_configuration_version_id", "requested_next_run_at", "accepted_next_run_at", "last_completed_run_id", "created_at", "updated_at", "version"],
             ["trading_bot_configuration_versions"] = ["id", "trading_bot_id", "version_number", "investment_mandate_json", "risk_policy_json", "tool_policy_json", "run_budget_json", "scheduling_policy_json", "execution_mode", "model_configuration_json", "prompt_version", "content_hash", "created_at", "activated_at", "superseded_at"],
             ["portfolios"] = ["id", "name", "base_currency", "broker_account_id", "assigned_trading_bot_id", "status", "capital_allocation_amount", "cash_reserve_policy_json", "created_at", "updated_at", "version"],
-            ["positions"] = ["id", "portfolio_id", "instrument_id", "quantity", "average_cost_amount", "average_cost_currency", "realized_pnl_amount", "realized_pnl_currency", "opened_at", "updated_at", "closed_at", "version"],
+            ["positions"] = ["id", "portfolio_id", "instrument_id", "quantity_unit", "quantity", "average_cost_amount", "average_cost_currency", "realized_pnl_amount", "realized_pnl_currency", "opened_at", "updated_at", "closed_at", "version"],
             ["position_applied_fills"] = ["position_id", "fill_id", "applied_at"],
             ["portfolio_ledger_entries"] = ["id", "portfolio_id", "entry_type", "amount", "currency", "instrument_id", "quantity", "effective_at", "recorded_at", "source_type", "source_id", "reverses_entry_id", "description", "metadata_json"],
             ["portfolio_decision_snapshots"] = ["id", "portfolio_id", "trading_bot_id", "configuration_version_id", "as_of", "reconciliation_status", "data_freshness_json", "snapshot_schema_version", "snapshot_json", "content_hash", "created_at"],
@@ -109,9 +109,8 @@ internal sealed class InitialMigrationTests
             foreignKeys.AddRange(await ForeignKeysAsync(connection, table));
         }
 
-        Assert.That(foreignKeys, Has.Count.EqualTo(17));
+        Assert.That(foreignKeys, Has.Count.EqualTo(16));
         Assert.That(foreignKeys.Select(key => key.DeleteAction), Is.All.EqualTo("RESTRICT"));
-        Assert.That(foreignKeys, Does.Contain(("position_applied_fills", "fills", "RESTRICT")));
         Assert.That(foreignKeys, Does.Contain(("portfolio_ledger_entries", "portfolio_ledger_entries", "RESTRICT")));
         Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history"), Does.EndWith("_InitialStage2Persistence"));
         Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("2"));

@@ -20,6 +20,7 @@ public sealed class Portfolio
         CapitalAllocation = capitalAllocation;
         CashReservePercentage = cashReservePercentage;
         CreatedAt = PortfolioValidation.Utc(createdAt, nameof(createdAt));
+        UpdatedAt = CreatedAt;
         Status = PortfolioStatus.Active;
     }
 
@@ -32,6 +33,8 @@ public sealed class Portfolio
     public Money CapitalAllocation { get; private set; }
     public decimal CashReservePercentage { get; }
     public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset UpdatedAt { get; private set; }
+    public long Version { get; private set; }
     public bool HasFinancialActivity => _hasFinancialActivity;
     public bool CanAcceptNewActivity => Status != PortfolioStatus.Closed;
 
@@ -77,6 +80,22 @@ public sealed class Portfolio
     public void Close() => Status = PortfolioStatus.Closed;
     public void AuthorizeDecisionSnapshot() { EnsureOpen(); if (AssignedTradingBotId is null) throw new InvalidOperationException("A Trading Bot must be assigned."); }
     private void EnsureOpen() { if (Status == PortfolioStatus.Closed) throw new InvalidOperationException("A closed portfolio rejects new activity."); }
+
+    public static Portfolio Rehydrate(PortfolioId id, string name, Currency baseCurrency, BrokerAccountId? brokerAccountId,
+        TradingBotId? assignedTradingBotId, PortfolioStatus status, Money capitalAllocation, decimal cashReservePercentage,
+        DateTimeOffset createdAt, DateTimeOffset updatedAt, long version, bool hasFinancialActivity)
+    {
+        var portfolio = new Portfolio(id, name, baseCurrency, capitalAllocation, cashReservePercentage, createdAt)
+        {
+            BrokerAccountId = brokerAccountId,
+            AssignedTradingBotId = assignedTradingBotId,
+            Status = status,
+            UpdatedAt = PortfolioValidation.Utc(updatedAt, nameof(updatedAt)),
+            Version = version,
+            _hasFinancialActivity = hasFinancialActivity
+        };
+        return portfolio;
+    }
 }
 
 internal static class PortfolioValidation

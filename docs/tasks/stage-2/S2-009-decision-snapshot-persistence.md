@@ -3,7 +3,7 @@ schema_version: 1
 id: S2-009
 title: Persist immutable Portfolio Decision Snapshots
 stage: 2
-status: planned
+status: ready
 priority: 790
 type: feature
 depends_on: [S2-008]
