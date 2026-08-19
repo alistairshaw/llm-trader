@@ -2,6 +2,7 @@ using Trading.Core.Bots;
 using Trading.Core.Brokers;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
+using Trading.Core.Policies;
 using Trading.Core.Portfolios;
 
 namespace Trading.Core.Persistence;
@@ -97,6 +98,39 @@ public interface IPortfolioDecisionSnapshotRepository
 {
     Task<PortfolioDecisionSnapshot?> GetAsync(PortfolioDecisionSnapshotId id, CancellationToken cancellationToken);
     Task<PersistenceWriteResult> PublishAsync(PortfolioDecisionSnapshot snapshot, CancellationToken cancellationToken);
+}
+
+public sealed record PendingBotRunTrigger(BotRunTriggerId Id, TradingBotId TradingBotId,
+    BotRunTriggerType Type, string Reason, DateTimeOffset OccurredAt, DateTimeOffset CreatedAt,
+    string? SourceType = null, string? SourceId = null);
+
+public interface IBotRunTriggerRepository
+{
+    Task<PersistenceWriteResult> AppendAsync(PendingBotRunTrigger trigger, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PendingBotRunTrigger>> GetPendingAsync(TradingBotId botId, CancellationToken cancellationToken);
+}
+
+public sealed record BotRunClaim(BotRunId RunId, TradingBotId TradingBotId,
+    TradingBotConfigurationVersionId ConfigurationVersionId, PortfolioDecisionSnapshotId PortfolioSnapshotId,
+    string LeaseOwner, DateTimeOffset StartedAt, DateTimeOffset LeaseExpiresAt, Usage InitialUsage,
+    int ModelTranscriptSchemaVersion, string ModelTranscriptJson, string InputRenderingVersion);
+
+public abstract record BotRunLeaseResult
+{
+    private BotRunLeaseResult() { }
+    public sealed record Acquired(BotRun Run) : BotRunLeaseResult;
+    public sealed record ActiveLeaseConflict(BotRunId? ActiveRunId) : BotRunLeaseResult;
+    public sealed record ConcurrencyConflict : BotRunLeaseResult;
+}
+
+public interface IBotRunRepository
+{
+    Task<BotRun?> GetAsync(BotRunId id, CancellationToken cancellationToken);
+    Task<BotRunLeaseResult> TryClaimAsync(BotRunClaim claim, CancellationToken cancellationToken);
+    Task<bool> RenewLeaseAsync(BotRunId runId, string leaseOwner, DateTimeOffset newExpiry,
+        long expectedVersion, CancellationToken cancellationToken);
+    Task<PersistenceWriteResult> SaveAsync(BotRun run, long expectedVersion, CancellationToken cancellationToken);
+    Task<IReadOnlyList<BotRunId>> GetExpiredLeaseRunIdsAsync(DateTimeOffset now, CancellationToken cancellationToken);
 }
 
 public sealed record PortfolioSummary(

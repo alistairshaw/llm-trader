@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 #pragma warning disable CA1861 // EF scaffolding emits inline metadata arrays required by MigrationBuilder.

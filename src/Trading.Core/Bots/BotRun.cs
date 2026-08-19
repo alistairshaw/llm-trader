@@ -42,12 +42,42 @@ public sealed class BotRun : IBotRunScheduler
     public Usage Usage { get; private set; }
     public IReadOnlyList<BotRunTrigger> Triggers => _triggers.AsReadOnly();
     public IReadOnlyList<ToolInvocation> ToolInvocations => _toolInvocations.AsReadOnly();
+    public int ModelTranscriptSchemaVersion { get; private set; } = 1;
+    public string ModelTranscriptJson { get; private set; } = "{}";
+    public string InputRenderingVersion { get; private set; } = "1";
+    public string? TerminalReason { get; private set; }
+    public long Version { get; private set; }
     public static IReadOnlySet<BotRunStatus> ActiveStatuses { get; } = new HashSet<BotRunStatus>
     {
         BotRunStatus.Pending, BotRunStatus.AcquiringLease, BotRunStatus.PreparingSnapshot,
         BotRunStatus.Reasoning, BotRunStatus.WaitingForTool,
     };
     public bool IsTerminal => !ActiveStatuses.Contains(Status);
+
+    public static BotRun Rehydrate(BotRunState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        var run = new BotRun(state.Id, state.TradingBotId, state.ConfigurationVersionId,
+            state.PortfolioSnapshotId, state.Usage)
+        {
+            Status = state.Status,
+            StartedAt = state.StartedAt,
+            CompletedAt = state.CompletedAt,
+            LeaseOwner = state.LeaseOwner,
+            LeaseExpiresAt = state.LeaseExpiresAt,
+            FinishResult = state.FinishResult,
+            AcceptedNextRunAt = state.AcceptedNextRunAt,
+            ModelTranscriptSchemaVersion = state.ModelTranscriptSchemaVersion,
+            ModelTranscriptJson = BotValidation.Required(state.ModelTranscriptJson, nameof(state.ModelTranscriptJson)),
+            InputRenderingVersion = BotValidation.Required(state.InputRenderingVersion, nameof(state.InputRenderingVersion)),
+            TerminalReason = state.TerminalReason,
+            Version = state.Version,
+        };
+        run._triggers.AddRange(state.Triggers.OrderBy(x => x.SequenceNumber).Select(x =>
+            new BotRunTrigger(x.Id, x.Type, x.Reason, x.OccurredAt, x.SourceId)));
+        run._toolInvocations.AddRange(state.ToolInvocations.OrderBy(x => x.SequenceNumber).Select(ToolInvocation.Rehydrate));
+        return run;
+    }
 
     public void AddTrigger(BotRunTriggerId id, BotRunTriggerType type, string reason, DateTimeOffset occurredAt, string? sourceId = null)
     {
@@ -145,6 +175,19 @@ public sealed class BotRun : IBotRunScheduler
     }
 }
 
+public sealed record BotRunState(BotRunId Id, TradingBotId TradingBotId,
+    TradingBotConfigurationVersionId ConfigurationVersionId, PortfolioDecisionSnapshotId PortfolioSnapshotId,
+    BotRunStatus Status, DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt, string? LeaseOwner,
+    DateTimeOffset? LeaseExpiresAt, FinishResult? FinishResult, DateTimeOffset? AcceptedNextRunAt,
+    Usage Usage, IReadOnlyList<BotRunTriggerState> Triggers, IReadOnlyList<ToolInvocationState> ToolInvocations,
+    int ModelTranscriptSchemaVersion, string ModelTranscriptJson, string InputRenderingVersion,
+    string? TerminalReason, long Version);
+public sealed record BotRunTriggerState(int SequenceNumber, BotRunTriggerId Id, BotRunTriggerType Type,
+    string Reason, DateTimeOffset OccurredAt, string? SourceId);
+public sealed record ToolInvocationState(int SequenceNumber, ToolInvocationId Id, string ToolName,
+    string Arguments, ToolInvocationStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt,
+    string? ResultReference, string? Error, Usage? Usage);
+
 public sealed record BotRunTrigger
 {
     internal BotRunTrigger(BotRunTriggerId id, BotRunTriggerType type, string reason, DateTimeOffset occurredAt, string? sourceId)
@@ -176,6 +219,19 @@ public sealed class ToolInvocation
     public string? ResultReference { get; private set; }
     public string? Error { get; private set; }
     public Usage? Usage { get; private set; }
+
+    internal static ToolInvocation Rehydrate(ToolInvocationState state)
+    {
+        var invocation = new ToolInvocation(state.Id, state.ToolName, state.Arguments, state.StartedAt)
+        {
+            Status = state.Status,
+            CompletedAt = state.CompletedAt,
+            ResultReference = state.ResultReference,
+            Error = state.Error,
+            Usage = state.Usage,
+        };
+        return invocation;
+    }
 
     public void Complete(string resultReference, Usage usage, DateTimeOffset completedAt) =>
         Finish(ToolInvocationStatus.Completed, resultReference, null, usage, completedAt);
