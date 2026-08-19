@@ -1,4 +1,4 @@
-@stage3 @acceptance @runtime @scheduling @cross-platform @ignore
+@stage3 @acceptance @runtime @scheduling @cross-platform
 Feature: Durable triggers and scheduling
   Trigger and schedule decisions remain deterministic and durable.
 

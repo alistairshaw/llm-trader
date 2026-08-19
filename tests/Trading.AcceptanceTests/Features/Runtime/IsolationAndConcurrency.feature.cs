@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Runtime
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Isolated multi-Bot supervision")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage3")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("runtime")]
@@ -34,8 +33,7 @@ namespace Trading.AcceptanceTests.Features.Runtime
                 "stage3",
                 "acceptance",
                 "runtime",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Runtime", "Isolated multi-Bot supervision", "  Different Trading Bots run concurrently without crossing ownership boundaries.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
         

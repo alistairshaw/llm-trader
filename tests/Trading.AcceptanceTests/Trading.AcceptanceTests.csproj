@@ -10,5 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trading.Core\Trading.Core.csproj" />
     <ProjectReference Include="..\..\src\Trading.Data\Trading.Data.csproj" />
+    <ProjectReference Include="..\..\src\Trading.Engine\Trading.Engine.csproj" />
+    <ProjectReference Include="..\..\src\Trading.Host\Trading.Host.csproj" />
   </ItemGroup>
 </Project>

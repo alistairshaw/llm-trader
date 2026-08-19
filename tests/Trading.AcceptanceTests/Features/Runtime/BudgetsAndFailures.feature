@@ -1,4 +1,4 @@
-@stage3 @acceptance @runtime @cross-platform @ignore
+@stage3 @acceptance @runtime @cross-platform
 Feature: Bounded scripted model execution
   Every model session terminates safely within its pinned run budget.
 

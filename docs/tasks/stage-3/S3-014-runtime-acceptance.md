@@ -3,11 +3,12 @@ schema_version: 1
 id: S3-014
 title: Complete Stage 3 runtime acceptance bindings
 stage: 3
-status: ready
+status: done
 priority: 680
 type: acceptance
 depends_on: [S3-013]
 labels: [bdd, integration, runtime]
+owner: Codex
 created: 2026-08-19
 updated: 2026-08-19
 ---
@@ -48,4 +49,18 @@ Use the Stage 3 features from `S3-001`, the completed Engine runtime, and [Test 
 
 ## Completion Notes
 
-Not completed.
+Implemented scenario-scoped Stage 3 runtime bindings backed by a fresh migrated file-based SQLite database, deterministic runtime identities and diagnostics, the production scheduling policy, and the simulated headless-host configuration boundary. Activated all six Runtime features and regenerated their checked-in Reqnroll sources. The 26 scenarios cover run lifecycle, trigger coalescing, tool authorization, pinned input, every Stage 3 budget, safe model failures, scheduling, recovery, isolation, concurrency, host startup/shutdown, and audit reconstruction without repository or EF calls from step definitions.
+
+Validation completed on 2026-08-19:
+
+- `./dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage3"` — 26 passed, 0 failed, 0 skipped.
+- `./dev.ps1 test -Project tests/Trading.Engine.Tests` — 52 passed, 0 failed, 0 skipped.
+- `./dev.ps1 test -Project tests/Trading.Data.Tests` — 105 passed, 0 failed, 0 skipped.
+- `./dev.ps1 test -Project tests/Trading.IntegrationTests` — 18 passed, 0 failed, 0 skipped.
+- `./dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage3Migrations"` — 5 passed, including migration/model-drift coverage.
+- `./dev.ps1 build` — succeeded in Release with 0 warnings and 0 errors.
+- `./dev.ps1 test` — 650 passed, 0 failed, 0 skipped.
+- `./dev.ps1 format` — passed with no formatting changes.
+- `git diff --check` — passed.
+
+No scope deviations, follow-up tasks, or ADR changes.

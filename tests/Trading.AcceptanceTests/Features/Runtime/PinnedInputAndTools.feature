@@ -1,4 +1,4 @@
-@stage3 @acceptance @runtime @cross-platform @ignore
+@stage3 @acceptance @runtime @cross-platform
 Feature: Pinned input and authorized tools
   A run sees immutable owned input and only tools allowed by its pinned policy.
 

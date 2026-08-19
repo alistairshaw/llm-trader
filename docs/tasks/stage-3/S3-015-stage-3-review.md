@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-015
 title: Complete Stage 3 acceptance and review
 stage: 3
-status: planned
+status: ready
 priority: 1000
 type: acceptance
 depends_on: [S3-001, S3-002, S3-003, S3-004, S3-005, S3-006, S3-007, S3-008, S3-009, S3-010, S3-011, S3-012, S3-013, S3-014]

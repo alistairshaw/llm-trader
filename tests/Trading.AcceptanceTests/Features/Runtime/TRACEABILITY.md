@@ -1,6 +1,6 @@
 # Stage 3 Acceptance-Criteria Traceability
 
-All Stage 3 scenarios are tagged `@stage3`, `@acceptance`, `@runtime`, and `@cross-platform`. Scheduling and recovery scenarios additionally use `@scheduling` and `@recovery`. The temporary `@ignore` tag marks implementation-dependent scenarios pending until `S3-014` binds and activates them. Scenario names are unique within Stage 3.
+All Stage 3 scenarios are tagged `@stage3`, `@acceptance`, `@runtime`, and `@cross-platform`. Scheduling and recovery scenarios additionally use `@scheduling` and `@recovery`. All scenarios are active and bound through the scenario-scoped Stage 3 runtime driver. Scenario names are unique within Stage 3.
 
 Run the discoverable Stage 3 specifications with:
 

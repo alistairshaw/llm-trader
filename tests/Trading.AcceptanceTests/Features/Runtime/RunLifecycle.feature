@@ -1,4 +1,4 @@
-@stage3 @acceptance @runtime @cross-platform @ignore
+@stage3 @acceptance @runtime @cross-platform
 Feature: Trading Bot run lifecycle
   Trading Bot runs use durable triggers and one exclusive per-Bot lease.
 

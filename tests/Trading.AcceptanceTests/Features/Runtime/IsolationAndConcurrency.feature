@@ -1,4 +1,4 @@
-@stage3 @acceptance @runtime @cross-platform @ignore
+@stage3 @acceptance @runtime @cross-platform
 Feature: Isolated multi-Bot supervision
   Different Trading Bots run concurrently without crossing ownership boundaries.
 

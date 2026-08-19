@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Runtime
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Trading Bot run lifecycle")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage3")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("runtime")]
@@ -34,8 +33,7 @@ namespace Trading.AcceptanceTests.Features.Runtime
                 "stage3",
                 "acceptance",
                 "runtime",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Runtime", "Trading Bot run lifecycle", "  Trading Bot runs use durable triggers and one exclusive per-Bot lease.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
         

@@ -1,4 +1,4 @@
-@stage3 @acceptance @runtime @recovery @cross-platform @ignore
+@stage3 @acceptance @runtime @recovery @cross-platform
 Feature: Runtime recovery and headless hosting
   Runtime state survives process boundaries and controlled shutdown.
 
