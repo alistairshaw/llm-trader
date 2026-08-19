@@ -42,7 +42,7 @@ public sealed class BotRunTriggerRepository(TradingDbContext dbContext) : IBotRu
         ArgumentNullException.ThrowIfNull(botId);
         var entities = await dbContext.BotRunTriggers.AsNoTracking()
             .Where(x => x.TradingBotId == botId.ToString() && x.ConsumedByRunId == null)
-            .OrderBy(x => x.OccurredAt).ThenBy(x => x.CreatedAt).ThenBy(x => x.Id)
+            .OrderBy(x => x.OccurredAt).ThenBy(x => x.Id)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
         return entities.Select(ToPending).ToArray();
     }
@@ -87,8 +87,9 @@ public sealed class BotRunRepository(TradingDbContext dbContext) : IBotRunReposi
                 x => x.Id == claim.PortfolioSnapshotId.ToString() && x.TradingBotId == botId && x.ConfigurationVersionId == claim.ConfigurationVersionId.ToString(), cancellationToken).ConfigureAwait(false);
             if (!configurationValid || !snapshotValid) throw new InvalidOperationException("The pinned configuration and snapshot must belong to the claimed bot.");
 
-            var pending = await dbContext.BotRunTriggers.Where(x => x.TradingBotId == botId && x.ConsumedByRunId == null)
-                .OrderBy(x => x.OccurredAt).ThenBy(x => x.CreatedAt).ThenBy(x => x.Id).ToListAsync(cancellationToken).ConfigureAwait(false);
+            var startedAt = UtcUnixMilliseconds.ToProvider(claim.StartedAt);
+            var pending = await dbContext.BotRunTriggers.Where(x => x.TradingBotId == botId && x.ConsumedByRunId == null && x.OccurredAt <= startedAt)
+                .OrderBy(x => x.OccurredAt).ThenBy(x => x.Id).ToListAsync(cancellationToken).ConfigureAwait(false);
             var entity = new BotRunEntity
             {
                 Id = claim.RunId.ToString(),

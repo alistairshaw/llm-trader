@@ -3,11 +3,12 @@ schema_version: 1
 id: S3-006
 title: Implement durable trigger ingestion and coalescing
 stage: 3
-status: ready
+status: done
 priority: 840
 type: feature
 depends_on: [S3-004, S3-005]
 labels: [triggers, scheduler, coalescing]
+owner: s3_006
 created: 2026-08-19
 updated: 2026-08-19
 ---
@@ -50,4 +51,27 @@ Follow [Trading Bot — Triggers and Scheduling](../../trading-bot.md#5-triggers
 
 ## Completion Notes
 
-Not completed.
+Implemented application services for Stage 3-authorized manual, baseline, accepted-next-run,
+portfolio-event, and risk/reconciliation trigger ingestion. Ingestion persists before returning an
+accepted result and treats duplicate Bot/source-type/source-identity tuples as idempotent duplicate
+acknowledgements. Added lifecycle, active-configuration, due-time, and pending-trigger rechecks
+immediately before claim.
+
+Updated transactional run claiming to consume only eligible triggers and to order coalesced reasons
+by occurrence time and trigger identity. Triggers arriving during an active run remain pending and
+form at most one follow-up run under the existing conditional active-run constraint.
+
+Added real-SQLite integration coverage using fixed clocks and explicit async start gates for restart
+durability, sourced deduplication, due-time eligibility, active-run arrivals, deterministic reason
+retention, claim rollback, paused-Bot retention, same-Bot exclusion, and different-Bot independence.
+
+Validation:
+
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=TriggerCoalescing"` — passed, 4 tests.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=BotRuntimePersistence"` — passed, 5 tests.
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests` — passed, 5 tests.
+- `.\dev.ps1 build` — passed with zero warnings and zero errors.
+- `.\dev.ps1 test` — passed, 570 tests; 26 intentionally deferred Stage 3 acceptance scenarios skipped.
+- `.\dev.ps1 format` — passed.
+
+Deviations: none. Follow-up tasks: none. ADRs: none.
