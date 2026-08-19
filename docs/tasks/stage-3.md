@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S3-015` — Complete Stage 3 acceptance and review.
+No task is locally actionable. `S3-015` awaits exact-revision hosted Windows, Linux, and security validation.
 
 ## Ordered Backlog
 
@@ -26,7 +26,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S3-012`](stage-3/S3-012-recovery-shutdown.md) | Implement lease recovery and graceful shutdown | Done | 720 | `S3-011` |
 | [`S3-013`](stage-3/S3-013-headless-host.md) | Run configured bots through the headless host | Done | 700 | `S3-012` |
 | [`S3-014`](stage-3/S3-014-runtime-acceptance.md) | Complete Stage 3 runtime acceptance bindings | Done | 680 | `S3-013` |
-| [`S3-015`](stage-3/S3-015-stage-3-review.md) | Complete Stage 3 acceptance and review | Ready | 1000 | `S3-001`–`S3-014` |
+| [`S3-015`](stage-3/S3-015-stage-3-review.md) | Complete Stage 3 acceptance and review | Review | 1000 | `S3-001`–`S3-014` |
 
 ## Stage Exit Gate
 
@@ -41,4 +41,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Not started.
+Local review passed on 2026-08-19 with all 650 tests and all 26 Stage 3 scenarios passing with zero failures or skips. Exact-revision hosted Windows, Linux, and security validation remains before Stage 3 can close.
