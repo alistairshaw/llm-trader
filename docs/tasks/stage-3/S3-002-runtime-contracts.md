@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-002
 title: Define runtime, model, and tool contracts
 stage: 3
-status: planned
+status: ready
 priority: 930
 type: feature
 depends_on: [S3-001]

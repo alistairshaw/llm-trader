@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-001
 title: Write Stage 3 executable Gherkin specifications
 stage: 3
-status: ready
+status: done
 priority: 1000
 type: acceptance
 depends_on: []
@@ -47,4 +47,12 @@ Use [Implementation Plan — Stage 3](../../implementation-plan.md#5-stage-3-mul
 
 ## Completion Notes
 
-Not completed.
+Completed on 2026-08-19.
+
+- Added six Stage 3 feature files containing 26 unique deterministic Reqnroll test cases: 20 scenarios plus six examples covering every run-budget dimension.
+- Specified manual and scheduled runs, exclusive leases, cross-Bot concurrency and capacity, durable trigger coalescing, pinned configuration and snapshot input, `GetPortfolioSnapshot` and `Finish`, tool authorization, all six budgets, malformed responses, missing `Finish`, requested and baseline scheduling, restart recovery, ownership isolation, audit reconstruction, headless startup, and graceful shutdown.
+- Tagged every scenario for Stage 3 acceptance, runtime, and cross-platform execution; scheduling and recovery scenarios also carry their respective tags. Applied the acceptance harness's temporary `@ignore` tag so implementation-dependent tests remain explicitly pending until `S3-014` binds and activates them.
+- Added a traceability matrix mapping every Stage 3 acceptance criterion and explicit runtime deliverable to named scenarios and implementing tasks, including the documented Stage 3 filter command.
+- Generated and committed the Reqnroll/NUnit test cases for discoverability.
+- Validation: `.\dev.ps1 build` passed with 0 warnings and 0 errors. `.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage3"` discovered 26 tests and reported all 26 explicitly skipped/pending, with 0 failures.
+- Deviations: none. Follow-up tasks: none. ADRs: none.

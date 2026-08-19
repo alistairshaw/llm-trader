@@ -6,14 +6,14 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S3-001` — Write Stage 3 executable Gherkin specifications.
+`S3-002` — Define runtime, model, and tool contracts.
 
 ## Ordered Backlog
 
 | ID | Task | Status | Priority | Depends on |
 | --- | --- | --- | ---: | --- |
-| [`S3-001`](stage-3/S3-001-write-stage-3-gherkin.md) | Write Stage 3 executable Gherkin specifications | Ready | 1000 | — |
-| [`S3-002`](stage-3/S3-002-runtime-contracts.md) | Define runtime, model, and tool contracts | Planned | 930 | `S3-001` |
+| [`S3-001`](stage-3/S3-001-write-stage-3-gherkin.md) | Write Stage 3 executable Gherkin specifications | Done | 1000 | — |
+| [`S3-002`](stage-3/S3-002-runtime-contracts.md) | Define runtime, model, and tool contracts | Ready | 930 | `S3-001` |
 | [`S3-003`](stage-3/S3-003-runtime-migration.md) | Add Bot Run persistence migration | Planned | 910 | `S3-002` |
 | [`S3-004`](stage-3/S3-004-run-trigger-repositories.md) | Implement durable Bot Run, trigger, and lease repositories | Planned | 890 | `S3-003` |
 | [`S3-005`](stage-3/S3-005-scheduling-policy.md) | Implement deterministic scheduling policy | Planned | 860 | `S3-002` |
