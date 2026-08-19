@@ -1,3 +1,3 @@
-using System;
+using Trading.Host;
 
-Console.WriteLine("Trading.Host bootstrap is ready.");
+await HostBootstrap.RunAsync(args);

@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S3-013` — Run configured bots through the headless host.
+`S3-014` — Complete Stage 3 runtime acceptance bindings.
 
 ## Ordered Backlog
 
@@ -24,8 +24,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S3-010`](stage-3/S3-010-run-orchestration.md) | Orchestrate one complete Trading Bot run | Done | 760 | `S3-006`, `S3-009` |
 | [`S3-011`](stage-3/S3-011-multi-bot-supervisor.md) | Implement isolated multi-bot supervision | Done | 740 | `S3-010` |
 | [`S3-012`](stage-3/S3-012-recovery-shutdown.md) | Implement lease recovery and graceful shutdown | Done | 720 | `S3-011` |
-| [`S3-013`](stage-3/S3-013-headless-host.md) | Run configured bots through the headless host | Ready | 700 | `S3-012` |
-| [`S3-014`](stage-3/S3-014-runtime-acceptance.md) | Complete Stage 3 runtime acceptance bindings | Planned | 680 | `S3-013` |
+| [`S3-013`](stage-3/S3-013-headless-host.md) | Run configured bots through the headless host | Done | 700 | `S3-012` |
+| [`S3-014`](stage-3/S3-014-runtime-acceptance.md) | Complete Stage 3 runtime acceptance bindings | Ready | 680 | `S3-013` |
 | [`S3-015`](stage-3/S3-015-stage-3-review.md) | Complete Stage 3 acceptance and review | Planned | 1000 | `S3-001`–`S3-014` |
 
 ## Stage Exit Gate

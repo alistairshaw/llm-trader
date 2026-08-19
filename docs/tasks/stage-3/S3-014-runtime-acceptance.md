@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-014
 title: Complete Stage 3 runtime acceptance bindings
 stage: 3
-status: planned
+status: ready
 priority: 680
 type: acceptance
 depends_on: [S3-013]

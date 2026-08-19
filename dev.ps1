@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0, Mandatory = $true)]
-    [ValidateSet('restore', 'build', 'format', 'test', 'solution-list', 'reference-list', 'verify-build-conventions')]
+    [ValidateSet('restore', 'build', 'format', 'test', 'run', 'solution-list', 'reference-list', 'verify-build-conventions')]
     [string] $Command,
 
     [string] $Project,
@@ -33,6 +33,10 @@ switch ($Command) {
         if ($Filter) {
             $toolArguments += @('--filter', $Filter)
         }
+    }
+    'run' {
+        & docker compose run --build --rm --no-deps -e Trading__SmokeMode=true trading-host
+        exit $LASTEXITCODE
     }
     'solution-list' {
         $toolArguments = @('dotnet', 'sln', 'TradingBot.sln', 'list')

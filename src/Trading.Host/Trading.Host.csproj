@@ -6,5 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Trading.Engine\Trading.Engine.csproj" />
+    <ProjectReference Include="..\Trading.Data\Trading.Data.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 </Project>
