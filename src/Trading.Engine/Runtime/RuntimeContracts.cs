@@ -23,6 +23,11 @@ public interface IModelSession
     Task SubmitToolResultAsync(ModelToolResult result, CancellationToken cancellationToken);
 }
 
+public interface IModelLoop
+{
+    Task<RunResult> ExecuteAsync(DeterministicBotRunInput input, IModelSession session, CancellationToken cancellationToken);
+}
+
 public static class StageThreeTools
 {
     public const string GetPortfolioSnapshot = nameof(GetPortfolioSnapshot);

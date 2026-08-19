@@ -121,6 +121,22 @@ public sealed class BotRun : IBotRunScheduler
     public void WaitForTool() { RequireStatus(BotRunStatus.Reasoning); Status = BotRunStatus.WaitingForTool; }
     public void ResumeReasoning() { RequireStatus(BotRunStatus.WaitingForTool); Status = BotRunStatus.Reasoning; }
 
+    public void RecordModelProgress(int transcriptSchemaVersion, string canonicalTranscript, Usage usage)
+    {
+        if (Status is not BotRunStatus.Reasoning and not BotRunStatus.WaitingForTool && !IsTerminal)
+            throw new InvalidOperationException("Model progress can be recorded only during reasoning or tool dispatch.");
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(transcriptSchemaVersion);
+        ModelTranscriptSchemaVersion = transcriptSchemaVersion;
+        ModelTranscriptJson = BotValidation.Required(canonicalTranscript, nameof(canonicalTranscript));
+        Usage = usage ?? throw new ArgumentNullException(nameof(usage));
+    }
+
+    public void RecordTerminalReason(string reason)
+    {
+        EnsureNotTerminal();
+        TerminalReason = BotValidation.Required(reason, nameof(reason));
+    }
+
     public void RenewLease(string leaseOwner, DateTimeOffset leaseExpiresAt)
     {
         if (Status is not BotRunStatus.PreparingSnapshot and not BotRunStatus.Reasoning and not BotRunStatus.WaitingForTool)

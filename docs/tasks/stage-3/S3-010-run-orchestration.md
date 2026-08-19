@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-010
 title: Orchestrate one complete Trading Bot run
 stage: 3
-status: planned
+status: ready
 priority: 760
 type: feature
 depends_on: [S3-006, S3-009]

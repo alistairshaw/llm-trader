@@ -3,7 +3,7 @@ schema_version: 1
 id: S3-009
 title: Implement the scripted bounded model loop
 stage: 3
-status: ready
+status: done
 priority: 780
 type: feature
 depends_on: [S3-008]
@@ -49,4 +49,14 @@ Implement [Trading Bot — Run Budgets and Failure Policy](../../trading-bot.md#
 
 ## Completion Notes
 
-Not completed.
+Implemented the provider-neutral `BoundedModelLoop` and deterministic `ScriptedLlmClient`. The loop records a schema-versioned canonical assistant/tool transcript, accumulates model and tool usage, enforces wall-clock, token, cost, tool, research, proposal, iteration, and consecutive-failure limits before further actions, and produces stable safe terminal results for missing `Finish`, malformed/provider responses, cancellation, timeout, and budget exhaustion. Script steps support ordered request expectations, responses, usage, delays, provider faults, and cancellation without network access. `BotRun` now exposes guarded model-progress and terminal-reason audit mutations that are persisted by the existing repository mapping.
+
+Validation completed on 2026-08-19:
+
+- `./dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=ScriptedModelLoop"` — passed 16, failed 0, skipped 0.
+- `./dev.ps1 test -Project tests/Trading.Engine.Tests` — passed 45, failed 0, skipped 0.
+- `./dev.ps1 build` — succeeded in Release with 0 warnings and 0 errors.
+- `./dev.ps1 test` — passed 604, failed 0, skipped 26 pending Stage 3 acceptance scenarios.
+- `./dev.ps1 format` — passed with no formatter or analyzer findings.
+
+No persistence schema changed, so an EF migration drift check was not applicable. No scope deviations, follow-up tasks, or ADR changes.
