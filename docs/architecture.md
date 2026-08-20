@@ -350,6 +350,10 @@ Key rules:
   arguments against the Bot Run's pinned identity, configuration, Portfolio snapshot, evidence
   visibility, tool policy, and budgets; it has no approval, reservation, order, or broker port.
 - The deterministic engine converts an approved proposal into an order intent only after validation against fresh state.
+- A proposal pins its configuration's execution mode when recorded. `ResearchOnly` proposals use the same
+  identity, evidence, persistence, and structured guardrail evaluation pipeline, then terminate with the stable
+  `proposal_governance.research_only` disposition; their application graph cannot approve, reserve, convert, or
+  submit them, even if the Bot is later promoted to another mode.
 - The risk pipeline is mandatory and cannot be bypassed by a strategy or UI command.
 - A bot-requested next-run time is advisory and is bounded by platform scheduling policy and a baseline schedule.
 - Each run has deterministic wall-clock, token, cost, tool-call, research-request, and proposal limits.

@@ -222,7 +222,10 @@ The reservation service derives exact required capital from the structured actio
 
 ## 11. Execution Modes
 
-- `ResearchOnly`: store proposals; never submit orders.
+- `ResearchOnly`: store and fully evaluate proposals, pin the mode from the proposal's configuration version,
+  and terminate even passing evaluations with the stable `proposal_governance.research_only` non-executable
+  disposition. Approval, reservation, order conversion, and broker submission are unavailable; a later Bot
+  configuration change does not change the authority of an existing proposal.
 - `HumanApproval`: validated proposals await explicit approval and are revalidated afterward.
 - `PaperTrading`: approved proposals go to a simulated broker.
 - `LiveTrading`: approved proposals may reach a configured live broker.

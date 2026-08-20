@@ -25,6 +25,8 @@ public sealed class HumanProposalDecisionService(
         var proposal = await proposals.GetAsync(command.ProposalId, cancellationToken).ConfigureAwait(false);
         if (proposal is null)
             return Result(HumanProposalDecisionOutcome.NotFound, "proposal_decision.not_found");
+        if (proposal.ExecutionMode == Trading.Core.Bots.ExecutionMode.ResearchOnly)
+            return Result(HumanProposalDecisionOutcome.Unauthorized, ProposalGovernanceCodes.ResearchOnly);
 
         var identical = proposal.ApprovalHistory.SingleOrDefault(x =>
             x.Actor == command.Actor && x.Decision == command.Decision && x.Reason == Normalize(command.Reason) &&

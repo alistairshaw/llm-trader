@@ -135,6 +135,9 @@ If documents disagree, identify the disagreement explicitly and resolve it in do
 - Keep Trading Bot proposal access limited to the versioned `ProposeTrade` and `ProposeTargetAllocation` tools. Validate canonical exact-decimal arguments and authorize pinned run, configuration, Portfolio snapshot, evidence visibility, policy, and budgets before idempotently recording a proposal; never expose approval, reservation, order, broker, or policy-mutation authority through these tools.
 - Persist each guardrail evaluation and its proposal disposition atomically. Bind its canonical hash to the exact proposal content, configuration, fresh snapshot, and ordered policy versions; exact retries reuse the artifact, while revalidation appends and never overwrites an earlier rule result.
 - Reserve capital only through the atomic reservation repository. Recheck approved content, Portfolio/Bot ownership, fresh snapshot identity and hash, exact currency, and every unexpired same-Portfolio reservation inside the serializable transaction; expose contention and insufficient capital as stable outcomes.
+- Pin execution mode on every recorded proposal. A `ResearchOnly` proposal must still receive its complete
+  structured guardrail evaluation, then terminate with `proposal_governance.research_only`; reject approval,
+  reservation, order conversion, and broker submission from that pinned mode regardless of later configuration.
 - Never add a test that contacts a real LLM, the public web, live market data, or a live broker to the default or commit-gating suite.
 - Never submit a live-money order during development or automated validation.
 

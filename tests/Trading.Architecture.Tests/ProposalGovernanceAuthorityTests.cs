@@ -49,6 +49,21 @@ public sealed class ProposalGovernanceAuthorityTests
         });
     }
 
+    [Test, Category("ResearchOnlyProposal")]
+    public void ResearchOnlyGovernanceServicesHaveNoOrderOrBrokerAuthority()
+    {
+        Type[] researchOnlyPath =
+        [
+            typeof(ProposalToolDispatcher), typeof(GuardrailEvaluationService),
+            typeof(HumanProposalDecisionService), typeof(CapitalReservationService)
+        ];
+        var dependencies = researchOnlyPath.SelectMany(TypeGraph).Select(x => x.FullName ?? x.Name).Distinct();
+        Assert.That(dependencies, Has.None.Matches<string>(name =>
+            name.Contains("Trading.Brokers", StringComparison.Ordinal) ||
+            name.Contains("SubmitOrder", StringComparison.Ordinal) ||
+            name.Contains("IOrderRepository", StringComparison.Ordinal)));
+    }
+
     private static IEnumerable<Type> TypeGraph(Type root)
     {
         yield return root;

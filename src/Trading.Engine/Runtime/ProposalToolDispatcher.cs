@@ -89,7 +89,7 @@ public sealed class ProposalToolDispatcher(
             var arguments = Parse(call);
             code = await AuthorizeAsync(context, run, configuration, arguments, token).ConfigureAwait(false);
             if (code is not null) return await FailAsync(run, invocation, expected + 1, call, code, auditToken).ConfigureAwait(false);
-            var proposal = await CreateAsync(run, arguments, token).ConfigureAwait(false);
+            var proposal = await CreateAsync(run, configuration.ExecutionMode, arguments, token).ConfigureAwait(false);
             var result = await proposals.RecordAsync(proposal, $"{run.Id}:{call.InvocationId}", token).ConfigureAwait(false);
             if (result is ProposalRecordResult.IdempotencyConflict)
                 return await FailAsync(run, invocation, expected + 1, call, ProposalToolCodes.IdempotencyConflict, auditToken).ConfigureAwait(false);
@@ -150,7 +150,8 @@ public sealed class ProposalToolDispatcher(
         return null;
     }
 
-    private async Task<TradeProposal> CreateAsync(BotRun run, ProposalArgs args, CancellationToken token)
+    private async Task<TradeProposal> CreateAsync(BotRun run, ExecutionMode executionMode, ProposalArgs args,
+        CancellationToken token)
     {
         var evidence = new List<ReportEvidenceReference>();
         foreach (var item in args.Evidence)
@@ -167,7 +168,8 @@ public sealed class ProposalToolDispatcher(
         }
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(args.Canonical))).ToLowerInvariant();
         return new(args.ProposalId, run.TradingBotId, run.Id, args.PortfolioId, run.ConfigurationVersionId, run.PortfolioSnapshotId,
-            args.InstrumentId, args.Action, args.Rationale, new(1, hash), hypothesis, evidence, clock.UtcNow, args.ValidUntil);
+            args.InstrumentId, args.Action, args.Rationale, new(1, hash), hypothesis, evidence, clock.UtcNow,
+            args.ValidUntil, executionMode);
     }
 
     private static ProposalArgs Parse(ModelToolCall call)

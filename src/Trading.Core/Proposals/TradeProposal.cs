@@ -1,3 +1,4 @@
+using Trading.Core.Bots;
 using Trading.Core.Identifiers;
 
 namespace Trading.Core.Proposals;
@@ -11,7 +12,8 @@ public sealed class TradeProposal
         TradingBotConfigurationVersionId configurationVersionId, PortfolioDecisionSnapshotId portfolioSnapshotId,
         InstrumentId instrumentId, RequestedAction requestedAction, string rationale, ProposalContentVersion contentVersion,
         HypothesisEvidenceReference? hypothesisEvidence, IEnumerable<ReportEvidenceReference> reportEvidence,
-        DateTimeOffset createdAt, DateTimeOffset validUntil)
+        DateTimeOffset createdAt, DateTimeOffset validUntil,
+        ExecutionMode executionMode = ExecutionMode.HumanApproval)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));
         TradingBotId = tradingBotId ?? throw new ArgumentNullException(nameof(tradingBotId));
@@ -35,12 +37,15 @@ public sealed class TradeProposal
         CreatedAt = ProposalValidation.Utc(createdAt, nameof(createdAt));
         ValidUntil = ProposalValidation.Utc(validUntil, nameof(validUntil));
         if (validUntil <= createdAt) throw new ArgumentException("Proposal validity must end after creation.", nameof(validUntil));
+        if (!Enum.IsDefined(executionMode)) throw new ArgumentOutOfRangeException(nameof(executionMode));
+        ExecutionMode = executionMode;
         Status = ProposalStatus.Recorded;
     }
     private TradeProposal(TradeProposalState state)
         : this(state.Id, state.TradingBotId, state.BotRunId, state.PortfolioId, state.ConfigurationVersionId,
             state.PortfolioSnapshotId, state.InstrumentId, state.RequestedAction, state.Rationale,
-            state.ContentVersion, state.HypothesisEvidence, state.ReportEvidence, state.CreatedAt, state.ValidUntil)
+            state.ContentVersion, state.HypothesisEvidence, state.ReportEvidence, state.CreatedAt, state.ValidUntil,
+            state.ExecutionMode)
     {
         Status = state.Status; Version = state.Version;
         _evaluations.AddRange(state.Evaluations.OrderBy(x => x.Sequence).Select(GuardrailEvaluation.Rehydrate));
@@ -70,6 +75,7 @@ public sealed class TradeProposal
     public HypothesisEvidenceReference? HypothesisEvidence { get; }
     public IReadOnlyList<ReportEvidenceReference> ReportEvidence { get; }
     public ProposalStatus Status { get; private set; }
+    public ExecutionMode ExecutionMode { get; }
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset ValidUntil { get; }
     public long Version { get; private set; }
@@ -132,6 +138,12 @@ public sealed class TradeProposal
     public void CompleteValidation(GuardrailOutcome outcome, DateTimeOffset at)
     {
         if (outcome == GuardrailOutcome.Failed)
+        {
+            if (Status != ProposalStatus.Validating) throw new InvalidOperationException("Proposal is not validating.");
+            EnsureNotExpired(at); Status = ProposalStatus.Rejected; Version++;
+            return;
+        }
+        if (ExecutionMode == ExecutionMode.ResearchOnly)
         {
             if (Status != ProposalStatus.Validating) throw new InvalidOperationException("Proposal is not validating.");
             EnsureNotExpired(at); Status = ProposalStatus.Rejected; Version++;
@@ -235,6 +247,8 @@ public sealed class TradeProposal
     public bool ConvertToOrder(DateTimeOffset at)
     {
         ProposalValidation.Utc(at, nameof(at));
+        if (ExecutionMode == ExecutionMode.ResearchOnly)
+            throw new InvalidOperationException(ProposalGovernanceCodes.ResearchOnly);
         if (Status == ProposalStatus.ConvertedToOrder) return false;
         if (Status != ProposalStatus.Approved) throw new InvalidOperationException("Only an approved proposal can become an order.");
         EnsureNotExpired(at); Status = ProposalStatus.ConvertedToOrder; Version++; return true;
@@ -265,4 +279,5 @@ public sealed record TradeProposalState(TradeProposalId Id, TradingBotId Trading
     string Rationale, ProposalContentVersion ContentVersion, HypothesisEvidenceReference? HypothesisEvidence,
     IReadOnlyList<ReportEvidenceReference> ReportEvidence, ProposalStatus Status, DateTimeOffset CreatedAt,
     DateTimeOffset ValidUntil, long Version, IReadOnlyList<GuardrailEvaluationState> Evaluations,
-    IReadOnlyList<ProposalApprovalState> Approvals);
+    IReadOnlyList<ProposalApprovalState> Approvals,
+    ExecutionMode ExecutionMode = ExecutionMode.HumanApproval);

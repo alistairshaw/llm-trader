@@ -1,3 +1,4 @@
+using Trading.Core.Bots;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
 

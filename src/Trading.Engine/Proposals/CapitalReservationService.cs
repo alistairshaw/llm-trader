@@ -17,6 +17,8 @@ public sealed class CapitalReservationService(
         var proposal = await proposals.GetAsync(command.ProposalId, cancellationToken).ConfigureAwait(false);
         if (proposal is null)
             return Reject("capital_reservation.proposal_not_found");
+        if (proposal.ExecutionMode == Trading.Core.Bots.ExecutionMode.ResearchOnly)
+            return Reject(ProposalGovernanceCodes.ResearchOnly);
         if (proposal.PortfolioId != command.PortfolioId)
             return Reject(ProposalGovernanceCodes.PortfolioNotAssigned);
         if (proposal.Status != ProposalStatus.Approved)

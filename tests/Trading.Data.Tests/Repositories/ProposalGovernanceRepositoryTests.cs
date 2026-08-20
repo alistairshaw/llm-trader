@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Trading.Core.Bots;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
 using Trading.Core.Persistence;
@@ -70,6 +71,39 @@ internal sealed class ProposalGovernanceRepositoryTests
             Assert.That(loaded.ReportEvidence.Single().ContentHash, Is.EqualTo(Hash('a')));
             Assert.That(loaded.RequestedAction, Is.EqualTo(proposal.RequestedAction));
             Assert.That(database.Context.ChangeTracker.Entries(), Is.Empty);
+        });
+    }
+
+    [Test, Category("ResearchOnlyProposal")]
+    public async Task ResearchOnlyModeAndNonExecutableEvaluationDispositionRoundTrip()
+    {
+        await using var database = await CreateAsync();
+        var repository = new TradeProposalRepository(database.Context);
+        var proposal = new TradeProposal(TradeProposalId.New(), TradingBotId.Parse(Bot), BotRunId.Parse(Run),
+            PortfolioId.Parse(Portfolio), TradingBotConfigurationVersionId.Parse(Configuration),
+            PortfolioDecisionSnapshotId.Parse(Snapshot), InstrumentId.Parse(Instrument),
+            new TargetAllocationAction(new Percentage(25)), "research allocation", new(1, Hash('p')), null, [],
+            Now, Now.AddHours(1), ExecutionMode.ResearchOnly);
+        await repository.RecordAsync(proposal, "research-only", default);
+        proposal.StartValidation(Now.AddMinutes(1));
+        proposal.RecordEvaluation(GuardrailEvaluationId.New(),
+            [new GuardrailPolicyReference(GuardrailPolicyLevel.Platform, "platform", "v1")],
+            GuardrailOutcome.Passed, [new GuardrailRuleResult("all", GuardrailOutcome.Passed, "passed")],
+            Now.AddMinutes(1), new(proposal.PortfolioSnapshotId, Now, Hash('s')), Hash('e'),
+            ProposalGovernanceCodes.ResearchOnly);
+        proposal.CompleteValidation(GuardrailOutcome.Passed, Now.AddMinutes(1));
+        Assert.That(await repository.SaveAsync(proposal, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        database.Context.ChangeTracker.Clear();
+
+        var loaded = (await repository.GetAsync(proposal.Id, default))!;
+        Assert.Multiple(() =>
+        {
+            Assert.That(loaded.ExecutionMode, Is.EqualTo(ExecutionMode.ResearchOnly));
+            Assert.That(loaded.Status, Is.EqualTo(ProposalStatus.Rejected));
+            Assert.That(loaded.RequestedAction, Is.TypeOf<TargetAllocationAction>());
+            Assert.That(loaded.GuardrailEvaluations.Single().DiagnosticCode,
+                Is.EqualTo(ProposalGovernanceCodes.ResearchOnly));
+            Assert.That(loaded.ApprovalHistory, Is.Empty);
         });
     }
 

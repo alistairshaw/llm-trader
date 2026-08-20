@@ -52,6 +52,7 @@ public sealed class ProposalToolDispatcherTests
             Assert.That(result.Authorization.Reason, Is.EqualTo(ProposalToolCodes.Recorded));
             Assert.That(recorded.Id, Is.EqualTo(proposalId)); Assert.That(recorded.TradingBotId, Is.EqualTo(fixture.Run.TradingBotId));
             Assert.That(recorded.BotRunId, Is.EqualTo(fixture.Run.Id)); Assert.That(recorded.PortfolioSnapshotId, Is.EqualTo(fixture.Run.PortfolioSnapshotId));
+            Assert.That(recorded.ExecutionMode, Is.EqualTo(ExecutionMode.ResearchOnly));
             Assert.That(recorded.Status, Is.EqualTo(ProposalStatus.Recorded)); Assert.That(recorded.ApprovalHistory, Is.Empty);
             Assert.That(fixture.Run.Usage.Proposals, Is.EqualTo(1));
         });
@@ -61,7 +62,7 @@ public sealed class ProposalToolDispatcherTests
     public async Task TargetAllocationRecordsExactDecimalWithoutConstructingTrades()
     {
         var fixture = Fixture.Create(); var result = await fixture.Dispatch(StageFiveTradingTools.ProposeTargetAllocation, fixture.AllocationJson(25m));
-        Assert.Multiple(() => { Assert.That(result.Result.Outcome, Is.EqualTo(ToolExecutionOutcome.Succeeded)); Assert.That(((TargetAllocationAction)fixture.Proposals.Values.Single().RequestedAction).TargetPercentage.Value, Is.EqualTo(25m)); });
+        Assert.Multiple(() => { Assert.That(result.Result.Outcome, Is.EqualTo(ToolExecutionOutcome.Succeeded)); Assert.That(((TargetAllocationAction)fixture.Proposals.Values.Single().RequestedAction).TargetPercentage.Value, Is.EqualTo(25m)); Assert.That(fixture.Proposals.Values.Single().ExecutionMode, Is.EqualTo(ExecutionMode.ResearchOnly)); });
     }
 
     [TestCase("0", ProposalToolCodes.InvalidQuantity)]
