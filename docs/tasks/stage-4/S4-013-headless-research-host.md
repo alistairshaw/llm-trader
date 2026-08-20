@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-013
 title: Run shared Research through the headless host
 stage: 4
-status: ready
+status: done
 priority: 710
 type: infrastructure
 depends_on: [S4-011, S4-012]
@@ -47,4 +47,13 @@ Use [Architecture — Trading.Host](../../architecture.md#66-tradinghost), [Rese
 
 ## Completion Notes
 
-Pending implementation.
+Completed 2026-08-20.
+
+- Composed the Research repositories, fixture source, scripted model factory, authorized catalog and artifact adapters, tool dispatcher, publisher, request service, bounded supervisor, recovery, and durable notification delivery in `Trading.Host`.
+- Added startup-validated fixture-only Research options for capacity, batches, budgets, recovery age, fixture version, and model/prompt/tool/report-schema pins. Migrations and Trading/Research recovery complete before readiness and work claims.
+- Extended deterministic smoke mode with two fixed ResearchOnly Bot identities. It proves shared request coalescing, a private report access denial, a refresh published as immutable version 2, durable subscription-trigger delivery, and recoverable graceful shutdown without credentials or network access.
+- Corrected refresh metadata reconstruction to deserialize the canonical persistence envelope; the prior direct JSON-root read lost the predecessor ID and incorrectly started a new report series.
+- Updated README, architecture, Research Bot, local-development, and agent workflow documentation. Refreshed affected NuGet lock files after adding the Host-to-Research project reference.
+- Validation: `.\dev.ps1 build` passed with zero warnings and errors; ResearchHost integration tests passed 3/3; Research tests 55/55, Engine 57/57, Data 130/130, Integration 23/23, and Architecture 15/15 passed; the full suite passed 765 with the 39 intentionally pending S4-014 acceptance scenarios and no failures; Stage 4 migration/drift tests passed 5/5; `.\dev.ps1 format` passed.
+- `.\dev.ps1 run` passed in Linux Docker. Smoke evidence included Bot A `01J5QH8M000000000000000101`, Bot B `01J5QH8M000000000000000201`, shared report `01J5QH8M000000000000000501`, shared hash `c288b6f376c0e943d867dfa236417ecbd3b5dbc0c7362869a27d73c491d3db83`, `First=Queued`, `Second=Subscribed`, `PrivateDenied=True`, refreshed report `01J5QH8M000000000000000503`, `LatestVersion=2`, `InitialRuns=1`, and `Shutdown=recoverable`.
+- No deviations, follow-up tasks, or ADRs.

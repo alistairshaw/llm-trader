@@ -162,9 +162,9 @@ Non-secret defaults belong in versioned application settings. Developer override
 
 The exact secret-provider strategy for Windows and Linux remains an architecture decision for the integration stages. Until then, no local workflow should require a real provider credential.
 
-## Planned Repository Support
+## Repository Support
 
-The solution-initialization work should add:
+The repository provides:
 
 - A multi-stage `Dockerfile` with development/build/test and headless-runtime targets.
 - A Docker Compose file with a default headless service and reusable build/test invocation.
@@ -172,10 +172,10 @@ The solution-initialization work should add:
 - A repository-root `dev.ps1` wrapper, including commands to publish WPF in Docker and launch it on Windows.
 - An ignored, host-visible artifacts directory for the self-contained Windows publish output.
 - Named volumes for NuGet cache and local application data.
-- Health checks and graceful shutdown behavior for the headless service when those endpoints exist.
+- Readiness sequencing and graceful shutdown behavior for the headless service.
 - Windows and Linux CI commands that call the same underlying restore, build, format, and test operations used locally.
 
-The container setup should be added alongside the solution skeleton rather than maintained as a separate, later environment.
+`./dev.ps1 run` selects `Trading:SmokeMode=true`. The smoke host deletes only its dedicated `/data/smoke.db`, applies migrations, completes Trading and Research recovery before claiming work, and uses only the embedded `approved-fixtures` v1 source plus the scripted model client. Research defaults are bound under `Research`; startup rejects non-fixture providers, non-scripted models, unknown fixture versions, missing version pins, and capacity or budget values outside their documented safe bounds. The smoke output includes fixed Bot identities, shared request decisions, exact report IDs and hashes, private-access denial, refresh version, notification effects, and the shutdown result.
 
 ## Definition of a Working Local Environment
 

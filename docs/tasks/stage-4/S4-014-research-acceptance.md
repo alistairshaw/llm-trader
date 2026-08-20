@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-014
 title: Complete Stage 4 Research acceptance bindings
 stage: 4
-status: planned
+status: ready
 priority: 690
 type: acceptance
 depends_on: [S4-013]

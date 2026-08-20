@@ -545,7 +545,8 @@
         "dependencies": {
           "Microsoft.Extensions.Hosting": "[10.0.1, )",
           "Trading.Data": "[1.0.0, )",
-          "Trading.Engine": "[1.0.0, )"
+          "Trading.Engine": "[1.0.0, )",
+          "Trading.Research": "[1.0.0, )"
         }
       },
       "trading.research": {

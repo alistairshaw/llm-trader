@@ -316,7 +316,7 @@ Trading.Engine
       └── Trading.Brokers
 ```
 
-The headless process responds to `Ctrl+C`, `SIGINT`, and `SIGTERM` through Generic Host lifetime handling. It must stop accepting new work, cancel active loops, persist checkpoints, and close broker connections cleanly.
+The headless process responds to `Ctrl+C`, `SIGINT`, and `SIGTERM` through Generic Host lifetime handling. It composes the Trading and shared Research supervisors. Database migrations and both recovery services complete before readiness or new claims; shutdown stops accepting work, propagates cancellation, and leaves active attempts, notifications, and Trading runs recoverable.
 
 ## 9. Core Execution Flow
 

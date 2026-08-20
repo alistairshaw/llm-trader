@@ -392,6 +392,11 @@ internal static class ResearchPersistenceMapper
     }
     private sealed record FreshnessDto(DateTimeOffset SourceAsOf, DateTimeOffset RetrievedAt, long MaximumAgeTicks);
     internal static string? RestrictedGroup(string requestJson) => CanonicalJsonSerializer.Deserialize<RequestDto>(Schema, requestJson).RestrictedGroup;
+    internal static ResearchReportId? RefreshReportId(string requestJson)
+    {
+        var value = CanonicalJsonSerializer.Deserialize<RequestDto>(Schema, requestJson).RefreshReportId;
+        return value is null ? null : ResearchReportId.Parse(value);
+    }
     private sealed record RequestDto(bool HasPrivateInputs, string[] AuthorizedSubscribers, string? RestrictedGroup,
         string? CanonicalSpecification = null, string? RefreshReportId = null);
     private sealed record AttemptDto(string Provider, string ModelId, string ModelVersion, long WallClockTicks, long TokenLimit, decimal CostLimit, string Currency, int ToolCallLimit, int DocumentLimit, long RetainedByteLimit, int FailureLimit, DateTimeOffset CreatedAt);

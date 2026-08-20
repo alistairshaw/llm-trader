@@ -1,5 +1,4 @@
 using System.Data;
-using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Trading.Core.Identifiers;
@@ -42,7 +41,7 @@ public sealed class ResearchOrchestrationRepository(TradingDbContext db) : IRese
             var subscriptions = await db.ResearchSubscriptions.AsNoTracking().Where(x => x.ResearchRequestId == entity.Id)
                 .OrderBy(x => x.SubscribedAt).ThenBy(x => x.Id).ToListAsync(token).ConfigureAwait(false);
             var request = ResearchPersistenceMapper.ToDomain(entity, subscriptions);
-            var refresh = ReadRefresh(entity.RequestJson);
+            var refresh = ResearchPersistenceMapper.RefreshReportId(entity.RequestJson);
             await transaction.CommitAsync(token).ConfigureAwait(false); await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
             return new(request, started, entity.Version, 1, number, refresh);
         }
@@ -94,6 +93,4 @@ public sealed class ResearchOrchestrationRepository(TradingDbContext db) : IRese
 
     private async Task<T> RollbackAsync<T>(T value, Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction)
     { await transaction.RollbackAsync(CancellationToken.None).ConfigureAwait(false); await db.Database.UseTransactionAsync(null, CancellationToken.None).ConfigureAwait(false); db.ChangeTracker.Clear(); return value; }
-    private static ResearchReportId? ReadRefresh(string json)
-    { using var document = JsonDocument.Parse(json); return document.RootElement.TryGetProperty("refreshReportId", out var value) && value.ValueKind == JsonValueKind.String ? ResearchReportId.Parse(value.GetString()!) : null; }
 }
