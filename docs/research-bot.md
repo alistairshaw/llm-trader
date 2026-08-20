@@ -135,6 +135,8 @@ Initial research tools may include:
 
 Tool results include provider, source URI or stable identifier, publication/effective time where known, retrieval time, content hash, and relevant licensing/retention metadata.
 
+The initial approved-source implementation is the `approved-fixtures` provider. Its `v1` manifest and UTF-8 payloads are embedded in `Trading.Research`, verified by exact byte count and lowercase SHA-256 hash when loaded, filtered by publication and effective time, and returned in stable source-identifier order. It performs no network access. Unsupported providers, missing or oversized documents, deterministic provider failures, and cancellation use stable `research.source.*` result codes.
+
 ## 8. Untrusted Content and Prompt Injection
 
 All external content is untrusted evidence. Pages, documents, filings, and prior report text may contain instructions that conflict with the Research Bot's task or attempt to invoke tools.
@@ -147,6 +149,8 @@ Controls include:
 - Secrets, credentials, local configuration, and unrelated files are unavailable to the bot.
 - Source provenance is retained independently of model-generated citations.
 - Output links and citations are validated against sources actually retrieved during the run.
+
+The source boundary wraps every retrieved fixture payload between `<<<BEGIN_UNTRUSTED_RESEARCH_EVIDENCE>>>` and `<<<END_UNTRUSTED_RESEARCH_EVIDENCE>>>`. These delimiters label evidence for later prompt construction; deterministic authorization remains outside the payload and cannot be changed by its text.
 
 ## 9. Report Contract
 

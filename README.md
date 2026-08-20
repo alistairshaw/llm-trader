@@ -6,7 +6,7 @@ The platform is designed around a strict authority boundary: language models may
 
 ## Current Status
 
-Stages 1–3 are complete: the repository has its domain and persistence foundation plus a bounded, recoverable multi-Bot runtime and cross-platform headless host. Stage 4 is adding the shared Research Bot, its immutable report catalog, authorization boundaries, and fixture-backed deterministic workflows. Production behavior is added incrementally through the repository-native tasks.
+Stages 1–3 are complete: the repository has its domain and persistence foundation plus a bounded, recoverable multi-Bot runtime and cross-platform headless host. Stage 4 is adding the shared Research Bot, its immutable report catalog, authorization boundaries, and fixture-backed deterministic workflows. Approved-source development uses embedded, versioned fixtures whose byte counts and SHA-256 hashes are verified against a manifest; retrieved text is always wrapped as untrusted evidence. Production behavior is added incrementally through the repository-native tasks.
 
 The current backlog and next eligible task are recorded in [Stage 4 Backlog](docs/tasks/stage-4.md).
 

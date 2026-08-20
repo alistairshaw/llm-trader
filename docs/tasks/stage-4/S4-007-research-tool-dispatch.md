@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-007
 title: Implement authorized Research tool dispatch
 stage: 4
-status: planned
+status: ready
 priority: 830
 type: feature
 depends_on: [S4-005, S4-006]

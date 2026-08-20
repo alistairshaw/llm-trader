@@ -1,0 +1,33 @@
+{
+  "version": "v1",
+  "documents": [
+    {
+      "resource": "acme-filing.txt",
+      "sourceType": "regulatory-filing",
+      "sourceIdentifier": "fixture://regulatory/acme/2025-annual",
+      "title": "ACME 2025 Annual Filing",
+      "publisher": "Example Securities Authority",
+      "publishedAt": "2026-02-20T14:00:00Z",
+      "effectiveAt": "2025-12-31T23:59:59Z",
+      "license": "Fixture-Test-Only-v1",
+      "retentionPolicy": "retain-with-referenced-report",
+      "byteCount": 191,
+      "contentHash": "72b4dda5698410b4c4072537bfe87f598315ad2316a3ff6c164ea1d8227d8925",
+      "keywords": ["ACME", "revenue", "cash flow", "risks"]
+    },
+    {
+      "resource": "adversarial-note.txt",
+      "sourceType": "publisher-commentary",
+      "sourceIdentifier": "fixture://publisher/acme/adversarial-note",
+      "title": "ACME Quarterly Commentary",
+      "publisher": "Fixture Financial News",
+      "publishedAt": "2026-05-01T12:00:00Z",
+      "effectiveAt": "2026-03-31T23:59:59Z",
+      "license": "Fixture-Test-Only-v1",
+      "retentionPolicy": "retain-30-days-unless-cited",
+      "byteCount": 353,
+      "contentHash": "6971988110c2a2de00d087250409fed127fa969dea103d8730c6bca918058313",
+      "keywords": ["ACME", "margin", "demand", "commentary"]
+    }
+  ]
+}

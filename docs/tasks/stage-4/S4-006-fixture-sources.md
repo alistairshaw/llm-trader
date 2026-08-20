@@ -3,13 +3,14 @@ schema_version: 1
 id: S4-006
 title: Implement fixture-backed approved research sources
 stage: 4
-status: ready
+status: done
 priority: 850
 type: feature
 depends_on: [S4-002]
 labels: [research, fixtures, provenance, security]
 created: 2026-08-20
 updated: 2026-08-20
+owner: s4_006
 ---
 
 # S4-006: Implement Fixture-Backed Approved Research Sources
@@ -47,4 +48,9 @@ Use [Research Bot — Tooling](../../research-bot.md#7-tooling), [Untrusted Cont
 
 ## Completion Notes
 
-Pending implementation.
+- Added the embedded `approved-fixtures` v1 manifest and deterministic regulatory-filing and adversarial publisher-commentary payloads. Loading verifies exact UTF-8 byte counts and lowercase SHA-256 hashes before the provider can serve either payload.
+- Added deterministic, point-in-time search and bounded document retrieval with complete provenance, stable ordering, injected retrieval time, explicit untrusted-evidence delimiters, and stable result codes for unsupported providers, missing and oversized documents, provider failure, and cancellation.
+- Extended Research source results with source type, title, publisher, effective time, and byte count. Added source-contract and prompt-injection boundary coverage that performs no network request.
+- Updated `README.md`, `docs/research-bot.md`, and `docs/test-plan.md` with the implemented fixture, provenance, trust-boundary, and test-double contracts.
+- Validation: `./dev.ps1 build` passed with 0 warnings and 0 errors; focused `FixtureSources|PromptInjection` tests passed 6/6; Research tests passed 20/20; architecture tests passed 15/15; the full suite passed 711 with 39 intentionally pending Stage 4 acceptance scenarios and 0 failures; `./dev.ps1 format` passed; `git diff --check` passed.
+- Deviations: none. Follow-up tasks: none. ADRs: none.

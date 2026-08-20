@@ -19,6 +19,11 @@ public static class ResearchResultCodes
     public const string BudgetExceeded = "research.terminal.budget_exceeded";
     public const string Cancelled = "research.terminal.cancelled";
     public const string ProviderFailed = "research.terminal.provider_failed";
+    public const string SourceNotFound = "research.source.not_found";
+    public const string SourceUnsupported = "research.source.unsupported";
+    public const string SourceOversized = "research.source.oversized";
+    public const string SourceProviderFailed = "research.source.provider_failed";
+    public const string SourceCancelled = "research.source.cancelled";
     public const string RecoveryExpiredLease = "research.recovery.expired_lease";
 }
 
@@ -33,7 +38,8 @@ public interface IResearchIdentifierSource { ResearchRequestId NewRequestId(); R
 
 public sealed record ResearchSourceQuery(string Provider, string Query, DateTimeOffset AsOf);
 public sealed record ResearchSourceResult(string Provider, string SourceIdentifier, DateTimeOffset? PublishedAt, DateTimeOffset RetrievedAt,
-    string ContentHash, string UntrustedContent, string? License, string? RetentionPolicy);
+    string ContentHash, string UntrustedContent, string? License, string? RetentionPolicy, string SourceType = "document",
+    string Title = "", string Publisher = "", DateTimeOffset? EffectiveAt = null, int ByteCount = 0);
 public interface IResearchSource { string Provider { get; } Task<IReadOnlyList<ResearchSourceResult>> QueryAsync(ResearchSourceQuery query, CancellationToken cancellationToken); }
 
 public sealed record ResearchToolResult(string CallId, bool Succeeded, string ResultCode, string CanonicalPayload, ResearchUsage Usage);

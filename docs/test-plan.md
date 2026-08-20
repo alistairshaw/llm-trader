@@ -151,6 +151,7 @@ Prefer small hand-written fakes for stable domain ports:
 - `StubMarketDataProvider`
 - `SimulatedBroker`
 - `InMemoryResearchSource`
+- `FixtureResearchSource` with an embedded versioned manifest, exact UTF-8 byte counts, SHA-256 hashes, and adversarial untrusted-content payloads
 - `CapturingOutboxDispatcher`
 
 Mocks are appropriate for verifying a narrow collaboration, but tests should prefer assertions on returned state, domain events, and durable outcomes over large invocation scripts.
