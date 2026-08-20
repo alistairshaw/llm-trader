@@ -209,6 +209,7 @@ Core workflows:
 - Manual and scheduled Bot Run creation.
 - Broker reconciliation followed by decision-snapshot generation.
 - Bounded scripted LLM tool loop.
+- Table-driven Research model-loop tests exercise each wall-clock, token, cost, total/per-tool call, document, retained-byte, consecutive-failure, transcript, cancellation, malformed-response, missing-draft, and missing-finish boundary without network access or wall-clock waits.
 - Research request, deduplication, report publication, and subscriber notification.
 - Proposal recording followed by hierarchical validation.
 - Human approval and capital reservation.

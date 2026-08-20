@@ -73,6 +73,7 @@ public sealed class ResearchToolDispatcherTests
     }
 
     [Test]
+    [Category("Budgets")]
     public async Task PinnedPolicyPerToolTotalDocumentAndByteBudgetsAreEnforced()
     {
         var harness = new Harness(fetchLimit: 1, documentLimit: 1, retainedBytes: 191, toolLimit: 3);

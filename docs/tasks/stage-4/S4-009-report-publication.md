@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-009
 title: Validate and publish immutable Research reports
 stage: 4
-status: planned
+status: ready
 priority: 790
 type: feature
 depends_on: [S4-008]

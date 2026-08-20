@@ -211,6 +211,8 @@ Freshness policy may depend on report type:
 
 Each run has deterministic limits for time, tokens, cost, tool calls, documents retrieved, bytes retained, and consecutive failures. Platform-wide concurrency and provider quotas protect other Research and Trading Bot runs.
 
+The bounded model loop checks cumulative limits before model and tool work and again after usage is returned. It accepts a publication candidate only after one successful `PublishReportDraft` and one subsequent successful `FinishResearch`. Missing or malformed responses, missing draft or finish, provider faults, cancellation, timeouts, repeated tool failures, and exhausted limits terminate with stable result codes and no publication candidate. Material tool effects are one-shot within an attempt, and the retained canonical transcript is byte-bounded.
+
 The Research Bot may recommend a refresh time, but deterministic policy schedules refreshes. A recommendation cannot create an unbounded retry loop or exceed platform budgets.
 
 ## 13. Auditability

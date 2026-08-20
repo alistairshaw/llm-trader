@@ -25,6 +25,11 @@ public static class ResearchResultCodes
     public const string SourceProviderFailed = "research.source.provider_failed";
     public const string SourceCancelled = "research.source.cancelled";
     public const string RecoveryExpiredLease = "research.recovery.expired_lease";
+    public const string MissingDraft = "research.terminal.missing_draft";
+    public const string MissingFinish = "research.terminal.missing_finish";
+    public const string MalformedModelResponse = "research.terminal.malformed_model_response";
+    public const string ConsecutiveFailuresExceeded = "research.terminal.consecutive_failures_exceeded";
+    public const string PersistenceConflict = "research.terminal.persistence_conflict";
 }
 
 public sealed record ResearchToolDefinition(string Name, int SchemaVersion, string CanonicalJsonSchema);
@@ -34,6 +39,7 @@ public sealed record ResearchModelRequest(ResearchRunAttemptId AttemptId, string
 
 public interface IResearchModelSession { Task<ResearchAssistantResponse> CompleteAsync(ResearchModelRequest request, CancellationToken cancellationToken); }
 public interface IResearchClock { DateTimeOffset UtcNow { get; } }
+public interface IResearchDelay { Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken); }
 public interface IResearchIdentifierSource { ResearchRequestId NewRequestId(); ResearchRunAttemptId NewAttemptId(); ResearchReportId NewReportId(); ResearchSubscriptionId NewSubscriptionId(); }
 
 public sealed record ResearchSourceQuery(string Provider, string Query, DateTimeOffset AsOf);
