@@ -128,6 +128,7 @@ If documents disagree, identify the disagreement explicitly and resolve it in do
 - Preserve bot, portfolio, account, report-visibility, and artifact isolation.
 - Make material transitions explicit, idempotent, auditable, and recoverable.
 - Keep durable tool-audit arguments, results, usage, timings, and errors canonical and bounded; redact diagnostic detail rather than persisting secrets or unbounded provider payloads.
+- Canonicalize and hash Research report content before persistence; validate every citation against provenance retrieved by the same run, and publish report, provenance, request completion, and refresh supersession in one transaction.
 - Never add a test that contacts a real LLM, the public web, live market data, or a live broker to the default or commit-gating suite.
 - Never submit a live-money order during development or automated validation.
 

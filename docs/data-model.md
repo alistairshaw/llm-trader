@@ -426,6 +426,11 @@ The same append-only shape as `bot_tool_invocations`, keyed to `research_run_id`
 | `generator_metadata_json` | Required provenance |
 
 Unique `(report_series_id, version_number)` and `(report_series_id, content_hash)`. Published content is immutable.
+The publication repository uses an immediate SQLite transaction to allocate the next series version, insert the
+report and ordered source rows, mark the preceding latest version superseded, and complete the Research request.
+The run identity is the idempotency boundary: retrying a completed publication returns the report already linked
+to that run. Repository writes reject changes or deletion of published report facts and provenance; only the
+`Published` to `Superseded` disposition made by refresh publication is permitted.
 
 ### 8.6 `research_report_sources`
 

@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S4-009` — Validate and publish immutable Research reports.
+`S4-010` — Deliver durable subscriber notifications and Bot triggers.
 
 ## Ordered Backlog
 
@@ -20,8 +20,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S4-006`](stage-4/S4-006-fixture-sources.md) | Implement fixture-backed approved research sources | Done | 850 | `S4-002` |
 | [`S4-007`](stage-4/S4-007-research-tool-dispatch.md) | Implement authorized Research tool dispatch | Done | 830 | `S4-005`, `S4-006` |
 | [`S4-008`](stage-4/S4-008-scripted-research-loop.md) | Implement the scripted bounded Research loop | Done | 810 | `S4-007` |
-| [`S4-009`](stage-4/S4-009-report-publication.md) | Validate and publish immutable Research reports | Ready | 790 | `S4-008` |
-| [`S4-010`](stage-4/S4-010-subscriber-notifications.md) | Deliver durable subscriber notifications and Bot triggers | Planned | 770 | `S4-009` |
+| [`S4-009`](stage-4/S4-009-report-publication.md) | Validate and publish immutable Research reports | Done | 790 | `S4-008` |
+| [`S4-010`](stage-4/S4-010-subscriber-notifications.md) | Deliver durable subscriber notifications and Bot triggers | Ready | 770 | `S4-009` |
 | [`S4-011`](stage-4/S4-011-research-orchestration.md) | Orchestrate Research runs and restart recovery | Planned | 750 | `S4-010` |
 | [`S4-012`](stage-4/S4-012-trading-bot-research-tools.md) | Add Trading Bot Research tools and report consumption | Planned | 730 | `S4-005`, `S4-010` |
 | [`S4-013`](stage-4/S4-013-headless-research-host.md) | Run shared Research through the headless host | Planned | 710 | `S4-011`, `S4-012` |

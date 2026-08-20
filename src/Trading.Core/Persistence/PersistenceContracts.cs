@@ -192,7 +192,13 @@ public interface IResearchReportRepository
 {
     Task<ResearchReport?> GetAsync(ResearchReportId id, CancellationToken token);
     Task<PersistenceWriteResult> PublishAsync(ResearchReport report, ResearchRunAttemptId attemptId, CancellationToken token);
+    Task<ResearchReport> PublishCompletedAsync(ResearchPublication publication, CancellationToken token);
 }
+
+public sealed record ResearchPublication(ResearchReportId ReportId, ResearchRequest Request,
+    ResearchRunAttempt Attempt, string CanonicalContent, string ContentHash, ReportProvenance Provenance,
+    DateTimeOffset DataCutoff, DateTimeOffset GeneratedAt, DateTimeOffset ExpiresAt, ResearchReportId? RefreshReportId,
+    GeneratorMetadata GeneratorMetadata);
 
 public sealed record ResearchReportSearch(ResearchPrincipal Principal, DateTimeOffset At, string? Subject = null,
     string? NormalizedResearchKey = null, bool FreshOnly = false, int Offset = 0, int Size = 50);

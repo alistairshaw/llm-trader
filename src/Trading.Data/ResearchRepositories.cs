@@ -232,6 +232,64 @@ public sealed class ResearchReportRepository(TradingDbContext db) : IResearchRep
         foreach (var source in report.Provenance.Sources) db.ResearchReportSources.Add(ResearchPersistenceMapper.ToEntity(report.Id, ++sequence, source));
         return await RepositoryWrites.SaveAsync(db, "research_report", token).ConfigureAwait(false);
     }
+
+    public async Task<ResearchReport> PublishCompletedAsync(ResearchPublication publication, CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(publication);
+        await db.Database.OpenConnectionAsync(token).ConfigureAwait(false);
+        await using var transaction = ((SqliteConnection)db.Database.GetDbConnection())
+            .BeginTransaction(IsolationLevel.Serializable, deferred: false);
+        await db.Database.UseTransactionAsync(transaction, token).ConfigureAwait(false);
+        try
+        {
+            var attemptId = publication.Attempt.Id.ToString();
+            var existing = await db.ResearchReports.AsNoTracking().SingleOrDefaultAsync(x => x.ResearchRunId == attemptId, token).ConfigureAwait(false);
+            if (existing is not null)
+            {
+                await transaction.CommitAsync(token).ConfigureAwait(false);
+                await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
+                return (await ResearchPersistenceMapper.LoadReportAsync(db, existing.Id, token).ConfigureAwait(false))!;
+            }
+            var requestEntity = await db.ResearchRequests.SingleAsync(x => x.Id == publication.Request.Id.ToString(), token).ConfigureAwait(false);
+            var attemptEntity = await db.ResearchRuns.AsNoTracking().SingleAsync(x => x.Id == attemptId, token).ConfigureAwait(false);
+            if (requestEntity.Status != "Running" || attemptEntity.Status != "Completed" || attemptEntity.TerminalReason != "research.success")
+                throw new InvalidOperationException("Publication requires a running request and successfully completed attempt.");
+
+            ResearchReportEntity? predecessor = null;
+            string seriesId; int version;
+            if (publication.RefreshReportId is null)
+            {
+                seriesId = publication.ReportId.ToString(); version = 1;
+            }
+            else
+            {
+                predecessor = await db.ResearchReports.SingleAsync(x => x.Id == publication.RefreshReportId.ToString(), token).ConfigureAwait(false);
+                seriesId = predecessor.ReportSeriesId;
+                var latest = await db.ResearchReports.Where(x => x.ReportSeriesId == seriesId).OrderByDescending(x => x.VersionNumber).FirstAsync(token).ConfigureAwait(false);
+                predecessor = latest; version = latest.VersionNumber + 1;
+            }
+            var report = new ResearchReport(publication.ReportId, seriesId, version, publication.Request.Id,
+                publication.Request.Subject, publication.Request.Question, publication.Request.Visibility,
+                publication.DataCutoff,
+                publication.GeneratedAt, publication.ExpiresAt, predecessor is null ? null : ResearchReportId.Parse(predecessor.Id),
+                publication.CanonicalContent, publication.ContentHash, publication.Provenance, publication.GeneratorMetadata);
+            db.ResearchReports.Add(ResearchPersistenceMapper.ToEntity(report, publication.Attempt.Id));
+            var sequence = 0; foreach (var source in report.Provenance.Sources)
+                db.ResearchReportSources.Add(ResearchPersistenceMapper.ToEntity(report.Id, ++sequence, source));
+            if (predecessor is not null) predecessor.Status = "Superseded";
+            requestEntity.Status = "Completed"; requestEntity.CompletedAt = UtcUnixMilliseconds.ToProvider(publication.GeneratedAt);
+            requestEntity.ResultReportId = report.Id.ToString(); requestEntity.Version++;
+            await db.SaveChangesAsync(token).ConfigureAwait(false);
+            await transaction.CommitAsync(token).ConfigureAwait(false);
+            await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
+            return report;
+        }
+        catch
+        {
+            try { await transaction.RollbackAsync(token).ConfigureAwait(false); } catch (InvalidOperationException) { }
+            await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false); db.ChangeTracker.Clear(); throw;
+        }
+    }
 }
 
 public sealed class ResearchReportCatalogQueries(TradingDbContext db) : IResearchReportCatalogQueries

@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-009
 title: Validate and publish immutable Research reports
 stage: 4
-status: ready
+status: done
 priority: 790
 type: feature
 depends_on: [S4-008]
@@ -49,4 +49,22 @@ Use [Research Bot — Report Contract](../../research-bot.md#9-report-contract),
 
 ## Completion Notes
 
-Pending implementation.
+- Added schema-1 deterministic validation and ordinal canonical JSON serialization for every required report
+  section, same-attempt citation provenance, UTC cutoff/refresh times, successful run completion, and pinned
+  generator/schema versions. The golden canonical content SHA-256 is
+  `865cd67dc02e5b7a3b13ce38f6619748de58b6ee56cfcdfecc59f773a7393c9b`.
+- Added the publication service and atomic SQLite publication operation. A single immediate transaction allocates
+  series versions, writes the report and ordered provenance, completes the request, and supersedes the preceding
+  latest version. Run retries return the existing report; concurrent refreshes allocate distinct monotonic
+  versions. EF writes reject published fact/provenance mutation and deletion outside the allowed supersession.
+- Invalid and partial drafts remain in the pre-existing bounded artifact/tool audit path and never reach the
+  publication operation. Exact historical catalog reads retain their original content and hash after supersession.
+- Updated `README.md`, `AGENTS.md`, the Research Bot contract, and the data model with the implemented canonical
+  schema, citation, transaction, immutability, and idempotency rules.
+- Validation: `\.\dev.ps1 build` passed with zero warnings and errors; focused Research publication tests passed
+  4/4; focused Data report tests passed 3/3; focused Integration publication tests passed 1/1; all Research tests
+  passed 52/52; all Data tests passed 123/123; architecture tests passed 15/15; the complete local suite passed
+  747 with 39 intentionally pending Stage 4 acceptance scenarios; Stage 4 migration/model-drift tests passed 5/5;
+  and `\.\dev.ps1 format` passed.
+- Deviations: no migration was required because S4-003 already supplied the report, provenance, series-version,
+  hash, and supersession schema and constraints. No follow-up tasks or ADRs were created.

@@ -158,6 +158,15 @@ The source boundary wraps every retrieved fixture payload between `<<<BEGIN_UNTR
 
 ## 9. Report Contract
 
+Report schema `1` is canonical JSON with exactly these top-level fields: `schemaVersion`, `executiveSummary`,
+`claims`, `supportingEvidence`, `contradictoryEvidence`, `materialRisks`,
+`uncertaintyAndMissingInformation`, `methodologyAndCalculations`, `timeHorizons`,
+`applicabilityLimits`, and `conclusions`. Object properties are serialized in ordinal order before a lowercase
+SHA-256 is computed. Every citation must exactly match provenance returned by a successful retrieval in the same
+run. Publication requires a successfully completed run and atomically inserts the immutable report and provenance,
+completes its request, and, for a refresh, supersedes the preceding latest version. A repeated publication for the
+same run returns its existing report.
+
 A completed report should contain:
 
 - Stable `ReportId` and immutable version.

@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-010
 title: Deliver durable subscriber notifications and Bot triggers
 stage: 4
-status: planned
+status: ready
 priority: 770
 type: feature
 depends_on: [S4-009]

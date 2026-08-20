@@ -53,8 +53,8 @@ public interface IResearchToolDispatcher { IReadOnlyList<ResearchToolDefinition>
 
 public sealed record ResearchReportDraft(string CanonicalContent, IReadOnlyList<SourceCitation> Citations, DateTimeOffset DataCutoff, DateTimeOffset? RecommendedRefreshAt);
 public sealed record DraftValidationResult(bool IsValid, string ResultCode, IReadOnlyList<string> Errors);
-public interface IResearchDraftValidator { DraftValidationResult Validate(ResearchReportDraft draft, ResearchRunAttempt attempt); }
-public interface IResearchReportPublisher { Task<ResearchReport> PublishAsync(ResearchRequest request, ResearchRunAttempt attempt, ResearchReportDraft draft, CancellationToken cancellationToken); }
+public interface IResearchDraftValidator { DraftValidationResult Validate(ResearchReportDraft draft, ResearchRunAttempt attempt, IReadOnlyCollection<SourceCitation> retrievedSources); }
+public interface IResearchReportPublisher { Task<ResearchReport> PublishAsync(ResearchRequest request, ResearchRunAttempt attempt, ResearchReportDraft draft, IReadOnlyCollection<SourceCitation> retrievedSources, ResearchReportId? refreshReportId, CancellationToken cancellationToken); }
 
 public sealed record ResearchCatalogQuery(ResearchPrincipal Principal, string? Subject, string? NormalizedKey, ResearchReportId? ExactReportId, DateTimeOffset At);
 public sealed record ResearchCatalogEntry(ResearchReportId ReportId, string SeriesId, int Version, string Subject, ResearchReportStatus Status, DateTimeOffset DataCutoff, DateTimeOffset GeneratedAt, DateTimeOffset ExpiresAt, bool IsFresh);
