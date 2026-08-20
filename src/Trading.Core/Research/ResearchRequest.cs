@@ -15,7 +15,8 @@ public sealed class ResearchRequest
 
     public ResearchRequest(ResearchRequestId id, TradingBotId requestingBotId, string subject, string question,
         DateTimeOffset asOf, ResearchVisibility visibility, DataFreshness freshnessRequirement,
-        string normalizedResearchKey, DateTimeOffset requestedAt, IEnumerable<TradingBotId>? authorizedSubscribers = null)
+        string normalizedResearchKey, DateTimeOffset requestedAt, IEnumerable<TradingBotId>? authorizedSubscribers = null,
+        string? restrictedGroup = null)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));
         RequestingBotId = requestingBotId ?? throw new ArgumentNullException(nameof(requestingBotId));
@@ -25,6 +26,9 @@ public sealed class ResearchRequest
         RequestedAt = ResearchValidation.Utc(requestedAt, nameof(requestedAt));
         if (AsOf > RequestedAt) throw new ArgumentException("Research as-of time cannot follow request time.", nameof(asOf));
         Visibility = visibility;
+        RestrictedGroup = visibility == ResearchVisibility.Restricted
+            ? ResearchValidation.Required(restrictedGroup, nameof(restrictedGroup), 200)
+            : restrictedGroup is null ? null : throw new ArgumentException("Only restricted visibility names a group.", nameof(restrictedGroup));
         FreshnessRequirement = freshnessRequirement ?? throw new ArgumentNullException(nameof(freshnessRequirement));
         NormalizedResearchKey = ResearchValidation.Required(normalizedResearchKey, nameof(normalizedResearchKey), 500);
         _authorizedSubscribers = authorizedSubscribers?.ToHashSet() ?? [];
@@ -39,6 +43,7 @@ public sealed class ResearchRequest
     public DateTimeOffset AsOf { get; }
     public ResearchRequestStatus Status { get; private set; }
     public ResearchVisibility Visibility { get; private set; }
+    public string? RestrictedGroup { get; }
     public DataFreshness FreshnessRequirement { get; }
     public string NormalizedResearchKey { get; }
     public DateTimeOffset RequestedAt { get; }
@@ -47,6 +52,19 @@ public sealed class ResearchRequest
     public ResearchReportId? ResultReportId { get; private set; }
     public bool HasPrivateInputs { get; private set; }
     public IReadOnlyList<ResearchSubscription> Subscriptions => _subscriptions.AsReadOnly();
+    public IReadOnlyCollection<TradingBotId> AuthorizedSubscriberIds => _authorizedSubscribers;
+
+    public static ResearchRequest Rehydrate(ResearchRequestState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        var request = new ResearchRequest(state.Id, state.RequestingBotId, state.Subject, state.Question,
+            state.AsOf, state.Visibility, state.FreshnessRequirement, state.NormalizedResearchKey,
+            state.RequestedAt, state.AuthorizedSubscribers, state.RestrictedGroup);
+        request.Status = state.Status; request.StartedAt = state.StartedAt; request.CompletedAt = state.CompletedAt;
+        request.ResultReportId = state.ResultReportId; request.HasPrivateInputs = state.HasPrivateInputs;
+        request._subscriptions.AddRange(state.Subscriptions.Select(ResearchSubscription.Rehydrate));
+        return request;
+    }
 
     public void RecordPrivateInputs()
     {
@@ -138,6 +156,12 @@ public sealed class ResearchSubscription
     public TradingBotId TradingBotId { get; }
     public DateTimeOffset SubscribedAt { get; }
     public ResearchNotificationStatus NotificationStatus { get; private set; } = ResearchNotificationStatus.Pending;
+    internal static ResearchSubscription Rehydrate(ResearchSubscriptionState state)
+    {
+        var subscription = new ResearchSubscription(state.Id, state.TradingBotId, state.SubscribedAt);
+        subscription.NotificationStatus = state.NotificationStatus;
+        return subscription;
+    }
     public void MarkDelivered() => TransitionNotification(ResearchNotificationStatus.Delivered);
     public void MarkFailed() => TransitionNotification(ResearchNotificationStatus.Failed);
     private void TransitionNotification(ResearchNotificationStatus next)
@@ -147,3 +171,13 @@ public sealed class ResearchSubscription
         NotificationStatus = next;
     }
 }
+
+public sealed record ResearchSubscriptionState(ResearchSubscriptionId Id, TradingBotId TradingBotId,
+    DateTimeOffset SubscribedAt, ResearchNotificationStatus NotificationStatus);
+
+public sealed record ResearchRequestState(ResearchRequestId Id, TradingBotId RequestingBotId, string Subject,
+    string Question, DateTimeOffset AsOf, ResearchRequestStatus Status, ResearchVisibility Visibility,
+    DataFreshness FreshnessRequirement, string NormalizedResearchKey, DateTimeOffset RequestedAt,
+    DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt, ResearchReportId? ResultReportId,
+    bool HasPrivateInputs, IReadOnlyList<TradingBotId> AuthorizedSubscribers, string? RestrictedGroup,
+    IReadOnlyList<ResearchSubscriptionState> Subscriptions);

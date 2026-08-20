@@ -367,6 +367,8 @@ Columns: `id` PK, `subject_type`, nullable `subject_id`, `question`, `normalized
 
 Index `(normalized_research_key, status)` supports catalog reuse and in-flight deduplication.
 
+`request_json` is the canonical request envelope and includes private-input state, the authorized subscriber set, and the exact restricted-group identifier when visibility is `Restricted`. Catalog authorization evaluates this persisted scope before applying pagination, so unauthorized rows cannot consume or influence a caller's result page.
+
 ### 8.2 `research_subscriptions`
 
 Columns: `id` PK, `research_request_id` FK, `trading_bot_id` FK, `subscribed_at`, `notification_status`, and nullable `notified_at`.

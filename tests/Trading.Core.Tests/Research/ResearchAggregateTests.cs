@@ -150,7 +150,8 @@ public sealed class ResearchAggregateTests
     private static ResearchRequest NewRequest(string question = "Does cash-flow growth support a five-year thesis?",
         ResearchVisibility visibility = ResearchVisibility.Shared, IEnumerable<TradingBotId>? authorized = null) =>
         new(ResearchRequestId.New(), TradingBotId.New(), "US:ABC", question, Now.AddMinutes(-1), visibility,
-            new DataFreshness(Now.AddDays(-1), Now.AddMinutes(-2), TimeSpan.FromDays(7)), "us:abc|cash-flow", Now, authorized);
+            new DataFreshness(Now.AddDays(-1), Now.AddMinutes(-2), TimeSpan.FromDays(7)), "us:abc|cash-flow", Now, authorized,
+            visibility == ResearchVisibility.Restricted ? "desk-a" : null);
 
     private static ResearchReport NewReport(int version = 1, ResearchReportId? supersedes = null) =>
         new(ResearchReportId.New(), "series-1", version, ResearchRequestId.New(), "US:ABC",

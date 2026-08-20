@@ -81,6 +81,14 @@ public sealed class ResearchRunAttempt
     public DateTimeOffset? CompletedAt { get; private set; }
     public ResearchUsage? Usage { get; private set; }
     public string? ResultCode { get; private set; }
+    public static ResearchRunAttempt Rehydrate(ResearchRunAttemptState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        var attempt = new ResearchRunAttempt(state.Id, state.RequestId, state.Versions, state.Budget, state.CreatedAt);
+        attempt.Status = state.Status; attempt.StartedAt = state.StartedAt; attempt.CompletedAt = state.CompletedAt;
+        attempt.Usage = state.Usage; attempt.ResultCode = state.ResultCode;
+        return attempt;
+    }
     public void Start(DateTimeOffset at) { Require(ResearchRunAttemptStatus.Created); StartedAt = Ordered(at, CreatedAt); Status = ResearchRunAttemptStatus.Running; }
     public void WaitForTool() { Require(ResearchRunAttemptStatus.Running); Status = ResearchRunAttemptStatus.WaitingForTool; }
     public void Resume() { Require(ResearchRunAttemptStatus.WaitingForTool); Status = ResearchRunAttemptStatus.Running; }
@@ -94,3 +102,7 @@ public sealed class ResearchRunAttempt
     private void Require(ResearchRunAttemptStatus status) { if (Status != status) throw new InvalidOperationException($"Attempt must be {status}."); }
     private static DateTimeOffset Ordered(DateTimeOffset at, DateTimeOffset lower) { ResearchValidation.Utc(at, nameof(at)); if (at < lower) throw new ArgumentException("Timestamp is out of order.", nameof(at)); return at; }
 }
+
+public sealed record ResearchRunAttemptState(ResearchRunAttemptId Id, ResearchRequestId RequestId,
+    ResearchVersionPins Versions, ResearchBudget Budget, ResearchRunAttemptStatus Status, DateTimeOffset CreatedAt,
+    DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt, ResearchUsage? Usage, string? ResultCode);

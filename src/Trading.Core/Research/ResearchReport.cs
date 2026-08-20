@@ -100,6 +100,15 @@ public sealed class ResearchReport
     public ReportProvenance Provenance { get; }
     public GeneratorMetadata GeneratorMetadata { get; }
     public ResearchReportStatus Status { get; private set; } = ResearchReportStatus.Published;
+    public static ResearchReport Rehydrate(ResearchReportState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        var report = new ResearchReport(state.Id, state.ReportSeriesId, state.VersionNumber, state.ResearchRequestId,
+            state.Subject, state.Question, state.Visibility, state.DataCutoff, state.GeneratedAt, state.ExpiresAt,
+            state.SupersedesReportId, state.Content, state.ContentHash, state.Provenance, state.GeneratorMetadata);
+        report.Status = state.Status;
+        return report;
+    }
     public bool IsFreshAt(DateTimeOffset at) { ResearchValidation.Utc(at, nameof(at)); return Status == ResearchReportStatus.Published && at <= ExpiresAt; }
     public void MarkExpired() => TransitionTo(ResearchReportStatus.Expired);
     public void MarkSuperseded() => TransitionTo(ResearchReportStatus.Superseded);
@@ -111,3 +120,9 @@ public sealed class ResearchReport
         Status = status;
     }
 }
+
+public sealed record ResearchReportState(ResearchReportId Id, string ReportSeriesId, int VersionNumber,
+    ResearchRequestId ResearchRequestId, string Subject, string Question, ResearchVisibility Visibility,
+    DateTimeOffset DataCutoff, DateTimeOffset GeneratedAt, DateTimeOffset ExpiresAt,
+    ResearchReportId? SupersedesReportId, string Content, string ContentHash, ReportProvenance Provenance,
+    GeneratorMetadata GeneratorMetadata, ResearchReportStatus Status);

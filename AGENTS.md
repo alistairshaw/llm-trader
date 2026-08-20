@@ -88,6 +88,7 @@ Before reporting a task complete:
 2. Run the narrow affected tests first, then the required broader suite.
 3. Distinguish clearly between tests run locally, platform checks delegated to CI, and checks not run.
 4. Ensure Release builds have zero warnings and no formatter, analyzer, or architecture violations.
+   Generated EF migrations and persistence entity additions are not exempt from formatting; apply the repository formatter to generated output before running the verification-only `format` target.
 5. Update documentation that would otherwise be made false.
 6. Fill Completion Notes with changes, exact validation commands, results, deviations, follow-up task IDs, and ADRs.
 7. Set the task and stage index to `done` only when all acceptance criteria pass. Use `review` or `blocked` honestly when they do not.

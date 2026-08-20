@@ -4,6 +4,7 @@ using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
 using Trading.Core.Policies;
 using Trading.Core.Portfolios;
+using Trading.Core.Research;
 
 namespace Trading.Core.Persistence;
 
@@ -140,6 +141,53 @@ public interface IBotRunRepository
     Task<PersistenceWriteResult> RecoverExpiredAsync(BotRun run, long expectedVersion,
         PendingBotRunTrigger? followUpTrigger, CancellationToken cancellationToken) =>
         throw new NotSupportedException("This repository does not support atomic runtime recovery.");
+}
+
+public sealed record ResearchAttemptClaim(ResearchRunAttempt Attempt, int AttemptNumber);
+public abstract record ResearchClaimResult
+{
+    private ResearchClaimResult() { }
+    public sealed record Acquired(ResearchRunAttempt Attempt) : ResearchClaimResult;
+    public sealed record ActiveAttemptConflict(ResearchRunAttemptId? ActiveAttemptId) : ResearchClaimResult;
+    public sealed record ConcurrencyConflict : ResearchClaimResult;
+}
+
+public sealed record ResearchToolAudit(string Id, ResearchRunAttemptId AttemptId, int SequenceNumber,
+    string ToolName, int SchemaVersion, string ArgumentsJson, string Status, DateTimeOffset StartedAt,
+    DateTimeOffset? CompletedAt, string? ResultJson, string? ErrorCode, string? ErrorDetail, string? UsageJson);
+
+public interface IResearchRequestRepository
+{
+    Task<ResearchRequest?> GetAsync(ResearchRequestId id, CancellationToken token);
+    Task<PersistenceWriteResult> AddAsync(ResearchRequest request, CancellationToken token);
+    Task<PersistenceWriteResult> SaveAsync(ResearchRequest request, long expectedVersion, CancellationToken token);
+    Task<ResearchClaimResult> TryClaimQueuedAsync(ResearchRequestId requestId, ResearchAttemptClaim claim, CancellationToken token);
+}
+
+public interface IResearchRunAttemptRepository
+{
+    Task<ResearchRunAttempt?> GetAsync(ResearchRunAttemptId id, CancellationToken token);
+    Task<PersistenceWriteResult> SaveAsync(ResearchRunAttempt attempt, long expectedVersion, CancellationToken token);
+    Task<PersistenceWriteResult> AppendToolAuditAsync(ResearchToolAudit audit, CancellationToken token);
+    Task<IReadOnlyList<ResearchToolAudit>> GetToolAuditAsync(ResearchRunAttemptId id, CancellationToken token);
+}
+
+public interface IResearchReportRepository
+{
+    Task<ResearchReport?> GetAsync(ResearchReportId id, CancellationToken token);
+    Task<PersistenceWriteResult> PublishAsync(ResearchReport report, ResearchRunAttemptId attemptId, CancellationToken token);
+}
+
+public sealed record ResearchReportSearch(ResearchPrincipal Principal, DateTimeOffset At, string? Subject = null,
+    string? NormalizedResearchKey = null, bool FreshOnly = false, int Offset = 0, int Size = 50);
+public sealed record ResearchReportSummary(ResearchReportId Id, string SeriesId, int Version, string Subject,
+    ResearchReportStatus Status, DateTimeOffset DataCutoff, DateTimeOffset GeneratedAt,
+    DateTimeOffset ExpiresAt, bool IsFresh);
+public interface IResearchReportCatalogQueries
+{
+    Task<IReadOnlyList<ResearchReportSummary>> SearchAsync(ResearchReportSearch search, CancellationToken token);
+    Task<ResearchReport?> GetAuthorizedAsync(ResearchPrincipal principal, ResearchReportId id, CancellationToken token);
+    Task<ResearchReport?> GetAuthorizedVersionAsync(ResearchPrincipal principal, string seriesId, int version, CancellationToken token);
 }
 
 public sealed record PortfolioSummary(
