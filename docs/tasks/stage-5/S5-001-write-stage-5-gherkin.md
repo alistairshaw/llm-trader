@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-001
 title: Write Stage 5 executable Gherkin specifications
 stage: 5
-status: ready
+status: done
 priority: 1000
 type: acceptance
 depends_on: []
@@ -47,4 +47,12 @@ Use [Implementation Plan — Stage 5](../../implementation-plan.md#7-stage-5-tra
 
 ## Completion Notes
 
-Pending implementation.
+Completed 2026-08-20.
+
+- Added six Stage 5 feature files containing 27 named scenarios and 32 discoverable Reqnroll test cases covering proposal recording, evidence and ownership binding, hierarchical risk, immutable evaluations, authorized human decisions, fresh-state revalidation, atomic capital reservations, concurrency, release and recovery, ResearchOnly governance, broker-authority exclusion, and the headless demonstration.
+- Added criterion-to-scenario and implementation-task traceability in `tests/Trading.AcceptanceTests/Features/Governance/TRACEABILITY.md`.
+- Tagged every Stage 5 specification for cross-platform discovery and applied the temporary `@ignore` acceptance-harness tag until `S5-014` provides production-backed bindings.
+- Generated and committed synchronized Reqnroll `.feature.cs` files through the repository build.
+- Validation: `.\dev.ps1 build` passed with zero warnings and errors; `.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage5"` discovered 32 tests with 32 explicitly skipped, zero failed, and zero passed; `.\dev.ps1 format` passed; `git diff --check` passed.
+- Local validation used the Linux Docker workflow. Windows execution remains delegated to hosted CI at the Stage 5 gate.
+- No deviations, follow-up tasks, or ADRs were required. No README, AGENTS.md, or authority update was needed because this task introduced specifications without changing durable project guidance.

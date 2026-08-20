@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-002
 title: Define proposal governance domain and contracts
 stage: 5
-status: planned
+status: ready
 priority: 940
 type: feature
 depends_on: [S5-001]
