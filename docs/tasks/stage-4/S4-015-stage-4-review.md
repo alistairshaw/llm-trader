@@ -3,13 +3,14 @@ schema_version: 1
 id: S4-015
 title: Complete Stage 4 acceptance and review
 stage: 4
-status: ready
+status: blocked
 priority: 1000
 type: acceptance
-depends_on: [S4-001, S4-002, S4-003, S4-004, S4-005, S4-006, S4-007, S4-008, S4-009, S4-010, S4-011, S4-012, S4-013, S4-014]
+depends_on: [S4-001, S4-002, S4-003, S4-004, S4-005, S4-006, S4-007, S4-008, S4-009, S4-010, S4-011, S4-012, S4-013, S4-014, S4-016]
 labels: [bdd, review, stage-gate]
 created: 2026-08-20
 updated: 2026-08-20
+blocked_reason: Stage 4 acceptance outcomes are derived from feature text instead of production Research workflows; S4-016 must pass before review can resume.
 ---
 
 # S4-015: Complete Stage 4 Acceptance and Review
@@ -59,4 +60,11 @@ Use [Implementation Plan — Stage 4](../../implementation-plan.md#6-stage-4-sha
 
 ## Completion Notes
 
-Pending implementation.
+Blocked during local review on 2026-08-20.
+
+- The complete prescribed local command matrix passed: locked restore; Release build with 0 warnings and 0 errors; format; Architecture 15/15; Core 391/391; Data 130/130; Research 55/55; Engine 57/57; Integration 23/23; Stage 4 acceptance 39/39; Stage 4 migration/persistence 5/5; full suite 804/804 with zero skipped; EF model drift empty; and deterministic headless smoke completed.
+- Review found that `Stage4ResearchDriver` derives scenario state and assertions by matching Gherkin text and scenario titles. It does not invoke the production Research, Engine, notification, recovery, Trading Bot Research, or host workflows required by `S4-014`; its application setup only validates host options and migrates SQLite.
+- The passing Stage 4 scenario count therefore does not satisfy the production-backed acceptance evidence required by the implementation plan, test plan, `S4-014`, or this stage gate.
+- Follow-up task: `S4-016`.
+- Remaining work after `S4-016`: repeat the complete local review matrix, create the Stage 4 Review Record, publish the reviewed revision, and record exact-revision Windows, Linux, and security evidence.
+- Scope deviations: none. ADRs: none.
