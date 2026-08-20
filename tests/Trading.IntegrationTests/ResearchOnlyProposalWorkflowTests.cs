@@ -7,7 +7,7 @@ using Trading.Engine.Proposals;
 
 namespace Trading.IntegrationTests;
 
-[TestFixture, Category("ResearchOnlyProposal")]
+[TestFixture, Category("ResearchOnlyProposal"), Category("ProposalGovernance")]
 public sealed class ResearchOnlyProposalWorkflowTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 20, 12, 0, 0, TimeSpan.Zero);

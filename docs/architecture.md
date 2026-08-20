@@ -350,6 +350,7 @@ Key rules:
   arguments against the Bot Run's pinned identity, configuration, Portfolio snapshot, evidence
   visibility, tool policy, and budgets; it has no approval, reservation, order, or broker port.
 - The deterministic engine converts an approved proposal into an order intent only after validation against fresh state.
+- Stage 5 proposal orchestration ends at an atomic capital reservation: it performs initial validation, exact human review, post-approval fresh-state revalidation, and recoverable expiration without resolving an order or broker service.
 - A proposal pins its configuration's execution mode when recorded. `ResearchOnly` proposals use the same
   identity, evidence, persistence, and structured guardrail evaluation pipeline, then terminate with the stable
   `proposal_governance.research_only` disposition; their application graph cannot approve, reserve, convert, or

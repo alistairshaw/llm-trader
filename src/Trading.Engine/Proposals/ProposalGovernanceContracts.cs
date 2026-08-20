@@ -203,3 +203,51 @@ public interface IProposalGovernanceTransaction
 {
     Task<T> ExecuteAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken cancellationToken);
 }
+
+public sealed record ProposalGovernanceEvaluationContext(
+    GuardrailPolicySet Policies,
+    HierarchicalGuardrailPolicySet PolicyDefinitions,
+    GuardrailState State);
+
+public interface IProposalGovernanceContextProvider
+{
+    Task<ProposalGovernanceEvaluationContext> GetAsync(
+        TradeProposal proposal, FreshProposalState freshState, CancellationToken cancellationToken);
+}
+
+public enum ProposalOrchestrationOutcome
+{
+    AwaitingHumanApproval,
+    Reserved,
+    AlreadyCompleted,
+    Rejected,
+    ResearchOnly,
+    Expired,
+    Cancelled,
+    Unauthorized,
+    StaleReview,
+    Contention,
+    NotFound,
+    Failed
+}
+
+public sealed record ProposalOrchestrationResult(
+    ProposalOrchestrationOutcome Outcome,
+    string Code,
+    TradeProposal? Proposal,
+    GuardrailEvaluation? Evaluation = null,
+    ProposalApproval? Approval = null,
+    CapitalReservation? Reservation = null);
+
+public interface IProposalGovernanceOrchestrator
+{
+    Task<ProposalOrchestrationResult> ValidateAsync(
+        TradeProposalId proposalId, CancellationToken cancellationToken);
+
+    Task<ProposalOrchestrationResult> DecideAndReserveAsync(
+        HumanProposalDecisionCommand command, TimeSpan reservationLifetime,
+        CancellationToken cancellationToken);
+
+    Task<ProposalOrchestrationResult> ExpireAsync(
+        TradeProposalId proposalId, CancellationToken cancellationToken);
+}

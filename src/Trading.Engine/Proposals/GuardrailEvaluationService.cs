@@ -38,7 +38,8 @@ public sealed class GuardrailEvaluationService(
 
         var expectedVersion = proposal.Version;
         if (proposal.Status == ProposalStatus.Recorded) proposal.StartValidation(clock.UtcNow);
-        else if (proposal.Status == ProposalStatus.AwaitingHumanApproval) proposal.StartRevalidation(clock.UtcNow);
+        else if (proposal.Status is ProposalStatus.AwaitingHumanApproval or ProposalStatus.Approved)
+            proposal.StartRevalidation(clock.UtcNow);
         else
             return new GuardrailEvaluationPersistenceResult(GuardrailEvaluationPersistenceOutcome.ConcurrencyConflict,
                 ProposalGovernanceCodes.ConcurrencyConflict, null, proposal);

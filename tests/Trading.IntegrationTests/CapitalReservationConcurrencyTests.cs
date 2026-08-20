@@ -7,7 +7,7 @@ using Trading.Data;
 
 namespace Trading.IntegrationTests;
 
-[TestFixture, Category("CapitalConcurrency")]
+[TestFixture, Category("CapitalConcurrency"), Category("ProposalGovernance")]
 public sealed class CapitalReservationConcurrencyTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 20, 21, 0, 0, TimeSpan.Zero);

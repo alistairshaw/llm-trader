@@ -86,8 +86,8 @@ public sealed class TradeProposal
 
     public void StartRevalidation(DateTimeOffset at)
     {
-        if (Status != ProposalStatus.AwaitingHumanApproval)
-            throw new InvalidOperationException("Only a proposal awaiting approval can be revalidated.");
+        if (Status is not ProposalStatus.AwaitingHumanApproval and not ProposalStatus.Approved)
+            throw new InvalidOperationException("Only a proposal awaiting or holding approval can be revalidated.");
         EnsureNotExpired(at); Status = ProposalStatus.Validating; Version++;
     }
 
@@ -149,7 +149,12 @@ public sealed class TradeProposal
             EnsureNotExpired(at); Status = ProposalStatus.Rejected; Version++;
             return;
         }
-        RequireHumanApproval(at);
+        if (_approvals.Any(x => x.Decision == ApprovalDecision.Approved))
+        {
+            if (Status != ProposalStatus.Validating) throw new InvalidOperationException("Proposal is not validating.");
+            EnsureNotExpired(at); Status = ProposalStatus.Approved; Version++;
+        }
+        else RequireHumanApproval(at);
     }
 
     public void RequireHumanApproval(DateTimeOffset at) => Transition(ProposalStatus.Validating, ProposalStatus.AwaitingHumanApproval, at);

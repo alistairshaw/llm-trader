@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-011
 title: Orchestrate proposal validation and approval
 stage: 5
-status: planned
+status: done
 priority: 760
 type: feature
 depends_on: [S5-005, S5-007, S5-008, S5-009, S5-010]
@@ -52,4 +52,23 @@ Use [Architecture — Core Execution Flow](../../architecture.md#9-core-executio
 
 ## Completion Notes
 
-Pending implementation.
+Implemented `ProposalGovernanceOrchestrator` and provider-neutral orchestration contracts for initial validation,
+authorized exact-review decisions, post-approval fresh-state revalidation, atomic reservation, bounded failures,
+and recoverable expiration. Passing revalidation preserves an existing approval; failed revalidation rejects the
+proposal while preserving immutable approval and evaluation history. The workflow ends at reservation and has no
+order or broker dependency. README, architecture, and Trading Bot documentation describe the boundary.
+
+Validation completed in Linux Docker:
+
+- `.\dev.ps1 build` — passed with 0 warnings and 0 errors.
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=ProposalOrchestration"` — 6 passed.
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=ProposalGovernance"` — 2 passed.
+- `.\dev.ps1 test -Project tests/Trading.Architecture.Tests` — 19 passed.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage5Migrations"` — 5 passed, including model drift.
+- `.\dev.ps1 test` — 959 passed, 32 expected pending Stage 5 acceptance cases, 0 failed.
+- `.\dev.ps1 format` — passed.
+
+The full suite discovered that the pre-existing headless smoke path created its manual trigger with the wall clock
+while the scheduler used the injected fixed clock. The scoped correction routes trigger time through `IUtcClock`;
+the focused `HeadlessHostTests` suite then passed 3 tests and the full suite passed. No ADRs or follow-up tasks were
+required. No model, market-provider, order, or broker operation was added to a database transaction.

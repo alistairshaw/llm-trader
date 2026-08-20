@@ -169,7 +169,8 @@ internal sealed class RuntimeIdentifiers : IRuntimeIdentifierGenerator
 }
 
 internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, TradingHostOptions options,
-    RuntimeReadiness readiness, IHostApplicationLifetime lifetime, ILogger<TradingRuntimeHostedService> logger) : BackgroundService
+    RuntimeReadiness readiness, IHostApplicationLifetime lifetime, IUtcClock clock,
+    ILogger<TradingRuntimeHostedService> logger) : BackgroundService
 {
     private MultiBotSupervisor? supervisor;
 
@@ -191,7 +192,8 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
             var completions = new List<Task<BotRunExecutionResult>>();
             foreach (var id in ids)
             {
-                if (options.SmokeMode) await services.GetRequiredService<BotTriggerIngestionService>().IngestAsync(new(id, BotRunTriggerType.Manual, "deterministic smoke", DateTimeOffset.UtcNow), stoppingToken);
+                if (options.SmokeMode) await services.GetRequiredService<BotTriggerIngestionService>().IngestAsync(
+                    new(id, BotRunTriggerType.Manual, "deterministic smoke", clock.UtcNow), stoppingToken);
                 var queued = await supervisor.QueueAsync(new(id, Environment.MachineName, TimeSpan.FromSeconds(options.LeaseSeconds), SmokeSession()), stoppingToken);
                 if (queued.Completion is not null) completions.Add(queued.Completion);
             }
