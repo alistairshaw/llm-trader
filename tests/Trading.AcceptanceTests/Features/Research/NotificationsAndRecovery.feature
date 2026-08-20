@@ -1,4 +1,4 @@
-@stage4 @acceptance @research @recovery @cross-platform @ignore
+@stage4 @acceptance @research @recovery @cross-platform
 Feature: Durable Research notification and recovery
   Every subscriber learns the terminal outcome exactly once and interrupted work recovers safely.
 
@@ -32,4 +32,3 @@ Feature: Durable Research notification and recovery
     When graceful shutdown is requested
     Then no new Research work should start
     And active Research state and queued requests should remain recoverable after restart
-

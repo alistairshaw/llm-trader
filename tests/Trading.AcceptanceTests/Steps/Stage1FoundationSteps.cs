@@ -11,7 +11,7 @@ using Trading.Core.Proposals;
 namespace Trading.AcceptanceTests.Steps;
 
 [Binding]
-public sealed class Stage1FoundationSteps(Stage1ScenarioState state, Stage2PersistenceDriver stage2, Stage3RuntimeDriver stage3)
+public sealed class Stage1FoundationSteps(Stage1ScenarioState state, Stage2PersistenceDriver stage2, Stage3RuntimeDriver stage3, Stage4ResearchDriver stage4)
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 19, 12, 0, 0, TimeSpan.Zero);
     private static readonly string Root = FindRoot();
@@ -28,6 +28,7 @@ public sealed class Stage1FoundationSteps(Stage1ScenarioState state, Stage2Persi
 
     private void Dispatch(string text)
     {
+        if (stage4.Handles) { stage4.Execute(text); return; }
         if (stage3.Handles(text)) { stage3.Execute(text); return; }
         if (HandleFinancial(text) || HandleIdentities(text) || HandleAggregates(text) || HandleRepository(text)) return;
         if (stage2.Handles(text)) { stage2.Execute(text); return; }

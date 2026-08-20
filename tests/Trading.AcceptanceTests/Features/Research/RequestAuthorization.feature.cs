@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Research
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Bounded and authorized Research requests")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage4")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("research")]
@@ -34,8 +33,7 @@ namespace Trading.AcceptanceTests.Features.Research
                 "stage4",
                 "acceptance",
                 "research",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Research", "Bounded and authorized Research requests", "  The shared Research service accepts only bounded questions within the requester" +
                 "\'s authority.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

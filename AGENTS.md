@@ -141,6 +141,7 @@ If documents disagree, identify the disagreement explicitly and resolve it in do
 - Reqnroll expresses executable Gherkin acceptance behavior.
 - EF Core integration tests use the real SQLite provider with isolated temporary databases, never the EF in-memory provider as a relational substitute.
 - Cross-platform acceptance tests exercise application services and run in Linux Docker and Windows CI.
+- Keep Reqnroll steps thin: route Stage-specific vocabulary through scenario-scoped application drivers. Drivers own production composition, temporary migrated SQLite files, deterministic substitutes, persistence inspection, and stable diagnostics; feature steps must not call EF, repositories, or external providers directly.
 - WPF journeys use Reqnroll and FlaUI UIA3 only in an interactive Windows environment.
 - Tests use injected clocks, deterministic identifiers where required, scripted LLM clients, simulated brokers, fixture-backed providers, and captured dispatchers.
 - Tests must not depend on execution order, local time zone, locale, network access, developer credentials, or mutable external data.

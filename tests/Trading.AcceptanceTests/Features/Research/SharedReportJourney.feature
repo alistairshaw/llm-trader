@@ -1,4 +1,4 @@
-@stage4 @acceptance @research @cross-platform @ignore
+@stage4 @acceptance @research @cross-platform
 Feature: Share fixture-backed Research between Trading Bots
   Multiple authorized Bots consume one immutable report without sharing private data.
 
@@ -22,4 +22,3 @@ Feature: Share fixture-backed Research between Trading Bots
     Then one shared Report series should contain immutable versions 1 and 2
     And the BotPrivate Report should remain visible only to Bot Alpha
     And the host should preserve the requests, runs, provenance, subscriptions, notifications, and Bot triggers
-

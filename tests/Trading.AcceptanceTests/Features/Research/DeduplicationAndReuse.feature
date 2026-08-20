@@ -1,4 +1,4 @@
-@stage4 @acceptance @research @cross-platform @ignore
+@stage4 @acceptance @research @cross-platform
 Feature: Equivalent Research deduplication and fresh reuse
   Deterministic policy shares safe work while preserving visibility and freshness.
 
@@ -25,4 +25,3 @@ Feature: Equivalent Research deduplication and fresh reuse
     When the Research request service evaluates deduplication
     Then separate Research runs should be queued
     And neither Bot should subscribe to the other Bot's request
-

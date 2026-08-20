@@ -1,6 +1,6 @@
 # Stage 4 Acceptance-Criteria Traceability
 
-All Stage 4 scenarios are tagged `@stage4`, `@acceptance`, `@research`, and `@cross-platform`. Recovery scenarios additionally use `@recovery`. Until `S4-014` supplies application-facing bindings, the acceptance harness's temporary `@ignore` tag makes every implementation-dependent scenario explicitly pending. Scenario names are unique within Stage 4.
+All Stage 4 scenarios are tagged `@stage4`, `@acceptance`, `@research`, and `@cross-platform`. Recovery scenarios additionally use `@recovery`. Every scenario executes through the scenario-scoped application driver. Scenario names are unique within Stage 4.
 
 Run the discoverable Stage 4 specifications with:
 

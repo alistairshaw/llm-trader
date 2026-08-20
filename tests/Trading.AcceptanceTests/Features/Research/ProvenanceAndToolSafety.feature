@@ -1,4 +1,4 @@
-@stage4 @acceptance @research @cross-platform @ignore
+@stage4 @acceptance @research @cross-platform
 Feature: Research provenance and tool authority
   Fixture-backed sources remain untrusted evidence within a bounded Research tool loop.
 
@@ -45,4 +45,3 @@ Feature: Research provenance and tool authority
       | documents retrieved  | 2     | 3         |
       | bytes retained       | 4096  | 4097      |
       | consecutive failures | 2     | 3         |
-

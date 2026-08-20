@@ -361,6 +361,8 @@ Each scenario receives:
 - Scripted LLM and external-provider responses.
 - Captured structured logs and outbox activity.
 
+Acceptance drivers own production composition and persistence inspection. Failure diagnostics identify the scenario database and the stable request, run, report, source, subscriber, notification, trigger, and Bot Run context without exposing provider payloads. Feature steps remain limited to application-facing actions and observable query results.
+
 ## 11. WPF UI Acceptance Tests
 
 `Trading.UI.Wpf.AcceptanceTests` uses Reqnroll and FlaUI UIA3 on Windows. It contains only critical presentation journeys:

@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S4-014` — Complete Stage 4 Research acceptance bindings.
+`S4-015` — Complete Stage 4 acceptance and review.
 
 ## Ordered Backlog
 
@@ -25,8 +25,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S4-011`](stage-4/S4-011-research-orchestration.md) | Orchestrate Research runs and restart recovery | Done | 750 | `S4-010` |
 | [`S4-012`](stage-4/S4-012-trading-bot-research-tools.md) | Add Trading Bot Research tools and report consumption | Done | 730 | `S4-005`, `S4-010` |
 | [`S4-013`](stage-4/S4-013-headless-research-host.md) | Run shared Research through the headless host | Done | 710 | `S4-011`, `S4-012` |
-| [`S4-014`](stage-4/S4-014-research-acceptance.md) | Complete Stage 4 Research acceptance bindings | Ready | 690 | `S4-013` |
-| [`S4-015`](stage-4/S4-015-stage-4-review.md) | Complete Stage 4 acceptance and review | Planned | 1000 | `S4-001`–`S4-014` |
+| [`S4-014`](stage-4/S4-014-research-acceptance.md) | Complete Stage 4 Research acceptance bindings | Done | 690 | `S4-013` |
+| [`S4-015`](stage-4/S4-015-stage-4-review.md) | Complete Stage 4 acceptance and review | Ready | 1000 | `S4-001`–`S4-014` |
 
 ## Stage Exit Gate
 

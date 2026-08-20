@@ -1,4 +1,4 @@
-@stage4 @acceptance @research @cross-platform @ignore
+@stage4 @acceptance @research @cross-platform
 Feature: Immutable versioned Research publication
   Only valid completed drafts become reports, and deterministic authorization controls access.
 
@@ -32,4 +32,3 @@ Feature: Immutable versioned Research publication
     When Research Run Failed enters its terminal state
     Then its request, sources, draft, validation result, usage, and failure reason should be retained for audit
     And no completed Report should be published from Research Run Failed
-

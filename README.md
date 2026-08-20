@@ -12,6 +12,8 @@ Stages 1–3 are complete: the repository has its domain and persistence foundat
 
 Schema-1 reports are deterministically validated, citation-bound to sources retrieved by their run, canonically hashed, and atomically published as immutable series versions. Queued Research work is claimed atomically with increasing attempt numbers, runs outside database transactions under global concurrency limits, and recovers abandoned attempts by retaining them as failed audit history before requeueing the request.
 
+All 39 Stage 4 Research acceptance cases execute through a scenario-scoped application driver against a fresh migrated SQLite file. The driver fixes time and identities and composes scripted models with approved fixture sources, so shared reuse, private visibility, publication, provenance, notification, recovery, and host behavior remain deterministic and network-free.
+
 The current backlog and next eligible task are recorded in [Stage 4 Backlog](docs/tasks/stage-4.md).
 
 ## Development Environment

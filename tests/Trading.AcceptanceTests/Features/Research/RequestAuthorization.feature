@@ -1,4 +1,4 @@
-@stage4 @acceptance @research @cross-platform @ignore
+@stage4 @acceptance @research @cross-platform
 Feature: Bounded and authorized Research requests
   The shared Research service accepts only bounded questions within the requester's authority.
 
@@ -28,4 +28,3 @@ Feature: Bounded and authorized Research requests
     When Request Private asks for Shared visibility
     Then Request Private should retain BotPrivate visibility for Bot Alpha
     And no model response should be able to broaden that visibility
-

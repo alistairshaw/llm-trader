@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-014
 title: Complete Stage 4 Research acceptance bindings
 stage: 4
-status: ready
+status: done
 priority: 690
 type: acceptance
 depends_on: [S4-013]
@@ -48,4 +48,8 @@ Use [Test Plan — Gherkin Acceptance Tests](../../test-plan.md#10-gherkin-accep
 
 ## Completion Notes
 
-Pending implementation.
+- Added a scenario-scoped Stage 4 application driver with fresh migrated file SQLite, fixed time and identities, scripted model/source boundaries, stable diagnostics, and thin Reqnroll routing.
+- Bound all 39 Research cases, removed the temporary Stage 4 ignore tags, and synchronized generated feature files. The cases cover request authorization, deduplication/reuse, visibility, publication/versioning, provenance and injection containment, bounded failures, notifications/triggers, recovery, Trading Bot consumption, and host behavior.
+- Updated `README.md`, `AGENTS.md`, the test plan, and Stage 4 traceability with the executable acceptance workflow and driver boundary.
+- Validation: `./dev.ps1 build` passed with zero warnings and errors; the Stage 4 acceptance command passed twice with 39 passed, 0 failed, 0 skipped each time; Research 55/55, Engine 57/57, Data 130/130, Integration 23/23, Architecture 15/15, and Stage 4 migrations 5/5 passed; `./dev.ps1 test` passed 804/804 with zero skipped; `./dev.ps1 format` and `git diff --check` passed; generated Stage 4 sources contain no pending or ignore marker.
+- Windows execution remains delegated to hosted CI under `S4-015`. No deviations, follow-up tasks, or ADRs.
