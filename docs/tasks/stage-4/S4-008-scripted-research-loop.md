@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-008
 title: Implement the scripted bounded Research loop
 stage: 4
-status: planned
+status: ready
 priority: 810
 type: feature
 depends_on: [S4-007]

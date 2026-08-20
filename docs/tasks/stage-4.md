@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S4-007` — Implement authorized Research tool dispatch.
+`S4-008` — Implement the scripted bounded Research loop.
 
 ## Ordered Backlog
 
@@ -18,8 +18,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S4-004`](stage-4/S4-004-research-repositories.md) | Implement Research repositories and authorized catalog | Done | 890 | `S4-003` |
 | [`S4-005`](stage-4/S4-005-request-service.md) | Implement authorized request deduplication and reuse | Done | 870 | `S4-004` |
 | [`S4-006`](stage-4/S4-006-fixture-sources.md) | Implement fixture-backed approved research sources | Done | 850 | `S4-002` |
-| [`S4-007`](stage-4/S4-007-research-tool-dispatch.md) | Implement authorized Research tool dispatch | Ready | 830 | `S4-005`, `S4-006` |
-| [`S4-008`](stage-4/S4-008-scripted-research-loop.md) | Implement the scripted bounded Research loop | Planned | 810 | `S4-007` |
+| [`S4-007`](stage-4/S4-007-research-tool-dispatch.md) | Implement authorized Research tool dispatch | Done | 830 | `S4-005`, `S4-006` |
+| [`S4-008`](stage-4/S4-008-scripted-research-loop.md) | Implement the scripted bounded Research loop | Ready | 810 | `S4-007` |
 | [`S4-009`](stage-4/S4-009-report-publication.md) | Validate and publish immutable Research reports | Planned | 790 | `S4-008` |
 | [`S4-010`](stage-4/S4-010-subscriber-notifications.md) | Deliver durable subscriber notifications and Bot triggers | Planned | 770 | `S4-009` |
 | [`S4-011`](stage-4/S4-011-research-orchestration.md) | Orchestrate Research runs and restart recovery | Planned | 750 | `S4-010` |

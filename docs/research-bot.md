@@ -137,6 +137,10 @@ Tool results include provider, source URI or stable identifier, publication/effe
 
 The initial approved-source implementation is the `approved-fixtures` provider. Its `v1` manifest and UTF-8 payloads are embedded in `Trading.Research`, verified by exact byte count and lowercase SHA-256 hash when loaded, filtered by publication and effective time, and returned in stable source-identifier order. It performs no network access. Unsupported providers, missing or oversized documents, deterministic provider failures, and cancellation use stable `research.source.*` result codes.
 
+The Stage 4 production registry is the exact version-1 set `SearchWeb`, `FetchWebDocument`, `ListReports`, `GetReport`, `PublishReportDraft`, and `FinishResearch`. Dispatch requires canonical JSON with no unknown fields, the pinned attempt identity and tool-set version, the authorized report principal, cancellation, and remaining per-tool, total-call, document, and retained-byte budgets. Draft citations must exactly match provenance returned by a successful `FetchWebDocument` call in the same attempt. `FinishResearch` succeeds once and closes the registry to subsequent calls. Each accepted or denied invocation produces one append-only audit record containing its start and terminal facts, bounded canonical arguments and results, usage and duration, provenance-bearing output, a stable result code, and redacted error detail.
+
+The registry provides no proposal, approval, capital-reservation, order, broker, configuration, visibility-mutation, arbitrary-code, or general-filesystem authority.
+
 ## 8. Untrusted Content and Prompt Injection
 
 All external content is untrusted evidence. Pages, documents, filings, and prior report text may contain instructions that conflict with the Research Bot's task or attempt to invoke tools.

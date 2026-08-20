@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-007
 title: Implement authorized Research tool dispatch
 stage: 4
-status: ready
+status: done
 priority: 830
 type: feature
 depends_on: [S4-005, S4-006]
@@ -48,4 +48,8 @@ Use [Research Bot — Tooling](../../research-bot.md#7-tooling), [Authority Boun
 
 ## Completion Notes
 
-Pending implementation.
+Completed on 2026-08-20. Added the exact version-1 Research registry for `SearchWeb`, `FetchWebDocument`, `ListReports`, `GetReport`, `PublishReportDraft`, and `FinishResearch`. The dispatcher enforces canonical closed JSON schemas, bounded arguments/results, the pinned attempt and tool-set identity, cancellation, per-tool/total/document/retained-byte budgets, authorized catalog reads, same-attempt citation provenance, and one-shot completion. Every success or denial appends bounded canonical start/terminal audit facts with duration, usage, stable result codes, and redacted error detail. The registry contains no trade, approval, reservation, order, broker, configuration, visibility-mutation, arbitrary-code, or filesystem authority.
+
+Validation: `.\dev.ps1 build` passed with 0 warnings and 0 errors; `.\dev.ps1 test -Project tests/Trading.Research.Tests -Filter "Category=ToolDispatch|Category=PromptInjection"` passed 12; `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=ResearchToolAudit"` passed 4; `.\dev.ps1 test -Project tests/Trading.Architecture.Tests` passed 15; `.\dev.ps1 test` passed 722 with the 39 intentionally pending Stage 4 acceptance scenarios; `docker compose run --rm --no-deps dev dotnet format TradingBot.sln --no-restore` applied formatting because the wrapper intentionally exposes verification only; `.\dev.ps1 format` then passed; and `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage4Migrations"` passed 5 including empty EF model drift.
+
+Updated the README, Research Bot authority documentation, and AGENTS.md durable audit guidance. No scope deviations, follow-up tasks, or ADR changes.
