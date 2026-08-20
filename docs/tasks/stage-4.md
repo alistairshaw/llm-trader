@@ -6,18 +6,18 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S4-002` — Define Research runtime and publication contracts.
+`S4-003` — Add the Stage 4 Research persistence migration.
 
 ## Ordered Backlog
 
 | ID | Task | Status | Priority | Depends on |
 | --- | --- | --- | ---: | --- |
 | [`S4-001`](stage-4/S4-001-write-stage-4-gherkin.md) | Write Stage 4 executable Gherkin specifications | Done | 1000 | — |
-| [`S4-002`](stage-4/S4-002-research-contracts.md) | Define Research runtime and publication contracts | Ready | 930 | `S4-001` |
-| [`S4-003`](stage-4/S4-003-research-persistence.md) | Add the Stage 4 Research persistence migration | Planned | 910 | `S4-002` |
+| [`S4-002`](stage-4/S4-002-research-contracts.md) | Define Research runtime and publication contracts | Done | 930 | `S4-001` |
+| [`S4-003`](stage-4/S4-003-research-persistence.md) | Add the Stage 4 Research persistence migration | Ready | 910 | `S4-002` |
 | [`S4-004`](stage-4/S4-004-research-repositories.md) | Implement Research repositories and authorized catalog | Planned | 890 | `S4-003` |
 | [`S4-005`](stage-4/S4-005-request-service.md) | Implement authorized request deduplication and reuse | Planned | 870 | `S4-004` |
-| [`S4-006`](stage-4/S4-006-fixture-sources.md) | Implement fixture-backed approved research sources | Planned | 850 | `S4-002` |
+| [`S4-006`](stage-4/S4-006-fixture-sources.md) | Implement fixture-backed approved research sources | Ready | 850 | `S4-002` |
 | [`S4-007`](stage-4/S4-007-research-tool-dispatch.md) | Implement authorized Research tool dispatch | Planned | 830 | `S4-005`, `S4-006` |
 | [`S4-008`](stage-4/S4-008-scripted-research-loop.md) | Implement the scripted bounded Research loop | Planned | 810 | `S4-007` |
 | [`S4-009`](stage-4/S4-009-report-publication.md) | Validate and publish immutable Research reports | Planned | 790 | `S4-008` |

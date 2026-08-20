@@ -4,8 +4,9 @@ using Trading.Core.Policies;
 namespace Trading.Core.Research;
 
 public enum ResearchVisibility { Shared, Restricted, BotPrivate }
-public enum ResearchRequestStatus { Requested, Validating, Queued, Running, Completed, Failed, TimedOut, BudgetExceeded, Cancelled }
+public enum ResearchRequestStatus { Requested, Validating, Queued, Running, WaitingForTool, Completed, Failed, TimedOut, BudgetExceeded, Cancelled }
 public enum ResearchNotificationStatus { Pending, Delivered, Failed }
+public enum ResearchTerminalOutcome { Completed, Failed, TimedOut, BudgetExceeded, Cancelled }
 
 public sealed class ResearchRequest
 {
@@ -47,7 +48,12 @@ public sealed class ResearchRequest
     public bool HasPrivateInputs { get; private set; }
     public IReadOnlyList<ResearchSubscription> Subscriptions => _subscriptions.AsReadOnly();
 
-    public void RecordPrivateInputs() => HasPrivateInputs = true;
+    public void RecordPrivateInputs()
+    {
+        if (Visibility == ResearchVisibility.Shared)
+            throw new InvalidOperationException("Visibility must be narrowed before recording private inputs.");
+        HasPrivateInputs = true;
+    }
 
     public void ChangeVisibility(ResearchVisibility visibility)
     {
@@ -71,13 +77,18 @@ public sealed class ResearchRequest
 
     public void Start(DateTimeOffset startedAt)
     {
-        if (Status is not ResearchRequestStatus.Requested and not ResearchRequestStatus.Validating and not ResearchRequestStatus.Queued)
-            throw new InvalidOperationException("Only a pending request can start.");
+        if (Status != ResearchRequestStatus.Queued)
+            throw new InvalidOperationException("Only a queued request can start.");
         ResearchValidation.Utc(startedAt, nameof(startedAt));
         if (startedAt < RequestedAt) throw new ArgumentException("Start cannot precede request.", nameof(startedAt));
         Status = ResearchRequestStatus.Running;
         StartedAt = startedAt;
     }
+
+    public void BeginValidation() => TransitionPending(ResearchRequestStatus.Requested, ResearchRequestStatus.Validating);
+    public void Queue() => TransitionPending(ResearchRequestStatus.Validating, ResearchRequestStatus.Queued);
+    public void WaitForTool() => TransitionPending(ResearchRequestStatus.Running, ResearchRequestStatus.WaitingForTool);
+    public void ResumeFromTool() => TransitionPending(ResearchRequestStatus.WaitingForTool, ResearchRequestStatus.Running);
 
     public void Complete(ResearchReportId publishedReportId, DateTimeOffset completedAt)
     {
@@ -87,6 +98,31 @@ public sealed class ResearchRequest
         if (completedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.", nameof(completedAt));
         Status = ResearchRequestStatus.Completed;
         CompletedAt = completedAt;
+    }
+
+    public void Terminate(ResearchTerminalOutcome outcome, DateTimeOffset completedAt)
+    {
+        if (outcome == ResearchTerminalOutcome.Completed)
+            throw new ArgumentException("Completion requires a published report.", nameof(outcome));
+        if (Status is not ResearchRequestStatus.Running and not ResearchRequestStatus.WaitingForTool)
+            throw new InvalidOperationException("Only an active request can terminate.");
+        ResearchValidation.Utc(completedAt, nameof(completedAt));
+        if (completedAt < StartedAt) throw new ArgumentException("Completion cannot precede start.", nameof(completedAt));
+        Status = outcome switch
+        {
+            ResearchTerminalOutcome.Failed => ResearchRequestStatus.Failed,
+            ResearchTerminalOutcome.TimedOut => ResearchRequestStatus.TimedOut,
+            ResearchTerminalOutcome.BudgetExceeded => ResearchRequestStatus.BudgetExceeded,
+            ResearchTerminalOutcome.Cancelled => ResearchRequestStatus.Cancelled,
+            _ => throw new ArgumentOutOfRangeException(nameof(outcome)),
+        };
+        CompletedAt = completedAt;
+    }
+
+    private void TransitionPending(ResearchRequestStatus required, ResearchRequestStatus next)
+    {
+        if (Status != required) throw new InvalidOperationException($"Request must be {required}.");
+        Status = next;
     }
 
     private static bool IsBroader(ResearchVisibility next, ResearchVisibility current) => (int)next < (int)current;
@@ -102,6 +138,12 @@ public sealed class ResearchSubscription
     public TradingBotId TradingBotId { get; }
     public DateTimeOffset SubscribedAt { get; }
     public ResearchNotificationStatus NotificationStatus { get; private set; } = ResearchNotificationStatus.Pending;
-    public void MarkDelivered() => NotificationStatus = ResearchNotificationStatus.Delivered;
-    public void MarkFailed() => NotificationStatus = ResearchNotificationStatus.Failed;
+    public void MarkDelivered() => TransitionNotification(ResearchNotificationStatus.Delivered);
+    public void MarkFailed() => TransitionNotification(ResearchNotificationStatus.Failed);
+    private void TransitionNotification(ResearchNotificationStatus next)
+    {
+        if (NotificationStatus != ResearchNotificationStatus.Pending)
+            throw new InvalidOperationException("A subscription notification has one terminal outcome.");
+        NotificationStatus = next;
+    }
 }

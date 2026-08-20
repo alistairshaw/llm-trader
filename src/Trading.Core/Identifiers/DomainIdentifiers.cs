@@ -144,6 +144,15 @@ public sealed record ResearchReportId
     public override string ToString() => Value.ToString();
 }
 
+public sealed record ResearchRunAttemptId
+{
+    private ResearchRunAttemptId(DomainIdentifierValue value) => Value = value;
+    private DomainIdentifierValue Value { get; }
+    public static ResearchRunAttemptId New() => new(DomainIdentifierValue.New());
+    public static ResearchRunAttemptId Parse(string value) => new(DomainIdentifierValue.Parse(value, nameof(value)));
+    public override string ToString() => Value.ToString();
+}
+
 public sealed record HypothesisId
 {
     private HypothesisId(DomainIdentifierValue value) => Value = value;

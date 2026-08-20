@@ -6,7 +6,7 @@ The platform is designed around a strict authority boundary: language models may
 
 ## Current Status
 
-The project is in Stage 1: solution foundation and domain model. The repository contains the initial .NET solution and Docker-first build bootstrap alongside the architecture, domain design, delivery plan, test strategy, and executable task specifications. Production behavior is added incrementally by completing the repository-native tasks.
+Stages 1–3 are complete: the repository has its domain and persistence foundation plus a bounded, recoverable multi-Bot runtime and cross-platform headless host. Stage 4 is adding the shared Research Bot, its immutable report catalog, authorization boundaries, and fixture-backed deterministic workflows. Production behavior is added incrementally through the repository-native tasks.
 
 The current backlog and next eligible task are recorded in [Stage 1 Backlog](docs/tasks/stage-1.md).
 

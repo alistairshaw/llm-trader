@@ -62,6 +62,8 @@ S1-002 defines the repository-root `dev.ps1` interface. Once implemented, use th
 
 The wrapper is orchestration, not a replacement build system: it validates arguments, calls Docker Compose, and returns the underlying exit code. Keep build and dependency truth in the .NET solution, project files, central build files, manifests, and lock files.
 
+The test targets run the current Release outputs without rebuilding them. After adding or changing production code, tests, categories, or projects, run `.\dev.ps1 build` before focused or full tests so validation cannot accidentally exercise stale binaries or report a new filter as unmatched.
+
 WPF can be compiled and self-contained-published from Linux by enabling Windows targeting. It runs on the Windows host for manual testing. Do not attempt to launch a GUI inside the Linux development container. Interactive debugging, designer support, and FlaUI/UIA3 journeys require an interactive Windows environment and are not reasons to install host tooling during ordinary tasks.
 
 ## Start-of-Task Protocol

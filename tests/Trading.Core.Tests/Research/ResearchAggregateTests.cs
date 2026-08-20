@@ -51,6 +51,8 @@ public sealed class ResearchAggregateTests
     {
         var request = NewRequest();
         Assert.That(() => request.Complete(ResearchReportId.New(), Now), Throws.InvalidOperationException);
+        request.BeginValidation();
+        request.Queue();
         request.Start(Now);
         var reportId = ResearchReportId.New();
         request.Complete(reportId, Now.AddMinutes(1));

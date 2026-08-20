@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-006
 title: Implement fixture-backed approved research sources
 stage: 4
-status: planned
+status: ready
 priority: 850
 type: feature
 depends_on: [S4-002]

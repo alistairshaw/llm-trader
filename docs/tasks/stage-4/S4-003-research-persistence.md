@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-003
 title: Add the Stage 4 Research persistence migration
 stage: 4
-status: planned
+status: ready
 priority: 910
 type: infrastructure
 depends_on: [S4-002]

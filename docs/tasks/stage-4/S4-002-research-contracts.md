@@ -3,13 +3,14 @@ schema_version: 1
 id: S4-002
 title: Define Research runtime and publication contracts
 stage: 4
-status: ready
+status: done
 priority: 930
 type: feature
 depends_on: [S4-001]
 labels: [research, domain, contracts]
 created: 2026-08-20
 updated: 2026-08-20
+owner: s4_002
 ---
 
 # S4-002: Define Research Runtime and Publication Contracts
@@ -48,4 +49,11 @@ Use [Domain Model — Research](../../domain.md#7-research), [Research Bot](../.
 
 ## Completion Notes
 
-Pending implementation.
+Completed on 2026-08-20.
+
+- Completed the request, subscription, run-attempt, visibility, and report-disposition lifecycles with explicit one-way transitions and UTC ordering.
+- Added normalized immutable request specifications, deterministic public/private deduplication keys, principals, restricted groups, version pins, Research budgets and usage, stable result codes, scripted model/source/tool/draft/publication/catalog/notification/store contracts, and cancellation on every asynchronous side-effect seam.
+- Added `Trading.Research.Tests` to the solution and contract, lifecycle-matrix, authorization, normalization, and architecture authority tests.
+- Updated `README.md` to reflect completed Stages 1–3 and active Stage 4. Updated `AGENTS.md` with the build-before-test rule discovered when a new filtered category initially exercised stale Release output.
+- Validation: `.\dev.ps1 restore` passed; `.\dev.ps1 build` passed with zero warnings and errors; focused Core Research tests passed 24/24; Research contract tests passed 7/7; architecture tests passed 15/15; `.\dev.ps1 test` passed 682 with the 39 intentionally pending Stage 4 acceptance scenarios and no failures; `.\dev.ps1 format` passed.
+- Deviations: none. Follow-up tasks: none. ADRs: none.
