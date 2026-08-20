@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-013
 title: Run shared Research through the headless host
 stage: 4
-status: planned
+status: ready
 priority: 710
 type: infrastructure
 depends_on: [S4-011, S4-012]

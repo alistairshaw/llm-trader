@@ -144,10 +144,11 @@ Prefer explicit tools such as `GetQuote`, `GetHistoricalBars`, `GetFundamentals`
 
 ### 8.4 Research tools
 
-- `RequestReport` submits a bounded research question and returns a request ID.
+- `RequestResearch` version `1` submits a bounded research question through the shared request service and returns its asynchronous queued, subscribed, or reused status. It never runs Research synchronously.
 - `ListReports` returns authorized report metadata, status, version, freshness, and expiration.
-- `GetReport` retrieves one immutable report version.
-- `GetReportStatus` checks asynchronous requests.
+- `GetReport` retrieves one immutable exact report ID, series, and version with canonical content and provenance.
+
+These three version `1` contracts are the complete Trading Bot Research tool surface. Their calls are authorized against the Bot Run's pinned identity, configuration, tool policy, and budgets. Request status is returned by `RequestResearch`; durable completion or failure notifications wake subscribers through Bot Run triggers.
 
 Report generation is asynchronous. A bot may finish and request a wake-up when a report completes.
 

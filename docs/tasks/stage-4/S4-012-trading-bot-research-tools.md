@@ -3,13 +3,14 @@ schema_version: 1
 id: S4-012
 title: Add Trading Bot Research tools and report consumption
 stage: 4
-status: ready
+status: done
 priority: 730
 type: feature
 depends_on: [S4-005, S4-010]
 labels: [trading-bot, research, tools, isolation]
 created: 2026-08-20
 updated: 2026-08-20
+owner: s4_012
 ---
 
 # S4-012: Add Trading Bot Research Tools and Report Consumption
@@ -49,4 +50,8 @@ Use [Trading Bot — Research tools](../../trading-bot.md#84-research-tools), [I
 
 ## Completion Notes
 
-Pending implementation.
+- Added strict version `1` `RequestResearch`, `ListReports`, and `GetReport` contracts alongside the Stage 3 tool surface. Dispatch binds calls to the active Bot Run and pinned configuration, enforces per-tool, total-tool, Research-request, source-provider, identity, visibility, freshness, and exact-version boundaries, and records canonical start/terminal audit payloads including the exact report version returned.
+- `RequestResearch` delegates to the shared asynchronous request/deduplication service and returns queued, subscribed, or reused state. Deterministic Bot input now includes only catalog metadata authorized for that Bot at the pinned snapshot time. Existing durable completion/failure notification delivery remains the sole wake mechanism and is covered by the Stage 4 integration suite.
+- Updated `README.md`, `AGENTS.md`, and the Trading Bot authority document to define the implemented three-tool contract and remove the obsolete synchronous/status-tool wording.
+- Validation: `./dev.ps1 build` passed with zero warnings and errors; focused Engine ResearchTools passed 5/5; Research TradingBotAccess passed 7/7; Data TradingBotAccess plus Stage4Migrations/model-drift passed 9/9; Integration TradingBotResearch passed 1/1; all Research tests passed 55/55; all Data tests passed 130/130; all Integration tests passed 22/22; architecture tests passed 15/15; the full suite passed 764 with 39 intentionally pending Stage 4 acceptance scenarios and no failures; `./dev.ps1 format` passed after applying the repository formatter in Docker.
+- Deviations: none. Follow-up tasks: none. ADRs: none.

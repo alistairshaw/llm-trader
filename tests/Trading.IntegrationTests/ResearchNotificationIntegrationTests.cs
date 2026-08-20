@@ -11,6 +11,7 @@ namespace Trading.IntegrationTests;
 
 [Category("ResearchNotifications")]
 [Category("TriggerCoalescing")]
+[Category("TradingBotResearch")]
 public sealed class ResearchNotificationIntegrationTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 20, 22, 30, 0, TimeSpan.Zero);

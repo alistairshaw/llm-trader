@@ -44,6 +44,7 @@ public sealed record ToolDispatchContext(BotRunId RunId, TradingBotId TradingBot
 public sealed record ToolDispatchResult(ModelToolResult Result, ToolAuthorizationResult Authorization);
 public interface IToolDispatcher
 {
+    IReadOnlyList<ToolDefinition> Definitions => StageThreeToolDispatcher.Definitions;
     Task<ToolDispatchResult> DispatchAsync(ToolDispatchContext context, ModelToolCall toolCall, CancellationToken cancellationToken);
 }
 

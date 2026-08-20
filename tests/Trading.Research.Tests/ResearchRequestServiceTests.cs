@@ -8,6 +8,7 @@ using Trading.Research.Contracts;
 namespace Trading.Research.Tests;
 
 [Category("RequestService")]
+[Category("TradingBotAccess")]
 public sealed class ResearchRequestServiceTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 20, 20, 0, 0, TimeSpan.Zero);

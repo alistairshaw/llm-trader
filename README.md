@@ -1,5 +1,7 @@
 # Trading Platform
 
+Stage 4 adds shared, asynchronous Research consumption to the bounded Trading Bot runtime. A pinned Bot Run may use only the versioned `RequestResearch`, `ListReports`, and `GetReport` contracts granted by its tool policy; catalog reads enforce report visibility and exact immutable versions, while durable terminal notifications enter the existing Bot trigger workflow.
+
 A safety-first automated trading platform built with C# and .NET 10. It supports multiple isolated Trading Bots, a shared Research Bot, deterministic risk controls, paper and eventual live broker integrations, a cross-platform headless host, and a Windows WPF operator application.
 
 The platform is designed around a strict authority boundary: language models may research and propose, while deterministic application services authorize schedules, risk decisions, capital reservations, and broker operations.

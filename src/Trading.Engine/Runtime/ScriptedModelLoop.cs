@@ -105,7 +105,7 @@ public sealed class BoundedModelLoop(
             try
             {
                 response = await session.GetNextResponseAsync(
-                    new ModelRequest(run.Id, input.Content, StageThreeToolDispatcher.Definitions), cancellationToken).ConfigureAwait(false);
+                    new ModelRequest(run.Id, input.Content, tools.Definitions), cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

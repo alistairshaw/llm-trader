@@ -6,6 +6,7 @@ using Trading.Core.Identifiers;
 using Trading.Core.Persistence;
 using Trading.Core.Policies;
 using Trading.Core.Portfolios;
+using Trading.Core.Research;
 
 namespace Trading.Engine.Runtime;
 
@@ -29,7 +30,7 @@ public sealed class BotRunInputException(BotRunInputFailure failure, string mess
 
 public sealed record DeterministicBotRunInput(string RenderingVersion, string Content, string Sha256Hash,
     BotRun Run, TradingBot Bot, TradingBotConfigurationVersion Configuration, Portfolio Portfolio,
-    PortfolioDecisionSnapshot Snapshot);
+    PortfolioDecisionSnapshot Snapshot, IReadOnlyList<ResearchReportSummary>? AuthorizedReports = null);
 
 public sealed record PinnedPortfolioSnapshot(string CanonicalContent, string ContentHash, int SchemaVersion,
     PortfolioDecisionSnapshot Snapshot);
@@ -45,14 +46,18 @@ public sealed class BotRunInputService(
     ITradingBotRepository botRepository,
     IPortfolioRepository portfolioRepository,
     IPortfolioDecisionSnapshotRepository snapshotRepository,
-    IBotRunInputAuditWriter auditWriter) : IBotRunInputService
+    IBotRunInputAuditWriter auditWriter,
+    IResearchReportCatalogQueries? researchCatalog = null) : IBotRunInputService
 {
     public const string CurrentRenderingVersion = "1";
 
     public async Task<DeterministicBotRunInput> PrepareAsync(BotRunId runId, CancellationToken cancellationToken)
     {
         var facts = await LoadAsync(runId, cancellationToken).ConfigureAwait(false);
-        var content = BotRunInputRenderer.Render(facts.Run, facts.Bot, facts.Configuration, facts.Portfolio, facts.Snapshot);
+        var reports = researchCatalog is null ? [] : await researchCatalog.SearchAsync(
+            new ResearchReportSearch(new ResearchPrincipal(facts.Bot.Id.ToString(), ResearchPrincipalKind.TradingBot),
+                facts.Snapshot.AsOf, FreshOnly: false, Size: 100), cancellationToken).ConfigureAwait(false);
+        var content = BotRunInputRenderer.Render(facts.Run, facts.Bot, facts.Configuration, facts.Portfolio, facts.Snapshot, reports);
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content))).ToLowerInvariant();
         var write = await auditWriter.StoreInputRenderingAsync(runId, facts.Run.Version, CurrentRenderingVersion, hash, cancellationToken)
             .ConfigureAwait(false);
@@ -60,7 +65,7 @@ public sealed class BotRunInputService(
             throw new BotRunInputException(BotRunInputFailure.AuditConcurrencyConflict, "The Bot Run input audit record changed concurrently.");
         facts.Run.RecordInputRendering(CurrentRenderingVersion, hash);
         return new DeterministicBotRunInput(CurrentRenderingVersion, content, hash, facts.Run, facts.Bot,
-            facts.Configuration, facts.Portfolio, facts.Snapshot);
+            facts.Configuration, facts.Portfolio, facts.Snapshot, reports);
     }
 
     public async Task<PinnedPortfolioSnapshot> GetPortfolioSnapshotAsync(BotRunId runId, CancellationToken cancellationToken)
@@ -105,7 +110,7 @@ public sealed class BotRunInputService(
 internal static class BotRunInputRenderer
 {
     public static string Render(BotRun run, TradingBot bot, TradingBotConfigurationVersion configuration,
-        Portfolio portfolio, PortfolioDecisionSnapshot snapshot)
+        Portfolio portfolio, PortfolioDecisionSnapshot snapshot, IReadOnlyList<ResearchReportSummary>? reports = null)
     {
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
@@ -118,10 +123,24 @@ internal static class BotRunInputRenderer
             WriteConfiguration(writer, configuration);
             WritePortfolio(writer, portfolio);
             WriteSnapshot(writer, snapshot);
+            WriteReports(writer, reports ?? []);
             WritePreviousRun(writer, bot);
             writer.WriteEndObject();
         }
         return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    private static void WriteReports(Utf8JsonWriter writer, IEnumerable<ResearchReportSummary> reports)
+    {
+        writer.WritePropertyName("authorizedReports"); writer.WriteStartArray();
+        foreach (var report in reports.OrderBy(x => x.SeriesId, StringComparer.Ordinal).ThenBy(x => x.Version))
+        {
+            writer.WriteStartObject(); writer.WriteString("reportId", report.Id.ToString()); writer.WriteString("seriesId", report.SeriesId);
+            writer.WriteNumber("version", report.Version); writer.WriteString("subject", report.Subject); writer.WriteString("status", report.Status.ToString());
+            writer.WriteString("dataCutoff", Timestamp(report.DataCutoff)); writer.WriteString("generatedAt", Timestamp(report.GeneratedAt));
+            writer.WriteString("expiresAt", Timestamp(report.ExpiresAt)); writer.WriteBoolean("isFresh", report.IsFresh); writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
     }
 
     private static void WriteIdentity(Utf8JsonWriter writer, BotRun run, TradingBot bot,

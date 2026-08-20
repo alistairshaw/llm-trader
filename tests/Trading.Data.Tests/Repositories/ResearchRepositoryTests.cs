@@ -10,6 +10,7 @@ namespace Trading.Data.Tests.Repositories;
 [Category("ResearchRepositories")]
 [Category("ResearchCatalog")]
 [Category("ResearchToolAudit")]
+[Category("TradingBotAccess")]
 public sealed class ResearchRepositoryTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 20, 18, 0, 0, TimeSpan.Zero);

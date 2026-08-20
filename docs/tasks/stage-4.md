@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S4-012` — Add Trading Bot Research tools and report consumption.
+`S4-013` — Run shared Research through the headless host.
 
 ## Ordered Backlog
 
@@ -23,8 +23,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S4-009`](stage-4/S4-009-report-publication.md) | Validate and publish immutable Research reports | Done | 790 | `S4-008` |
 | [`S4-010`](stage-4/S4-010-subscriber-notifications.md) | Deliver durable subscriber notifications and Bot triggers | Done | 770 | `S4-009` |
 | [`S4-011`](stage-4/S4-011-research-orchestration.md) | Orchestrate Research runs and restart recovery | Done | 750 | `S4-010` |
-| [`S4-012`](stage-4/S4-012-trading-bot-research-tools.md) | Add Trading Bot Research tools and report consumption | Ready | 730 | `S4-005`, `S4-010` |
-| [`S4-013`](stage-4/S4-013-headless-research-host.md) | Run shared Research through the headless host | Planned | 710 | `S4-011`, `S4-012` |
+| [`S4-012`](stage-4/S4-012-trading-bot-research-tools.md) | Add Trading Bot Research tools and report consumption | Done | 730 | `S4-005`, `S4-010` |
+| [`S4-013`](stage-4/S4-013-headless-research-host.md) | Run shared Research through the headless host | Ready | 710 | `S4-011`, `S4-012` |
 | [`S4-014`](stage-4/S4-014-research-acceptance.md) | Complete Stage 4 Research acceptance bindings | Planned | 690 | `S4-013` |
 | [`S4-015`](stage-4/S4-015-stage-4-review.md) | Complete Stage 4 acceptance and review | Planned | 1000 | `S4-001`–`S4-014` |
 
