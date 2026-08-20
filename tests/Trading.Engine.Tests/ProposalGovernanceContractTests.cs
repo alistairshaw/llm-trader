@@ -31,8 +31,8 @@ public sealed class ProposalGovernanceContractTests
         var state = new FreshStateReference(PortfolioDecisionSnapshotId.New(),
             new DateTimeOffset(2026, 8, 20, 12, 0, 0, TimeSpan.Zero), "state-hash");
         var command = new CapitalReservationCommand(CapitalReservationId.New(), TradeProposalId.New(),
-            PortfolioId.New(), version, state, new Money(100, Currency.USD), state.ObservedAt,
-            state.ObservedAt.AddMinutes(5));
+            PortfolioId.New(), version, state, new Money(100, Currency.USD),
+            new Money(1000, Currency.USD), state.ObservedAt, state.ObservedAt.AddMinutes(5));
 
         Assert.Multiple(() =>
         {

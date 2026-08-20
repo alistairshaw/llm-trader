@@ -537,7 +537,7 @@ the stable actor type and identity form the durable decision audit.
 | `released_at` | Nullable UTC |
 | `version` | Concurrency token |
 
-A unique partial index permits at most one active reservation per proposal. Reservation creation and proposal approval occur atomically. Available-capital queries include every active reservation.
+A unique partial index permits at most one active reservation per proposal. The approval is an immutable prerequisite; reservation creation revalidates its exact proposal-content binding, the fresh snapshot, Portfolio/Bot ownership, currency, and all unexpired same-Portfolio reservations inside one serializable transaction. Available-capital queries include every active reservation.
 
 Stage 5 repositories reconstruct proposal evidence, evaluations, decisions, and reservations with deterministic
 ordering. Evaluation and decision rows are appended while the proposal concurrency token is advanced; they are

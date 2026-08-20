@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
@@ -177,6 +178,97 @@ public sealed class ProposalGovernanceTransactionRepository(TradingDbContext db)
         await transaction.CommitAsync(token).ConfigureAwait(false);
         return result;
     }
+}
+
+public sealed class AtomicCapitalReservationRepository(TradingDbContext db) : IAtomicCapitalReservationRepository
+{
+    public async Task<AtomicCapitalReservationWriteResult> TryReserveAsync(
+        AtomicCapitalReservationRequest request, CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        try
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable, token).ConfigureAwait(false);
+            var reservation = request.Reservation;
+            var now = UtcUnixMilliseconds.ToProvider(request.At);
+
+            await db.CapitalReservations
+                .Where(x => x.PortfolioId == reservation.PortfolioId.ToString() &&
+                    x.Status == "Active" && x.ExpiresAt <= now)
+                .ExecuteUpdateAsync(update => update.SetProperty(x => x.Status, "Expired")
+                    .SetProperty(x => x.ReleasedAt, now)
+                    .SetProperty(x => x.Version, x => x.Version + 1), token).ConfigureAwait(false);
+
+            var existing = await db.CapitalReservations.AsNoTracking()
+                .Where(x => x.TradeProposalId == reservation.TradeProposalId.ToString())
+                .OrderByDescending(x => x.CreatedAt).ThenBy(x => x.Id)
+                .FirstOrDefaultAsync(token).ConfigureAwait(false);
+            if (existing is not null)
+            {
+                var domain = ProposalPersistenceMapper.ToDomain(existing)!;
+                if (existing.Status == "Active" && domain.PortfolioId == reservation.PortfolioId &&
+                    domain.Amount == reservation.Amount)
+                    return new AtomicCapitalReservationWriteResult.AlreadyReserved(domain);
+                return new AtomicCapitalReservationWriteResult.Rejected("capital_reservation.proposal_already_terminal");
+            }
+
+            var proposal = await ProposalPersistenceMapper.LoadProposalAsync(
+                db, reservation.TradeProposalId.ToString(), token).ConfigureAwait(false);
+            if (proposal is null || proposal.Status != ProposalStatus.Approved)
+                return Reject("capital_reservation.proposal_not_approved");
+            if (proposal.PortfolioId != reservation.PortfolioId || proposal.TradingBotId != request.TradingBotId)
+                return Reject(ProposalGovernanceCodes.PortfolioNotAssigned);
+            if (proposal.ContentVersion != request.ApprovedContentVersion)
+                return Reject(ProposalGovernanceCodes.VersionMismatch);
+            var approval = proposal.ApprovalHistory.Count == 0 ? null : proposal.ApprovalHistory[^1];
+            if (approval is null || approval.Decision != ApprovalDecision.Approved ||
+                approval.ReviewedContentVersion != request.ApprovedContentVersion)
+                return Reject("capital_reservation.approval_binding_mismatch");
+
+            var portfolio = await db.Portfolios.AsNoTracking().SingleOrDefaultAsync(
+                x => x.Id == reservation.PortfolioId.ToString(), token).ConfigureAwait(false);
+            if (portfolio is null || portfolio.AssignedTradingBotId != request.TradingBotId.ToString())
+                return Reject(ProposalGovernanceCodes.PortfolioNotAssigned);
+            if (portfolio.BaseCurrency != reservation.Currency.Code ||
+                request.GrossAvailableCapital.Currency != reservation.Currency)
+                return Reject("capital_reservation.currency_mismatch");
+
+            var state = await db.PortfolioDecisionSnapshots.AsNoTracking().SingleOrDefaultAsync(
+                x => x.Id == request.ValidatedState.SnapshotId.ToString(), token).ConfigureAwait(false);
+            if (state is null || state.PortfolioId != portfolio.Id || state.TradingBotId != request.TradingBotId.ToString() ||
+                state.ContentHash != request.ValidatedState.ContentHash || state.AsOf != request.ValidatedState.ObservedAt.ToUnixTimeMilliseconds())
+                return Reject(ProposalGovernanceCodes.StateMismatch);
+
+            var amounts = await db.CapitalReservations.AsNoTracking()
+                .Where(x => x.PortfolioId == portfolio.Id && x.Currency == reservation.Currency.Code &&
+                    x.Status == "Active" && x.ExpiresAt > now)
+                .Select(x => x.Amount).ToArrayAsync(token).ConfigureAwait(false);
+            var alreadyReserved = amounts.Aggregate(0m,
+                (total, value) => checked(total + CanonicalDecimal.Parse(value)));
+            if (alreadyReserved + reservation.Amount.Amount > request.GrossAvailableCapital.Amount)
+                return Reject(ProposalGovernanceCodes.InsufficientCapital);
+
+            db.CapitalReservations.Add(ProposalPersistenceMapper.ToEntity(reservation));
+            await db.SaveChangesAsync(token).ConfigureAwait(false);
+            await transaction.CommitAsync(token).ConfigureAwait(false);
+            return new AtomicCapitalReservationWriteResult.Reserved(reservation);
+        }
+        catch (DbUpdateException exception) when (exception.InnerException is SqliteException
+        { SqliteExtendedErrorCode: 1555 or 2067 })
+        {
+            db.ChangeTracker.Clear();
+            return new AtomicCapitalReservationWriteResult.Contention();
+        }
+        catch (SqliteException exception) when (exception.SqliteErrorCode is 5 or 6)
+        {
+            db.ChangeTracker.Clear();
+            return new AtomicCapitalReservationWriteResult.Contention();
+        }
+    }
+
+    private static AtomicCapitalReservationWriteResult.Rejected Reject(string code) =>
+        new AtomicCapitalReservationWriteResult.Rejected(code);
 }
 
 internal static class ProposalPersistenceMapper

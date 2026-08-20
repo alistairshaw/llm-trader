@@ -218,6 +218,8 @@ Policy composition is monotonic: child maximums can only decrease, child minimum
 
 Each proposal pins an immutable content version, its Bot Run/configuration/Portfolio/decision snapshot, and exact Report and Hypothesis evidence versions. Guardrail inputs name the platform, account, Portfolio, and Trading Bot policy versions in that fixed order. Human decisions bind the actor, exact proposal content version, and reviewed state reference; reservation requests bind a subsequent fresh-state reference. These provider-neutral contracts expose no order-submission or broker authority.
 
+The reservation service derives exact required capital from the structured action and fresh gross availability, then repeats approval, identity, currency, and fresh-snapshot checks inside a serializable persistence transaction. Every unexpired active reservation in the same Portfolio and currency reduces availability. Exact retries return the existing active reservation; rejection, cancellation, and injected-time expiration release capacity idempotently.
+
 ## 11. Execution Modes
 
 - `ResearchOnly`: store proposals; never submit orders.

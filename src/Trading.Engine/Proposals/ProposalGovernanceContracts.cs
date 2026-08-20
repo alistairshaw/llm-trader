@@ -169,6 +169,7 @@ public sealed record CapitalReservationCommand(
     ProposalContentVersion ApprovedContentVersion,
     FreshStateReference ValidatedState,
     Money Amount,
+    Money GrossAvailableCapital,
     DateTimeOffset CreatedAt,
     DateTimeOffset ExpiresAt);
 
@@ -178,7 +179,12 @@ public sealed record CapitalReservationResult(CapitalReservationOutcome Outcome,
 public interface ICapitalReservationService
 {
     Task<CapitalReservationResult> ReserveAsync(CapitalReservationCommand command, CancellationToken cancellationToken);
+    Task<CapitalReservationReleaseResult> ReleaseAsync(TradeProposalId proposalId,
+        DateTimeOffset at, CancellationToken cancellationToken);
+    Task<int> ExpireAsync(PortfolioId portfolioId, DateTimeOffset at, CancellationToken cancellationToken);
 }
+
+public sealed record CapitalReservationReleaseResult(bool Changed, string Code, CapitalReservation? Reservation);
 
 public interface IProposalGovernanceClock
 {

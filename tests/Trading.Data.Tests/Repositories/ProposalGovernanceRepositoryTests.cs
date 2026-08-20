@@ -208,6 +208,62 @@ internal sealed class ProposalGovernanceRepositoryTests
         Assert.That(string.Join(' ', plan), Does.Contain("IX_capital_reservations_portfolio_id_status_expires_at"));
     }
 
+    [Test, Category("CapitalReservation")]
+    public async Task AtomicReservationIncludesActiveCapitalAndExactRetryIsIdempotent()
+    {
+        await using var database = await CreateAsync();
+        var proposals = new TradeProposalRepository(database.Context);
+        var first = Proposal(); await proposals.RecordAsync(first, "reserve-first", default);
+        Approve(first); Assert.That(await proposals.SaveAsync(first, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        var second = Proposal(); await proposals.RecordAsync(second, "reserve-second", default);
+        Approve(second); Assert.That(await proposals.SaveAsync(second, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        database.Context.ChangeTracker.Clear();
+        var repository = new AtomicCapitalReservationRepository(database.Context);
+        var firstRequest = ReservationRequest(first, 250, 300);
+
+        Assert.That(await repository.TryReserveAsync(firstRequest, default), Is.TypeOf<AtomicCapitalReservationWriteResult.Reserved>());
+        Assert.That(await repository.TryReserveAsync(firstRequest, default), Is.TypeOf<AtomicCapitalReservationWriteResult.AlreadyReserved>());
+        var rejected = await repository.TryReserveAsync(ReservationRequest(second, 100, 300), default);
+        Assert.Multiple(() =>
+        {
+            Assert.That(rejected, Is.EqualTo(new AtomicCapitalReservationWriteResult.Rejected(ProposalGovernanceCodes.InsufficientCapital)));
+            Assert.That(database.Context.CapitalReservations.Count(), Is.EqualTo(1));
+        });
+    }
+
+    [Test, Category("CapitalReservation")]
+    public async Task ReleaseAndExpirationRestoreAvailabilityExactlyOnce()
+    {
+        await using var database = await CreateAsync(); var proposals = new TradeProposalRepository(database.Context);
+        var first = Proposal(); await proposals.RecordAsync(first, "release-first", default); Approve(first);
+        await proposals.SaveAsync(first, 1, default); database.Context.ChangeTracker.Clear();
+        var writer = new AtomicCapitalReservationRepository(database.Context);
+        var reserved = (await writer.TryReserveAsync(ReservationRequest(first, 250, 300), default) as AtomicCapitalReservationWriteResult.Reserved)!.Reservation;
+        Assert.That(reserved.Release(Now.AddMinutes(4)), Is.True);
+        Assert.That(reserved.Release(Now.AddMinutes(4)), Is.False);
+        Assert.That(await new CapitalReservationRepository(database.Context).SaveAsync(reserved, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+
+        var second = Proposal(); await proposals.RecordAsync(second, "release-second", default); Approve(second);
+        await proposals.SaveAsync(second, 1, default); database.Context.ChangeTracker.Clear();
+        Assert.That(await writer.TryReserveAsync(ReservationRequest(second, 300, 300), default), Is.TypeOf<AtomicCapitalReservationWriteResult.Reserved>());
+        Assert.That(await new CapitalReservationRepository(database.Context).ExpireAsync(second.PortfolioId, Now.AddMinutes(21), default), Is.EqualTo(1));
+        Assert.That(await new CapitalReservationRepository(database.Context).ExpireAsync(second.PortfolioId, Now.AddMinutes(21), default), Is.Zero);
+    }
+
+    private static void Approve(TradeProposal proposal)
+    {
+        proposal.StartValidation(Now.AddMinutes(1)); proposal.RequireHumanApproval(Now.AddMinutes(1));
+        proposal.Approve(ProposalApprovalId.New(), new DecisionActor(ApprovalActorType.User, "operator"), null,
+            Now.AddMinutes(2), proposal.ContentVersion,
+            new FreshStateReference(proposal.PortfolioSnapshotId, Now, Hash('s')));
+    }
+
+    private static AtomicCapitalReservationRequest ReservationRequest(TradeProposal proposal, decimal amount, decimal gross) =>
+        new(new CapitalReservation(CapitalReservationId.New(), proposal, new Money(amount, Currency.USD),
+                Now.AddMinutes(3), Now.AddMinutes(20)), proposal.TradingBotId, proposal.ContentVersion,
+            new FreshStateReference(proposal.PortfolioSnapshotId, Now, Hash('s')),
+            new Money(gross, Currency.USD), Now.AddMinutes(3));
+
     private static TradeProposal Proposal() => new(TradeProposalId.New(), TradingBotId.Parse(Bot), BotRunId.Parse(Run),
         PortfolioId.Parse(Portfolio), TradingBotConfigurationVersionId.Parse(Configuration),
         PortfolioDecisionSnapshotId.Parse(Snapshot), InstrumentId.Parse(Instrument),

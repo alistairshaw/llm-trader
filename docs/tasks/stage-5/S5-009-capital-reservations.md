@@ -3,13 +3,14 @@ schema_version: 1
 id: S5-009
 title: Implement atomic capital reservations
 stage: 5
-status: planned
+status: done
 priority: 800
 type: feature
 depends_on: [S5-004, S5-008]
 labels: [capital, concurrency, reservations, sqlite]
 created: 2026-08-20
 updated: 2026-08-20
+owner: s5_009
 ---
 
 # S5-009: Implement Atomic Capital Reservations
@@ -51,4 +52,19 @@ Use [Domain Model — CapitalReservation Aggregate](../../domain.md#82-capitalre
 
 ## Completion Notes
 
-Pending implementation.
+Implemented deterministic exact-currency reservation calculation for priced direct buys and target allocations,
+plus a provider-neutral reservation service with stable idempotency, rejection, contention, release, and expiration
+outcomes. Added a serializable SQLite reservation boundary that rechecks the immutable approval/content binding,
+Portfolio and Trading Bot ownership, fresh snapshot identity/hash/time, currency, proposal lifetime, and all unexpired
+same-Portfolio reservations before inserting one active claim. Exact retries reuse the durable claim; rejection,
+cancellation, and injected-time expiration release capacity idempotently without exposing order or broker authority.
+
+Validation completed on 2026-08-20: `./dev.ps1 build` passed with zero warnings and errors; focused Core reservation
+tests passed 102, Engine reservation tests passed 4, Data reservation tests passed 2, and real-SQLite integration
+contention passed 1; the Stage 5 migration/model-drift test passed 1; `./dev.ps1 test` passed 945 tests with 32
+intentionally pending Stage 5 acceptance scenarios and no failures; and `./dev.ps1 format` passed. The first
+format invocation could not read Docker Desktop configuration in the sandbox; the approved Docker invocation passed.
+
+Updated the README, AGENTS.md, Data Model, and Trading Bot documentation with the durable reservation transaction
+and authority rules. No scope deviations, follow-up tasks, or ADRs were created. Hosted Windows validation remains
+delegated to the Stage 5 review task.

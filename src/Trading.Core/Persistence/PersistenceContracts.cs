@@ -287,6 +287,29 @@ public interface IProposalGovernanceTransactionRepository
         CapitalReservation? reservation, CancellationToken token);
 }
 
+public sealed record AtomicCapitalReservationRequest(
+    CapitalReservation Reservation,
+    TradingBotId TradingBotId,
+    ProposalContentVersion ApprovedContentVersion,
+    FreshStateReference ValidatedState,
+    Money GrossAvailableCapital,
+    DateTimeOffset At);
+
+public abstract record AtomicCapitalReservationWriteResult
+{
+    private AtomicCapitalReservationWriteResult() { }
+    public sealed record Reserved(CapitalReservation Reservation) : AtomicCapitalReservationWriteResult;
+    public sealed record AlreadyReserved(CapitalReservation Reservation) : AtomicCapitalReservationWriteResult;
+    public sealed record Rejected(string Code) : AtomicCapitalReservationWriteResult;
+    public sealed record Contention : AtomicCapitalReservationWriteResult;
+}
+
+public interface IAtomicCapitalReservationRepository
+{
+    Task<AtomicCapitalReservationWriteResult> TryReserveAsync(
+        AtomicCapitalReservationRequest request, CancellationToken token);
+}
+
 public sealed record PortfolioSummary(
     PortfolioId Id,
     string Name,
