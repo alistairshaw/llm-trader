@@ -224,6 +224,8 @@ The bounded model loop checks cumulative limits before model and tool work and a
 
 The Research Bot may recommend a refresh time, but deterministic policy schedules refreshes. A recommendation cannot create an unbounded retry loop or exceed platform budgets.
 
+Terminal delivery is durable and per subscriber. For each authorized subscription, one immediate SQLite transaction derives a visibility-safe outcome from the terminal request, records the exact report ID and version when completion produced a report, appends a `ResearchCompleted` or `ResearchFailed` Trading Bot trigger keyed by the subscription ID, and only then marks the subscription delivered. The request ID is the correlation ID. Pending subscriptions are processed in bounded batches with bounded contention retries; one subscriber's failure does not roll back prior subscribers. The trigger source uniqueness constraint makes duplicate terminal processing and restart idempotent, while normal Bot trigger claiming coalesces multiple pending reasons into at most one follow-up run.
+
 ## 13. Auditability
 
 Each research run records:

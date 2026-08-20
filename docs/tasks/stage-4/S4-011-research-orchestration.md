@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-011
 title: Orchestrate Research runs and restart recovery
 stage: 4
-status: planned
+status: ready
 priority: 750
 type: feature
 depends_on: [S4-010]

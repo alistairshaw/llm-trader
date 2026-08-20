@@ -212,6 +212,24 @@ public interface IResearchReportCatalogQueries
     Task<ResearchReport?> GetAuthorizedVersionAsync(ResearchPrincipal principal, string seriesId, int version, CancellationToken token);
 }
 
+public sealed record ResearchSubscriptionNotification(ResearchSubscriptionId SubscriptionId,
+    ResearchRequestId RequestId, TradingBotId TradingBotId, ResearchTerminalOutcome Outcome,
+    ResearchReportId? ReportId, int? ReportVersion, string CorrelationId, DateTimeOffset DeliveredAt);
+public abstract record ResearchNotificationDeliveryResult
+{
+    private ResearchNotificationDeliveryResult() { }
+    public sealed record Delivered(ResearchSubscriptionNotification Notification, BotRunTriggerId TriggerId) : ResearchNotificationDeliveryResult;
+    public sealed record AlreadyDelivered(ResearchSubscriptionNotification Notification, BotRunTriggerId TriggerId) : ResearchNotificationDeliveryResult;
+    public sealed record NotTerminal : ResearchNotificationDeliveryResult;
+    public sealed record ConcurrencyConflict : ResearchNotificationDeliveryResult;
+}
+public interface IResearchNotificationRepository
+{
+    Task<IReadOnlyList<ResearchSubscriptionId>> GetPendingAsync(ResearchRequestId requestId, int limit, CancellationToken token);
+    Task<ResearchNotificationDeliveryResult> DeliverAsync(ResearchSubscriptionId subscriptionId,
+        BotRunTriggerId triggerId, DateTimeOffset deliveredAt, CancellationToken token);
+}
+
 public sealed record PortfolioSummary(
     PortfolioId Id,
     string Name,

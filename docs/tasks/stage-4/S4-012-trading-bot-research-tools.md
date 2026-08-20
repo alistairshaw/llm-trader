@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-012
 title: Add Trading Bot Research tools and report consumption
 stage: 4
-status: planned
+status: ready
 priority: 730
 type: feature
 depends_on: [S4-005, S4-010]
