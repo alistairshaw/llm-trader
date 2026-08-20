@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 4 passes its complete local review and is ready for exact-revision hosted validation. Stage 5 remains unapproved until the reviewed revision passes Windows, Linux, and security workflows.
+Stage 4 is approved and complete. Exact-revision local, Windows-hosted, Linux-hosted, and security validation passed. Stage 5 may begin.
 
 ## Delivered Scope
 
@@ -70,7 +70,13 @@ Research history is reconstructable from pinned request and attempt identities a
 
 ## Hosted Validation
 
-Pending for the exact reviewed revision. Windows, Linux, and security workflows are the only remaining Stage 4 gates.
+- Validated revision: `9f318b380646c00ebdd5089f2e5543180c5a0938`.
+- CI workflow: [run 32412331394](https://github.com/alistairshaw/llm-trader/actions/runs/32412331394) — passed.
+- Linux job `96565386940` — passed; `test-results-Linux` artifact ID `9422643098`, 94,459 bytes, not expired.
+- Windows job `96565386726` — passed; `test-results-Windows` artifact ID `9422695375`, 95,065 bytes, not expired.
+- Security workflow: [run 32412331359](https://github.com/alistairshaw/llm-trader/actions/runs/32412331359) — passed.
+- Secret scan job `96565386569` — passed; `gitleaks-results.sarif` artifact ID `9422586531`, 6,772 bytes, not expired.
+- Dependency review job `96565388000` — skipped as expected for a push event.
 
 ## Defects, Follow-ups, and Decisions
 
@@ -79,4 +85,4 @@ Pending for the exact reviewed revision. Windows, Linux, and security workflows 
 - Scope deviations: none.
 - Follow-up tasks: none.
 - ADRs created or changed: none.
-- Stage 5 commencement: pending exact-revision hosted validation.
+- Stage 5 commencement: approved.

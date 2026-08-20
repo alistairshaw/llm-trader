@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-No implementation task is locally eligible. `S4-015` awaits exact-revision hosted validation.
+Stage 4 is complete. There is no current Stage 4 task.
 
 ## Ordered Backlog
 
@@ -27,7 +27,7 @@ No implementation task is locally eligible. `S4-015` awaits exact-revision hoste
 | [`S4-013`](stage-4/S4-013-headless-research-host.md) | Run shared Research through the headless host | Done | 710 | `S4-011`, `S4-012` |
 | [`S4-014`](stage-4/S4-014-research-acceptance.md) | Complete Stage 4 Research acceptance bindings | Done | 690 | `S4-013` |
 | [`S4-016`](stage-4/S4-016-production-backed-research-acceptance.md) | Bind Stage 4 acceptance to production Research workflows | Done | 1100 | `S4-013` |
-| [`S4-015`](stage-4/S4-015-stage-4-review.md) | Complete Stage 4 acceptance and review | Review | 1000 | `S4-001`–`S4-014`, `S4-016` |
+| [`S4-015`](stage-4/S4-015-stage-4-review.md) | Complete Stage 4 acceptance and review | Done | 1000 | `S4-001`–`S4-014`, `S4-016` |
 
 ## Stage Exit Gate
 
@@ -39,3 +39,7 @@ No implementation task is locally eligible. `S4-015` awaits exact-revision hoste
 - Release build, formatting, architecture, unit, data, Research, Engine, integration, acceptance, migration, and security gates pass.
 - Hosted Windows and Linux CI passes on the completed Stage 4 revision.
 - The Stage 4 Review Record approves beginning Stage 5.
+
+## Completion Summary
+
+All 16 Stage 4 tasks are done. The production-backed 39-scenario Research acceptance suite, fresh and Stage 3 upgrade migrations, complete 805-test local suite, deterministic headless demonstration, exact-revision Windows and Linux CI, and security scan passed. The [Stage 4 Review Record](../stage-4-review.md) approves beginning Stage 5.

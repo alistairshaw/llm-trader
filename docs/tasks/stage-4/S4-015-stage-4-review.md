@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-015
 title: Complete Stage 4 acceptance and review
 stage: 4
-status: review
+status: done
 priority: 1000
 type: acceptance
 depends_on: [S4-001, S4-002, S4-003, S4-004, S4-005, S4-006, S4-007, S4-008, S4-009, S4-010, S4-011, S4-012, S4-013, S4-014, S4-016]
@@ -67,5 +67,11 @@ Local review passed on 2026-08-20 after `S4-016` repaired the production-backed 
 - Stage 4 migrations passed 5/5 for fresh and completed Stage 3 upgrade paths; EF model drift is empty.
 - Deterministic headless smoke passed shared reuse, private isolation, immutable refresh versioning, exact identities and hash, recoverable shutdown, and graceful deadline completion.
 - The Stage 4 Review Record contains exact commands, counts, migration identity, runtime identities, audit evidence, documentation reconciliation, and the pending decision.
-- Remaining gate: publish this reviewed revision and record exact-revision hosted Windows, Linux, and security success.
+- The reviewed revision was published and its exact-revision hosted Windows, Linux, and security results were recorded below.
 - Deviations: none. Follow-up tasks: none. ADRs: none.
+
+Hosted validation completed against exact revision `9f318b380646c00ebdd5089f2e5543180c5a0938`:
+
+- CI run `32412331394` passed; Linux job `96565386940` and Windows job `96565386726` passed with test-result artifacts `9422643098` and `9422695375` present and not expired.
+- Security run `32412331359` passed; secret scan job `96565386569` passed with non-expired SARIF artifact `9422586531`; dependency review job `96565388000` was skipped as expected for a push.
+- Every acceptance criterion and local/hosted gate now passes. Stage 4 is complete and Stage 5 may begin.
