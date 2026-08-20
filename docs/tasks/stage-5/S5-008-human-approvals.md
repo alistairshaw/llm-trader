@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-008
 title: Implement authorized human proposal decisions
 stage: 5
-status: planned
+status: ready
 priority: 820
 type: feature
 depends_on: [S5-004, S5-007]

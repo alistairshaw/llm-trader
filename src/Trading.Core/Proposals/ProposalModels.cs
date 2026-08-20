@@ -193,7 +193,10 @@ public sealed class GuardrailEvaluation
     internal GuardrailEvaluation(GuardrailEvaluationId id, int sequence, string evaluationStage, string policyVersion,
         GuardrailOutcome outcome, IEnumerable<GuardrailRuleResult> ruleResults, DateTimeOffset evaluatedAt,
         PortfolioDecisionSnapshotId stateSnapshotId, GuardrailPolicyReference? policyReference = null,
-        FreshStateReference? freshState = null)
+        FreshStateReference? freshState = null, IEnumerable<GuardrailPolicyReference>? evaluatedPolicies = null,
+        ProposalContentVersion? proposalContentVersion = null,
+        TradingBotConfigurationVersionId? configurationVersionId = null, string? contentHash = null,
+        string? diagnosticCode = null)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));
         Sequence = sequence;
@@ -206,6 +209,11 @@ public sealed class GuardrailEvaluation
         StateSnapshotId = stateSnapshotId ?? throw new ArgumentNullException(nameof(stateSnapshotId));
         PolicyReference = policyReference;
         FreshState = freshState;
+        EvaluatedPolicies = Array.AsReadOnly((evaluatedPolicies ?? (policyReference is null ? [] : [policyReference])).ToArray());
+        ProposalContentVersion = proposalContentVersion;
+        ConfigurationVersionId = configurationVersionId;
+        ContentHash = contentHash is null ? null : ProposalValidation.Required(contentHash, nameof(contentHash), 64);
+        DiagnosticCode = diagnosticCode is null ? null : ProposalValidation.Required(diagnosticCode, nameof(diagnosticCode), 200);
     }
     public GuardrailEvaluationId Id { get; }
     public int Sequence { get; }
@@ -217,15 +225,25 @@ public sealed class GuardrailEvaluation
     public PortfolioDecisionSnapshotId StateSnapshotId { get; }
     public GuardrailPolicyReference? PolicyReference { get; }
     public FreshStateReference? FreshState { get; }
+    public IReadOnlyList<GuardrailPolicyReference> EvaluatedPolicies { get; }
+    public ProposalContentVersion? ProposalContentVersion { get; }
+    public TradingBotConfigurationVersionId? ConfigurationVersionId { get; }
+    public string? ContentHash { get; }
+    public string? DiagnosticCode { get; }
     internal static GuardrailEvaluation Rehydrate(GuardrailEvaluationState state) => new(state.Id, state.Sequence,
         state.EvaluationStage, state.PolicyVersion, state.Outcome, state.RuleResults, state.EvaluatedAt,
-        state.StateSnapshotId, state.PolicyReference, state.FreshState);
+        state.StateSnapshotId, state.PolicyReference, state.FreshState, state.EvaluatedPolicies,
+        state.ProposalContentVersion, state.ConfigurationVersionId, state.ContentHash, state.DiagnosticCode);
 }
 
 public sealed record GuardrailEvaluationState(GuardrailEvaluationId Id, int Sequence, string EvaluationStage,
     string PolicyVersion, GuardrailOutcome Outcome, IReadOnlyList<GuardrailRuleResult> RuleResults,
     DateTimeOffset EvaluatedAt, PortfolioDecisionSnapshotId StateSnapshotId,
-    GuardrailPolicyReference? PolicyReference = null, FreshStateReference? FreshState = null);
+    GuardrailPolicyReference? PolicyReference = null, FreshStateReference? FreshState = null,
+    IReadOnlyList<GuardrailPolicyReference>? EvaluatedPolicies = null,
+    ProposalContentVersion? ProposalContentVersion = null,
+    TradingBotConfigurationVersionId? ConfigurationVersionId = null, string? ContentHash = null,
+    string? DiagnosticCode = null);
 
 public sealed class ProposalApproval
 {

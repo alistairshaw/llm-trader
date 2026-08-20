@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-010
 title: Enforce ResearchOnly proposal governance
 stage: 5
-status: planned
+status: ready
 priority: 780
 type: feature
 depends_on: [S5-005, S5-007]

@@ -495,9 +495,9 @@ Composite PK `(trade_proposal_id, research_report_id)`, referencing exact immuta
 
 ### 9.3 `guardrail_evaluations`
 
-Append-only children with `id`, `trade_proposal_id`, `evaluation_sequence`, `evaluation_stage`, `policy_version`, `outcome`, `state_snapshot_id`, `rule_results_json`, and `evaluated_at`.
+Append-only children with `id`, `trade_proposal_id`, `evaluation_sequence`, `evaluation_stage`, `policy_version`, `outcome`, `state_snapshot_id`, `rule_results_json`, `content_hash`, and `evaluated_at`. The canonical JSON preserves every ordered structured rule result, all evaluated policy identities and versions, the exact proposal content version and hash, configuration version, fresh snapshot observation and hash, and a stable bounded diagnostic code. `content_hash` is the lowercase SHA-256 identity of the pinned evaluation input.
 
-Unique `(trade_proposal_id, evaluation_sequence)`. Revalidation appends a new evaluation.
+Unique `(trade_proposal_id, evaluation_sequence)` and `content_hash`. Revalidation appends a new evaluation; an exact input retry returns the existing artifact. SQLite triggers reject direct updates and deletes in addition to the EF change-tracker guard.
 
 ### 9.4 `proposal_approvals`
 

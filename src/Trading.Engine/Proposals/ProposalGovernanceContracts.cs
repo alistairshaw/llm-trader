@@ -72,6 +72,20 @@ public interface IGuardrailPolicyEvaluator
     Task<GuardrailEvaluationDecision> EvaluateAsync(GuardrailEvaluationRequest request, CancellationToken cancellationToken);
 }
 
+public enum GuardrailEvaluationPersistenceOutcome { Persisted, AlreadyEvaluated, NotFound, ConcurrencyConflict }
+
+public sealed record GuardrailEvaluationPersistenceResult(
+    GuardrailEvaluationPersistenceOutcome Outcome, string Code, GuardrailEvaluation? Evaluation,
+    TradeProposal? Proposal);
+
+public interface IGuardrailEvaluationService
+{
+    Task<GuardrailEvaluationPersistenceResult> EvaluateAndPersistAsync(
+        TradeProposalId proposalId, GuardrailPolicySet policies,
+        HierarchicalGuardrailPolicySet policyDefinitions, GuardrailState state,
+        FreshStateReference freshState, CancellationToken cancellationToken);
+}
+
 public sealed record ProposalDecisionAuthorizationRequest(
     DecisionActor Actor,
     TradeProposalId ProposalId,

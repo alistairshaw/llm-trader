@@ -574,6 +574,8 @@ Lower layers may tighten but not weaken parent constraints. Kill switches exist 
 
 The effective policy is composed in the fixed `Platform -> Account -> Portfolio -> TradingBot` order. Maximum values use the lowest inherited value, minimum reserves and liquidity use the highest inherited value, eligible-instrument sets intersect, and kill switches and open-market requirements combine restrictively. Evaluation uses the stable `guardrail.*` rule and reason namespaces for authority, kill switch, mandate, instrument eligibility, expiry, position notional, concentration, available capital, price freshness, liquidity, and market hours. Missing or uncertain price, liquidity, market, identity, or mandate state fails restrictively. A rejection makes the proposal non-executable immediately, while the pure evaluator still returns the complete ordered result set required for audit.
 
+Each application-level evaluation is an immutable, monotonically sequenced artifact bound to the proposal content hash and version, configuration version, fresh Portfolio snapshot and hash, and every effective policy version. Its canonical input hash is the idempotency boundary: an exact retry reuses the artifact, while changed fresh state or policy versions append a new evaluation. A passing evaluation advances to the approval boundary; any failed rule rejects the proposal. Optimistic concurrency commits the lifecycle transition and artifact together.
+
 ## 11. Core Value Objects
 
 Explicit immutable value-object classes or record classes include:

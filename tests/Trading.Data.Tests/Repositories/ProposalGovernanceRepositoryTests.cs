@@ -99,6 +99,44 @@ internal sealed class ProposalGovernanceRepositoryTests
         });
     }
 
+    [Test, Category("GuardrailEvaluationPersistence")]
+    public async Task DetailedEvaluationRoundTripsExactlyAndCannotBeChangedOrDeleted()
+    {
+        await using var database = await CreateAsync(); var proposals = new TradeProposalRepository(database.Context);
+        var proposal = Proposal(); await proposals.RecordAsync(proposal, "detailed-evaluation", default);
+        proposal.StartValidation(Now.AddMinutes(1));
+        var policies = Enum.GetValues<GuardrailPolicyLevel>()
+            .Select(x => new GuardrailPolicyReference(x, $"{x}-policy", "v1")).ToArray();
+        var fresh = new FreshStateReference(PortfolioDecisionSnapshotId.Parse(Snapshot), Now.AddMinutes(1), Hash('s'));
+        proposal.RecordEvaluation(GuardrailEvaluationId.New(), policies, GuardrailOutcome.Passed,
+            [new GuardrailRuleResult("notional", GuardrailOutcome.Passed, "within limit",
+                GuardrailPolicyLevel.Platform, "v1", "250", "500", "guardrail.passed")],
+            Now.AddMinutes(1), fresh, Hash('e'), "guardrail.passed");
+        proposal.CompleteValidation(GuardrailOutcome.Passed, Now.AddMinutes(1));
+        Assert.That(await proposals.SaveAsync(proposal, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        database.Context.ChangeTracker.Clear();
+
+        var loaded = (await proposals.GetAsync(proposal.Id, default))!;
+        var evaluation = loaded.GuardrailEvaluations.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(evaluation.ContentHash, Is.EqualTo(Hash('e')));
+            Assert.That(evaluation.EvaluatedPolicies, Is.EqualTo(policies));
+            Assert.That(evaluation.ProposalContentVersion, Is.EqualTo(proposal.ContentVersion));
+            Assert.That(evaluation.ConfigurationVersionId, Is.EqualTo(proposal.ConfigurationVersionId));
+            Assert.That(evaluation.FreshState, Is.EqualTo(fresh));
+            Assert.That(evaluation.RuleResults.Single().ObservedValue, Is.EqualTo("250"));
+            Assert.That(evaluation.DiagnosticCode, Is.EqualTo("guardrail.passed"));
+        });
+
+        var row = await database.Context.GuardrailEvaluations.SingleAsync();
+        row.Outcome = "Failed";
+        Assert.That(async () => await database.Context.SaveChangesAsync(), Throws.InvalidOperationException);
+        database.Context.ChangeTracker.Clear();
+        database.Context.GuardrailEvaluations.Remove(await database.Context.GuardrailEvaluations.SingleAsync());
+        Assert.That(async () => await database.Context.SaveChangesAsync(), Throws.InvalidOperationException);
+    }
+
     [Test]
     public async Task ReservationUniquenessFailureRollsBackProposalDecision()
     {

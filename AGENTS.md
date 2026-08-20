@@ -133,6 +133,7 @@ If documents disagree, identify the disagreement explicitly and resolve it in do
 - Execute Research model and tool I/O only after the claim transaction commits. On restart, terminalize each abandoned active attempt with the stable recovery reason before requeueing its request; never overwrite or reuse the abandoned attempt.
 - Keep Trading Bot Research access asynchronous and limited to the versioned `RequestResearch`, `ListReports`, and exact-version `GetReport` tools. Authorize from the Bot Run's pinned identity, configuration, policy, budgets, and report visibility; record the exact consumed version in durable tool audit.
 - Keep Trading Bot proposal access limited to the versioned `ProposeTrade` and `ProposeTargetAllocation` tools. Validate canonical exact-decimal arguments and authorize pinned run, configuration, Portfolio snapshot, evidence visibility, policy, and budgets before idempotently recording a proposal; never expose approval, reservation, order, broker, or policy-mutation authority through these tools.
+- Persist each guardrail evaluation and its proposal disposition atomically. Bind its canonical hash to the exact proposal content, configuration, fresh snapshot, and ordered policy versions; exact retries reuse the artifact, while revalidation appends and never overwrites an earlier rule result.
 - Never add a test that contacts a real LLM, the public web, live market data, or a live broker to the default or commit-gating suite.
 - Never submit a live-money order during development or automated validation.
 

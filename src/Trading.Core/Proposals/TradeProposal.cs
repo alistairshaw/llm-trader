@@ -78,6 +78,13 @@ public sealed class TradeProposal
 
     public void StartValidation(DateTimeOffset at) => Transition(ProposalStatus.Recorded, ProposalStatus.Validating, at);
 
+    public void StartRevalidation(DateTimeOffset at)
+    {
+        if (Status != ProposalStatus.AwaitingHumanApproval)
+            throw new InvalidOperationException("Only a proposal awaiting approval can be revalidated.");
+        EnsureNotExpired(at); Status = ProposalStatus.Validating; Version++;
+    }
+
     public GuardrailEvaluation RecordEvaluation(GuardrailEvaluationId id, string stage, string policyVersion,
         GuardrailOutcome outcome, IEnumerable<GuardrailRuleResult> ruleResults, DateTimeOffset evaluatedAt,
         PortfolioDecisionSnapshotId stateSnapshotId)
@@ -102,6 +109,35 @@ public sealed class TradeProposal
             outcome, ruleResults, evaluatedAt, freshState.SnapshotId, policy, freshState);
         _evaluations.Add(evaluation);
         return evaluation;
+    }
+
+    public GuardrailEvaluation RecordEvaluation(GuardrailEvaluationId id,
+        IEnumerable<GuardrailPolicyReference> evaluatedPolicies, GuardrailOutcome outcome,
+        IEnumerable<GuardrailRuleResult> ruleResults, DateTimeOffset evaluatedAt, FreshStateReference freshState,
+        string contentHash, string diagnosticCode)
+    {
+        ArgumentNullException.ThrowIfNull(evaluatedPolicies);
+        var policies = evaluatedPolicies.ToArray();
+        if (policies.Length == 0) throw new ArgumentException("At least one evaluated policy is required.", nameof(evaluatedPolicies));
+        if (Status != ProposalStatus.Validating) throw new InvalidOperationException("Evaluations require validation to be active.");
+        EnsureNotExpired(evaluatedAt);
+        var evaluation = new GuardrailEvaluation(id, _evaluations.Count + 1, "Hierarchical",
+            string.Join("|", policies.Select(x => x.Version)), outcome, ruleResults, evaluatedAt,
+            freshState.SnapshotId, null, freshState, policies, ContentVersion, ConfigurationVersionId,
+            contentHash, diagnosticCode);
+        _evaluations.Add(evaluation);
+        return evaluation;
+    }
+
+    public void CompleteValidation(GuardrailOutcome outcome, DateTimeOffset at)
+    {
+        if (outcome == GuardrailOutcome.Failed)
+        {
+            if (Status != ProposalStatus.Validating) throw new InvalidOperationException("Proposal is not validating.");
+            EnsureNotExpired(at); Status = ProposalStatus.Rejected; Version++;
+            return;
+        }
+        RequireHumanApproval(at);
     }
 
     public void RequireHumanApproval(DateTimeOffset at) => Transition(ProposalStatus.Validating, ProposalStatus.AwaitingHumanApproval, at);

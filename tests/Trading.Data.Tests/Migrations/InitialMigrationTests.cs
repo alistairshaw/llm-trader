@@ -37,7 +37,7 @@ internal sealed class InitialMigrationTests
             ["hypothesis_test_results"] = ["id", "hypothesis_version_id", "dataset_version", "code_version", "parameters_hash", "status", "started_at", "completed_at", "metrics_json", "artifacts_json", "result_hash"],
             ["trade_proposals"] = ["id", "trading_bot_id", "bot_run_id", "portfolio_id", "portfolio_snapshot_id", "configuration_version_id", "instrument_id", "proposal_type", "requested_action_json", "rationale", "hypothesis_version_id", "status", "created_at", "valid_until", "idempotency_key", "version"],
             ["trade_proposal_evidence_reports"] = ["trade_proposal_id", "research_report_id"],
-            ["guardrail_evaluations"] = ["id", "trade_proposal_id", "evaluation_sequence", "evaluation_stage", "policy_version", "outcome", "state_snapshot_id", "rule_results_json", "evaluated_at"],
+            ["guardrail_evaluations"] = ["id", "content_hash", "evaluated_at", "evaluation_sequence", "evaluation_stage", "outcome", "policy_version", "rule_results_json", "state_snapshot_id", "trade_proposal_id"],
             ["proposal_approvals"] = ["id", "trade_proposal_id", "decision", "actor_type", "actor_id", "reason", "decided_at", "proposal_version", "state_snapshot_id"],
             ["capital_reservations"] = ["id", "portfolio_id", "trade_proposal_id", "order_id", "amount", "currency", "status", "created_at", "expires_at", "consumed_at", "released_at", "version"],
             ["schema_metadata"] = ["key", "value", "updated_at"],
@@ -52,7 +52,7 @@ internal sealed class InitialMigrationTests
         await initializer.InitializeAsync();
         await initializer.InitializeAsync();
 
-        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(5));
+        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(7));
         Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("5"));
     }
 
@@ -73,7 +73,7 @@ internal sealed class InitialMigrationTests
             await new DatabaseInitializer(context).InitializeAsync();
 
             Assert.That(await TableNamesAsync(context.Database.GetDbConnection()), Does.Contain("portfolios"));
-            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(5));
+            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(7));
         }
         finally
         {
@@ -130,7 +130,7 @@ internal sealed class InitialMigrationTests
         Assert.That(foreignKeys, Has.Count.EqualTo(53));
         Assert.That(foreignKeys.Select(key => key.DeleteAction), Is.All.EqualTo("RESTRICT"));
         Assert.That(foreignKeys, Does.Contain(("portfolio_ledger_entries", "portfolio_ledger_entries", "RESTRICT")));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_AddStage5ProposalGovernance"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_RestoreGuardrailEvaluationImmutabilityTriggers"));
         Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("5"));
     }
 
