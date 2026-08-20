@@ -414,9 +414,10 @@ TradeProposal
     InstrumentId
     ProposalType
     RequestedAction
+    ContentVersion
     Rationale
-    HypothesisVersionId
-    EvidenceReportIds
+    HypothesisEvidence (exact version and content hash)
+    ReportEvidence (exact report identity, series version, and content hash)
     Status
     CreatedAt
     ValidUntil
@@ -429,6 +430,8 @@ GuardrailEvaluation
     RuleResults
     EvaluatedAt
     StateSnapshotId
+    PolicyReference (level, identity, and version)
+    FreshStateReference (snapshot, observed time, and content hash)
 
 ProposalApproval
     Id: ProposalApprovalId
@@ -439,9 +442,11 @@ ProposalApproval
     DecidedAt
     ProposalVersion
     StateSnapshotId
+    ReviewedContentVersion
+    ReviewedStateReference
 ```
 
-Proposal types are `DirectTrade` and `TargetAllocation`. Lifecycle states include `Recorded`, `Validating`, `Rejected`, `AwaitingHumanApproval`, `Approved`, `Expired`, `Cancelled`, and `ConvertedToOrder`.
+Proposal types are versioned `DirectTrade` and `TargetAllocation` actions with exact decimal financial primitives and bounded canonical values. Lifecycle states include `Recorded`, `Validating`, `Rejected`, `AwaitingHumanApproval`, `Approved`, `Expired`, `Cancelled`, and `ConvertedToOrder`. Governance results use stable `proposal_governance.*` codes across domain and application boundaries.
 
 Invariants:
 

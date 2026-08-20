@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-003
 title: Add the Stage 5 proposal persistence migration
 stage: 5
-status: planned
+status: ready
 priority: 920
 type: infrastructure
 depends_on: [S5-002]

@@ -5,6 +5,7 @@ using Trading.Core.Proposals;
 namespace Trading.Core.Tests.Proposals;
 
 [Category("ProposalOrReservationAggregates")]
+[Category("ProposalGovernance")]
 public sealed class ProposalReservationAggregateTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 19, 12, 0, 0, TimeSpan.Zero);
@@ -39,6 +40,47 @@ public sealed class ProposalReservationAggregateTests
             Assert.That(direct.RequestedAction, Is.TypeOf<DirectTradeAction>());
             Assert.That(allocation.ProposalType, Is.EqualTo(ProposalType.TargetAllocation));
             Assert.That(allocation.RequestedAction, Is.TypeOf<TargetAllocationAction>());
+        });
+    }
+
+    [Test]
+    public void ExactEvidenceAndContentVersionAreDefensivelyPinned()
+    {
+        var report = new ReportEvidenceReference(ResearchReportId.New(), "series", 7, "report-hash");
+        var reports = new List<ReportEvidenceReference> { report };
+        var hypothesis = new HypothesisEvidenceReference(HypothesisVersionId.New(), "hypothesis-hash");
+        var content = new ProposalContentVersion(4, "proposal-hash");
+        var proposal = new TradeProposal(TradeProposalId.New(), TradingBotId.New(), BotRunId.New(), PortfolioId.New(),
+            TradingBotConfigurationVersionId.New(), PortfolioDecisionSnapshotId.New(), InstrumentId.New(),
+            new DirectTradeAction(TradeSide.Buy, new Quantity(10, "shares"), ProposedOrderType.Limit,
+                new Price(25, Currency.USD), ProposedTimeInForce.Day), "rationale", content, hypothesis, reports,
+            Now, Now.AddHours(1));
+        reports.Clear();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(proposal.ContentVersion, Is.SameAs(content));
+            Assert.That(proposal.ReportEvidence, Is.EqualTo(new[] { report }));
+            Assert.That(proposal.HypothesisEvidence, Is.SameAs(hypothesis));
+            Assert.That(((DirectTradeAction)proposal.RequestedAction).SchemaVersion, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public void ApprovalPinsExactImmutableContentAndFreshState()
+    {
+        var proposal = ExactProposal();
+        proposal.StartValidation(Now.AddMinutes(1));
+        proposal.RequireHumanApproval(Now.AddMinutes(2));
+        var state = new FreshStateReference(proposal.PortfolioSnapshotId, Now.AddMinutes(2), "fresh-state-hash");
+        var approval = proposal.Approve(ProposalApprovalId.New(), new DecisionActor(ApprovalActorType.User, "operator-1"),
+            "reviewed", Now.AddMinutes(3), proposal.ContentVersion, state);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(approval.ReviewedContentVersion, Is.EqualTo(proposal.ContentVersion));
+            Assert.That(approval.ReviewedState, Is.EqualTo(state));
+            Assert.That(approval.Actor, Is.EqualTo(new DecisionActor(ApprovalActorType.User, "operator-1")));
         });
     }
 
@@ -111,6 +153,14 @@ public sealed class ProposalReservationAggregateTests
         if (allowed) Assert.That(Act, Throws.Nothing); else Assert.That(Act, Throws.InvalidOperationException);
     }
 
+    [TestCaseSource(nameof(AllProposalTransitions))]
+    public void EveryProposalStatePairHasAnExplicitTransitionOutcome(ProposalStatus from, ProposalStatus to, bool allowed)
+    {
+        var proposal = ProposalIn(from);
+        void Act() => TransitionProposal(proposal, to);
+        if (allowed) Assert.That(Act, Throws.Nothing); else Assert.That(Act, Throws.InvalidOperationException);
+    }
+
     [TestCase(CapitalReservationStatus.Active, CapitalReservationStatus.Consumed, true)]
     [TestCase(CapitalReservationStatus.Active, CapitalReservationStatus.Released, true)]
     [TestCase(CapitalReservationStatus.Active, CapitalReservationStatus.Expired, true)]
@@ -118,6 +168,15 @@ public sealed class ProposalReservationAggregateTests
     [TestCase(CapitalReservationStatus.Released, CapitalReservationStatus.Consumed, false)]
     [TestCase(CapitalReservationStatus.Expired, CapitalReservationStatus.Consumed, false)]
     public void ReservationTransitionsAreTableDriven(CapitalReservationStatus from, CapitalReservationStatus to, bool allowed)
+    {
+        var reservation = ReservationIn(from);
+        void Act() => TransitionReservation(reservation, to);
+        if (allowed) Assert.That(Act, Throws.Nothing); else Assert.That(Act, Throws.InvalidOperationException);
+    }
+
+    [TestCaseSource(nameof(AllReservationTransitions))]
+    public void EveryReservationStatePairHasAnExplicitTransitionOutcome(
+        CapitalReservationStatus from, CapitalReservationStatus to, bool allowed)
     {
         var reservation = ReservationIn(from);
         void Act() => TransitionReservation(reservation, to);
@@ -162,8 +221,17 @@ public sealed class ProposalReservationAggregateTests
         new(TradeProposalId.New(), TradingBotId.New(), BotRunId.New(), PortfolioId.New(),
             TradingBotConfigurationVersionId.New(), PortfolioDecisionSnapshotId.New(), InstrumentId.New(),
             action ?? new DirectTradeAction(TradeSide.Buy, new Quantity(10, "shares"), "Limit",
-                new Price(25, Currency.USD), "Day"), "Within allocation", HypothesisVersionId.New(),
-            evidence ?? [ResearchReportId.New()], Now, Now.AddHours(1));
+                new Price(25, Currency.USD), "Day"), "Within allocation", new ProposalContentVersion(1, "proposal-hash"),
+            new HypothesisEvidenceReference(HypothesisVersionId.New(), "hypothesis-hash"),
+            (evidence ?? [ResearchReportId.New()]).Select((id, index) => new ReportEvidenceReference(id, $"series-{index}", 1, $"report-hash-{index}")),
+            Now, Now.AddHours(1));
+
+    private static TradeProposal ExactProposal() =>
+        new(TradeProposalId.New(), TradingBotId.New(), BotRunId.New(), PortfolioId.New(),
+            TradingBotConfigurationVersionId.New(), PortfolioDecisionSnapshotId.New(), InstrumentId.New(),
+            new TargetAllocationAction(new Percentage(25)), "Within allocation", new ProposalContentVersion(1, "proposal-hash"),
+            new HypothesisEvidenceReference(HypothesisVersionId.New(), "hypothesis-hash"),
+            [new ReportEvidenceReference(ResearchReportId.New(), "series", 1, "report-hash")], Now, Now.AddHours(1));
 
     private static CapitalReservation NewReservation(Money amount) =>
         new(CapitalReservationId.New(), ApprovedProposal(), amount, Now, Now.AddMinutes(10));
@@ -187,14 +255,20 @@ public sealed class ProposalReservationAggregateTests
         if (status == ProposalStatus.Approved) { proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.AuthorizedPolicy, "policy", null, Now.AddMinutes(2), proposal.Version, proposal.PortfolioSnapshotId); return proposal; }
         if (status == ProposalStatus.Rejected) { proposal.Reject(ProposalApprovalId.New(), ApprovalActorType.User, "user", "no", Now.AddMinutes(2), proposal.Version, proposal.PortfolioSnapshotId); return proposal; }
         if (status == ProposalStatus.Cancelled) { proposal.Cancel(Now.AddMinutes(2)); return proposal; }
+        if (status == ProposalStatus.Expired) { proposal.Expire(proposal.ValidUntil); return proposal; }
+        if (status == ProposalStatus.ConvertedToOrder) { proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.AuthorizedPolicy, "policy", null, Now.AddMinutes(2), proposal.Version, proposal.PortfolioSnapshotId); proposal.ConvertToOrder(Now.AddMinutes(3)); return proposal; }
         throw new ArgumentOutOfRangeException(nameof(status));
     }
 
     private static void TransitionProposal(TradeProposal proposal, ProposalStatus target)
     {
+        if (target == ProposalStatus.Recorded) throw new InvalidOperationException("Recorded is the initial state.");
         if (target == ProposalStatus.Validating) proposal.StartValidation(Now.AddMinutes(3));
         else if (target == ProposalStatus.AwaitingHumanApproval) proposal.RequireHumanApproval(Now.AddMinutes(3));
         else if (target == ProposalStatus.Approved) proposal.Approve(ProposalApprovalId.New(), ApprovalActorType.User, "user", null, Now.AddMinutes(3), proposal.Version, proposal.PortfolioSnapshotId);
+        else if (target == ProposalStatus.Rejected) proposal.Reject(ProposalApprovalId.New(), ApprovalActorType.User, "user", "no", Now.AddMinutes(3), proposal.Version, proposal.PortfolioSnapshotId);
+        else if (target == ProposalStatus.Expired) proposal.Expire(proposal.ValidUntil);
+        else if (target == ProposalStatus.Cancelled) proposal.Cancel(Now.AddMinutes(3));
         else if (target == ProposalStatus.ConvertedToOrder) proposal.ConvertToOrder(Now.AddMinutes(3));
         else throw new ArgumentOutOfRangeException(nameof(target));
     }
@@ -210,9 +284,45 @@ public sealed class ProposalReservationAggregateTests
 
     private static void TransitionReservation(CapitalReservation reservation, CapitalReservationStatus target)
     {
+        if (target == CapitalReservationStatus.Active) throw new InvalidOperationException("Active is the initial state.");
         if (target == CapitalReservationStatus.Consumed) reservation.Consume(Now.AddMinutes(11));
         else if (target == CapitalReservationStatus.Released) reservation.Release(Now.AddMinutes(11));
         else if (target == CapitalReservationStatus.Expired) reservation.Expire(Now.AddMinutes(11));
         else throw new ArgumentOutOfRangeException(nameof(target));
+    }
+
+    private static IEnumerable<TestCaseData> AllProposalTransitions()
+    {
+        var allowed = new HashSet<(ProposalStatus, ProposalStatus)>
+        {
+            (ProposalStatus.Recorded, ProposalStatus.Validating), (ProposalStatus.Recorded, ProposalStatus.Expired),
+            (ProposalStatus.Recorded, ProposalStatus.Cancelled),
+            (ProposalStatus.Validating, ProposalStatus.AwaitingHumanApproval), (ProposalStatus.Validating, ProposalStatus.Approved),
+            (ProposalStatus.Validating, ProposalStatus.Rejected), (ProposalStatus.Validating, ProposalStatus.Expired),
+            (ProposalStatus.Validating, ProposalStatus.Cancelled),
+            (ProposalStatus.AwaitingHumanApproval, ProposalStatus.Approved), (ProposalStatus.AwaitingHumanApproval, ProposalStatus.Rejected),
+            (ProposalStatus.AwaitingHumanApproval, ProposalStatus.Expired), (ProposalStatus.AwaitingHumanApproval, ProposalStatus.Cancelled),
+            (ProposalStatus.Approved, ProposalStatus.Cancelled), (ProposalStatus.Approved, ProposalStatus.ConvertedToOrder),
+            (ProposalStatus.Expired, ProposalStatus.Expired), (ProposalStatus.ConvertedToOrder, ProposalStatus.ConvertedToOrder),
+        };
+        foreach (var from in Enum.GetValues<ProposalStatus>())
+        {
+            foreach (var to in Enum.GetValues<ProposalStatus>())
+            {
+                yield return new TestCaseData(from, to, allowed.Contains((from, to))).SetName($"Proposal_{from}_to_{to}");
+            }
+        }
+    }
+
+    private static IEnumerable<TestCaseData> AllReservationTransitions()
+    {
+        foreach (var from in Enum.GetValues<CapitalReservationStatus>())
+        {
+            foreach (var to in Enum.GetValues<CapitalReservationStatus>())
+            {
+                var allowed = from == CapitalReservationStatus.Active && to != CapitalReservationStatus.Active || from == to && from != CapitalReservationStatus.Active;
+                yield return new TestCaseData(from, to, allowed).SetName($"Reservation_{from}_to_{to}");
+            }
+        }
     }
 }

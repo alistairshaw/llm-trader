@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-002
 title: Define proposal governance domain and contracts
 stage: 5
-status: ready
+status: done
 priority: 940
 type: feature
 depends_on: [S5-001]
@@ -50,4 +50,9 @@ Use [Domain Model — Trade Proposals](../../domain.md#8-trade-proposals), [Arch
 
 ## Completion Notes
 
-Pending implementation.
+- Completed the immutable proposal-governance model with schema-versioned direct-trade and target-allocation actions, exact content/evidence versions, typed policy and fresh-state references, structured actors, rule results, and stable `proposal_governance.*` result codes.
+- Added provider-neutral application ports for proposal recording/context acquisition, hierarchical policy evaluation, actor authorization, fresh-state acquisition, capital availability/reservation, UTC clocks, deterministic identifiers, transactions, and cancellation.
+- Added exhaustive table-driven coverage for all 64 Proposal and all 16 Capital Reservation state pairs, exact approval bindings, action/evidence primitives, authority boundaries, and application contracts.
+- Updated the Domain Model and Trading Bot authorities to document exact-version binding, fixed policy order, fresh-state reservation binding, and the absence of broker/order-submission authority.
+- Validation passed: `\.\dev.ps1 build` (Release, zero warnings/errors); `\.\dev.ps1 test -Project tests/Trading.Core.Tests -Filter "Category=ProposalGovernance"` (102 passed); `\.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=ProposalContracts"` (4 passed); `\.\dev.ps1 test -Project tests/Trading.Architecture.Tests` (17 passed); `\.\dev.ps1 test` (893 passed, 32 intentionally pending Stage 5 acceptance cases, zero failures); `\.\dev.ps1 format` (passed).
+- Deviations: none. Follow-up tasks: none. ADRs: none.

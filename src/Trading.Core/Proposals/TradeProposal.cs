@@ -9,8 +9,8 @@ public sealed class TradeProposal
 
     public TradeProposal(TradeProposalId id, TradingBotId tradingBotId, BotRunId botRunId, PortfolioId portfolioId,
         TradingBotConfigurationVersionId configurationVersionId, PortfolioDecisionSnapshotId portfolioSnapshotId,
-        InstrumentId instrumentId, RequestedAction requestedAction, string rationale,
-        HypothesisVersionId? hypothesisVersionId, IEnumerable<ResearchReportId> evidenceReportIds,
+        InstrumentId instrumentId, RequestedAction requestedAction, string rationale, ProposalContentVersion contentVersion,
+        HypothesisEvidenceReference? hypothesisEvidence, IEnumerable<ReportEvidenceReference> reportEvidence,
         DateTimeOffset createdAt, DateTimeOffset validUntil)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));
@@ -23,8 +23,15 @@ public sealed class TradeProposal
         RequestedAction = requestedAction ?? throw new ArgumentNullException(nameof(requestedAction));
         ProposalType = requestedAction switch { DirectTradeAction => ProposalType.DirectTrade, TargetAllocationAction => ProposalType.TargetAllocation, _ => throw new ArgumentException("Unsupported requested action.", nameof(requestedAction)) };
         Rationale = ProposalValidation.Required(rationale, nameof(rationale), 4000);
-        HypothesisVersionId = hypothesisVersionId;
-        EvidenceReportIds = Array.AsReadOnly((evidenceReportIds ?? throw new ArgumentNullException(nameof(evidenceReportIds))).Distinct().ToArray());
+        ContentVersion = contentVersion ?? throw new ArgumentNullException(nameof(contentVersion));
+        HypothesisEvidence = hypothesisEvidence;
+        HypothesisVersionId = hypothesisEvidence?.VersionId;
+        ArgumentNullException.ThrowIfNull(reportEvidence);
+        var exactReports = reportEvidence.ToArray();
+        if (exactReports.Any(item => item is null) || exactReports.Select(item => item.ReportId).Distinct().Count() != exactReports.Length)
+            throw new ArgumentException("Report evidence must contain unique, non-null exact versions.", nameof(reportEvidence));
+        ReportEvidence = Array.AsReadOnly(exactReports);
+        EvidenceReportIds = Array.AsReadOnly(exactReports.Select(item => item.ReportId).ToArray());
         CreatedAt = ProposalValidation.Utc(createdAt, nameof(createdAt));
         ValidUntil = ProposalValidation.Utc(validUntil, nameof(validUntil));
         if (validUntil <= createdAt) throw new ArgumentException("Proposal validity must end after creation.", nameof(validUntil));
@@ -43,6 +50,9 @@ public sealed class TradeProposal
     public string Rationale { get; }
     public HypothesisVersionId? HypothesisVersionId { get; }
     public IReadOnlyList<ResearchReportId> EvidenceReportIds { get; }
+    public ProposalContentVersion ContentVersion { get; }
+    public HypothesisEvidenceReference? HypothesisEvidence { get; }
+    public IReadOnlyList<ReportEvidenceReference> ReportEvidence { get; }
     public ProposalStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset ValidUntil { get; }
@@ -60,6 +70,20 @@ public sealed class TradeProposal
         EnsureNotExpired(evaluatedAt);
         var evaluation = new GuardrailEvaluation(id, _evaluations.Count + 1, stage, policyVersion, outcome,
             ruleResults, evaluatedAt, stateSnapshotId);
+        _evaluations.Add(evaluation);
+        return evaluation;
+    }
+
+    public GuardrailEvaluation RecordEvaluation(GuardrailEvaluationId id, GuardrailPolicyReference policy,
+        GuardrailOutcome outcome, IEnumerable<GuardrailRuleResult> ruleResults, DateTimeOffset evaluatedAt,
+        FreshStateReference freshState)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        ArgumentNullException.ThrowIfNull(freshState);
+        if (Status != ProposalStatus.Validating) throw new InvalidOperationException("Evaluations require validation to be active.");
+        EnsureNotExpired(evaluatedAt);
+        var evaluation = new GuardrailEvaluation(id, _evaluations.Count + 1, policy.Level.ToString(), policy.Version,
+            outcome, ruleResults, evaluatedAt, freshState.SnapshotId, policy, freshState);
         _evaluations.Add(evaluation);
         return evaluation;
     }
@@ -82,11 +106,35 @@ public sealed class TradeProposal
         return approval;
     }
 
+    public ProposalApproval Approve(ProposalApprovalId id, DecisionActor actor, string? reason,
+        DateTimeOffset decidedAt, ProposalContentVersion reviewedContentVersion, FreshStateReference reviewedState)
+    {
+        ArgumentNullException.ThrowIfNull(actor);
+        ArgumentNullException.ThrowIfNull(reviewedContentVersion);
+        ArgumentNullException.ThrowIfNull(reviewedState);
+        if (reviewedContentVersion != ContentVersion)
+            throw new InvalidOperationException(ProposalGovernanceCodes.VersionMismatch);
+        if (Status is not ProposalStatus.Validating and not ProposalStatus.AwaitingHumanApproval)
+            throw new InvalidOperationException("Proposal is not eligible for approval.");
+        if (Status == ProposalStatus.AwaitingHumanApproval && actor.Type != ApprovalActorType.User)
+            throw new InvalidOperationException("Human approval cannot be supplied by policy.");
+        EnsureNotExpired(decidedAt);
+        if (reviewedState.SnapshotId != PortfolioSnapshotId)
+            throw new InvalidOperationException(ProposalGovernanceCodes.StateMismatch);
+        var approval = new ProposalApproval(id, ApprovalDecision.Approved, actor.Type, actor.Id, reason, decidedAt,
+            Version, reviewedState.SnapshotId, reviewedContentVersion, reviewedState);
+        _approvals.Add(approval);
+        Status = ProposalStatus.Approved;
+        Version++;
+        return approval;
+    }
+
     public ProposalApproval Reject(ProposalApprovalId id, ApprovalActorType actorType, string actorId, string reason,
         DateTimeOffset decidedAt, long reviewedProposalVersion, PortfolioDecisionSnapshotId reviewedSnapshotId)
     {
         if (Status is not ProposalStatus.Validating and not ProposalStatus.AwaitingHumanApproval)
             throw new InvalidOperationException("Proposal is not eligible for rejection.");
+        EnsureNotExpired(decidedAt);
         if (reviewedProposalVersion != Version || reviewedSnapshotId != PortfolioSnapshotId)
             throw new InvalidOperationException("Decision does not match the reviewed proposal state.");
         var approval = AddDecision(id, ApprovalDecision.Rejected, actorType, actorId, reason, decidedAt,

@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-006
 title: Implement hierarchical guardrail policies
 stage: 5
-status: planned
+status: ready
 priority: 860
 type: feature
 depends_on: [S5-002]

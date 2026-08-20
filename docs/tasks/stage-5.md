@@ -6,18 +6,18 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S5-002` is ready: define the proposal-governance domain and contracts.
+`S5-003` and `S5-006` are ready and may proceed in parallel: add proposal persistence and implement hierarchical guardrails.
 
 ## Ordered Backlog
 
 | ID | Task | Status | Priority | Depends on |
 | --- | --- | --- | ---: | --- |
 | [`S5-001`](stage-5/S5-001-write-stage-5-gherkin.md) | Write Stage 5 executable Gherkin specifications | Done | 1000 | — |
-| [`S5-002`](stage-5/S5-002-proposal-domain-contracts.md) | Define proposal governance domain and contracts | Ready | 940 | `S5-001` |
-| [`S5-003`](stage-5/S5-003-proposal-persistence.md) | Add the Stage 5 proposal persistence migration | Planned | 920 | `S5-002` |
+| [`S5-002`](stage-5/S5-002-proposal-domain-contracts.md) | Define proposal governance domain and contracts | Done | 940 | `S5-001` |
+| [`S5-003`](stage-5/S5-003-proposal-persistence.md) | Add the Stage 5 proposal persistence migration | Ready | 920 | `S5-002` |
 | [`S5-004`](stage-5/S5-004-proposal-repositories.md) | Implement proposal governance repositories | Planned | 900 | `S5-003` |
 | [`S5-005`](stage-5/S5-005-proposal-tool-dispatch.md) | Implement structured proposal tool dispatch | Planned | 880 | `S5-002`, `S5-004` |
-| [`S5-006`](stage-5/S5-006-hierarchical-guardrails.md) | Implement hierarchical guardrail policies | Planned | 860 | `S5-002` |
+| [`S5-006`](stage-5/S5-006-hierarchical-guardrails.md) | Implement hierarchical guardrail policies | Ready | 860 | `S5-002` |
 | [`S5-007`](stage-5/S5-007-guardrail-evaluations.md) | Persist immutable guardrail evaluations | Planned | 840 | `S5-004`, `S5-006` |
 | [`S5-008`](stage-5/S5-008-human-approvals.md) | Implement authorized human proposal decisions | Planned | 820 | `S5-004`, `S5-007` |
 | [`S5-009`](stage-5/S5-009-capital-reservations.md) | Implement atomic capital reservations | Planned | 800 | `S5-004`, `S5-008` |
@@ -42,4 +42,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Stage 5 is in progress. `S5-001` defined 32 discoverable proposal-governance acceptance cases, all temporarily pending until `S5-014`; `S5-002` is ready.
+Stage 5 is in progress. `S5-001` defined 32 discoverable proposal-governance acceptance cases, all temporarily pending until `S5-014`; `S5-002` established the proposal-governance domain and application authority boundary. `S5-003` and `S5-006` are ready for parallel execution.

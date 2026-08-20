@@ -205,6 +205,8 @@ Recorded proposal
 
 Validation produces structured approvals or rejections. A proposal that was valid during reasoning may be rejected if state or prices changed. Passing deterministic rules establishes policy compliance, not investment quality.
 
+Each proposal pins an immutable content version, its Bot Run/configuration/Portfolio/decision snapshot, and exact Report and Hypothesis evidence versions. Guardrail inputs name the platform, account, Portfolio, and Trading Bot policy versions in that fixed order. Human decisions bind the actor, exact proposal content version, and reviewed state reference; reservation requests bind a subsequent fresh-state reference. These provider-neutral contracts expose no order-submission or broker authority.
+
 ## 11. Execution Modes
 
 - `ResearchOnly`: store proposals; never submit orders.
