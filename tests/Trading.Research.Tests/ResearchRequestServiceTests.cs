@@ -62,6 +62,23 @@ public sealed class ResearchRequestServiceTests
     }
 
     [Test]
+    public async Task BudgetAbovePlatformCeilingsIsRejectedBeforePersistence()
+    {
+        var store = new CapturingStore(); var service = Create(store);
+        var excessive = Command() with
+        {
+            Budget = new ResearchBudget(TimeSpan.FromMinutes(16), 1000,
+                new Money(1, Currency.USD), 10, 10, 10_000, 2)
+        };
+        var result = await service.SubmitAsync(excessive, default);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Code, Is.EqualTo(ResearchRequestCodes.Invalid));
+            Assert.That(store.Calls, Is.Zero);
+        });
+    }
+
+    [Test]
     public async Task QueuedDecisionContainsInitialIdempotentSubscription()
     {
         var store = new CapturingStore(); var result = await Create(store).SubmitAsync(Command(), default);

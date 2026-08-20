@@ -113,8 +113,10 @@ public sealed class ResearchRequestService(
         x.RequiredSourceTypes.Count is > 0 and <= MaximumItems && x.ApprovedSourceProviders.Count <= MaximumItems &&
         x.DesiredSections.All(ValidSetValue) && x.RequiredSourceTypes.All(ValidSetValue) && x.ApprovedSourceProviders.All(ValidSetValue) &&
         !string.IsNullOrWhiteSpace(x.MethodologyVersion) && !string.IsNullOrWhiteSpace(x.ReportSchemaVersion) &&
-        x.Budget.WallClock > TimeSpan.Zero && x.Budget.TokenLimit > 0 && x.Budget.CostLimit.Amount >= 0 &&
-        x.Budget.ToolCallLimit > 0 && x.Budget.DocumentLimit > 0 && x.Budget.RetainedByteLimit > 0 &&
+        x.Budget.WallClock > TimeSpan.Zero && x.Budget.WallClock <= TimeSpan.FromMinutes(15) &&
+        x.Budget.TokenLimit is > 0 and <= 100_000 && x.Budget.CostLimit.Amount is >= 0 and <= 1_000 &&
+        x.Budget.ToolCallLimit is > 0 and <= 100 && x.Budget.DocumentLimit is > 0 and <= 20 &&
+        x.Budget.RetainedByteLimit is > 0 and <= 1_000_000 && x.Budget.ConsecutiveFailureLimit is > 0 and <= 10 &&
         (x.PrivateInputHash is null || x.PrivateInputHash.Length == 64 && x.PrivateInputHash.All(Uri.IsHexDigit)) &&
         (x.Visibility == ResearchVisibility.Restricted) == !string.IsNullOrWhiteSpace(x.RestrictedGroup) &&
         (x.PrivateInputHash is null || x.Visibility != ResearchVisibility.Shared);

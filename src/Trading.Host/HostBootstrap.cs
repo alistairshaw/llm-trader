@@ -112,12 +112,13 @@ public static class HostBootstrap
         builder.Services.AddScoped<BotTriggerIngestionService>();
         builder.Services.AddScoped<BotTriggerCoalescingService>();
         builder.Services.AddScoped<IBotRunInputService, BotRunInputService>();
-        builder.Services.AddScoped<IToolDispatcher, StageThreeToolDispatcher>();
+        builder.Services.AddScoped<StageThreeToolDispatcher>();
         builder.Services.AddScoped<IModelLoop, BoundedModelLoop>();
         builder.Services.AddScoped<DeterministicSchedulingPolicy>();
         builder.Services.AddScoped<RuntimeRecoveryService>();
         builder.Services.AddScoped<BotRunOrchestrationService>();
         AddResearch(builder.Services, research, options.SmokeMode);
+        builder.Services.AddScoped<IToolDispatcher, TradingBotResearchToolDispatcher>();
         builder.Services.AddHostedService<TradingRuntimeHostedService>();
         return builder.Build();
     }
@@ -255,7 +256,7 @@ internal static class SmokeFixture
         if (await bots.GetAsync(BotId, token) is not null) return;
         var now = new DateTimeOffset(2026, 8, 19, 12, 0, 0, TimeSpan.Zero);
         var bot = new TradingBot(BotId, "smoke-bot", now);
-        var config = bot.AddConfiguration(TradingBotConfigurationVersionId.Parse("01J5QH8M000000000000000102"), new InvestmentMandate("smoke", TimeSpan.FromDays(30), new UniverseDefinition(["Equity"], ["US"], [Currency.USD])), new RiskPolicy([]), new ToolPolicy([new ToolAllowance(StageThreeTools.GetPortfolioSnapshot, 1), new ToolAllowance(StageThreeTools.Finish, 1)]), new RunBudget(TimeSpan.FromMinutes(1), 1000, new Money(10, Currency.USD), 3, 0, 0), new SchedulingPolicy(TimeSpan.FromHours(4), TimeSpan.FromMinutes(5), TimeSpan.FromDays(1)), ExecutionMode.ResearchOnly, new ModelConfiguration("scripted", "smoke", 0, 1000), "smoke-v1", now);
+        var config = bot.AddConfiguration(TradingBotConfigurationVersionId.Parse("01J5QH8M000000000000000102"), new InvestmentMandate("smoke", TimeSpan.FromDays(30), new UniverseDefinition(["Equity"], ["US"], [Currency.USD])), new RiskPolicy([]), new ToolPolicy([new ToolAllowance(StageThreeTools.GetPortfolioSnapshot, 1), new ToolAllowance(StageThreeTools.Finish, 1), new ToolAllowance(StageFourTradingTools.RequestResearch, 1), new ToolAllowance(StageFourTradingTools.ListReports, 1), new ToolAllowance(StageFourTradingTools.GetReport, 1)]), new RunBudget(TimeSpan.FromMinutes(1), 1000, new Money(10, Currency.USD), 5, 1, 0), new SchedulingPolicy(TimeSpan.FromHours(4), TimeSpan.FromMinutes(5), TimeSpan.FromDays(1)), ExecutionMode.ResearchOnly, new ModelConfiguration("scripted", "smoke", 0, 1000), "smoke-v1", now);
         var portfolioId = PortfolioId.Parse("01J5QH8M000000000000000103");
         bot.AssignPortfolio(portfolioId, now); bot.ActivateConfiguration(config.Id, now); bot.Enable(now);
         var portfolio = new Portfolio(portfolioId, "smoke portfolio", Currency.USD, new Money(1000, Currency.USD), 0, now); portfolio.AssignTradingBot(bot.Id);
@@ -271,7 +272,7 @@ internal static class SmokeFixture
         var bots = services.GetRequiredService<ITradingBotRepository>();
         if (await bots.GetAsync(BotTwoId, token) is not null) return;
         var bot = new TradingBot(BotTwoId, "smoke-bot-two", now);
-        var config = bot.AddConfiguration(TradingBotConfigurationVersionId.Parse("01J5QH8M000000000000000202"), new InvestmentMandate("smoke", TimeSpan.FromDays(30), new UniverseDefinition(["Equity"], ["US"], [Currency.USD])), new RiskPolicy([]), new ToolPolicy([new ToolAllowance(StageThreeTools.GetPortfolioSnapshot, 1), new ToolAllowance(StageThreeTools.Finish, 1)]), new RunBudget(TimeSpan.FromMinutes(1), 1000, new Money(10, Currency.USD), 3, 0, 0), new SchedulingPolicy(TimeSpan.FromHours(4), TimeSpan.FromMinutes(5), TimeSpan.FromDays(1)), ExecutionMode.ResearchOnly, new ModelConfiguration("scripted", "smoke", 0, 1000), "smoke-v1", now);
+        var config = bot.AddConfiguration(TradingBotConfigurationVersionId.Parse("01J5QH8M000000000000000202"), new InvestmentMandate("smoke", TimeSpan.FromDays(30), new UniverseDefinition(["Equity"], ["US"], [Currency.USD])), new RiskPolicy([]), new ToolPolicy([new ToolAllowance(StageThreeTools.GetPortfolioSnapshot, 1), new ToolAllowance(StageThreeTools.Finish, 1), new ToolAllowance(StageFourTradingTools.RequestResearch, 1), new ToolAllowance(StageFourTradingTools.ListReports, 1), new ToolAllowance(StageFourTradingTools.GetReport, 1)]), new RunBudget(TimeSpan.FromMinutes(1), 1000, new Money(10, Currency.USD), 5, 1, 0), new SchedulingPolicy(TimeSpan.FromHours(4), TimeSpan.FromMinutes(5), TimeSpan.FromDays(1)), ExecutionMode.ResearchOnly, new ModelConfiguration("scripted", "smoke", 0, 1000), "smoke-v1", now);
         var portfolioId = PortfolioId.Parse("01J5QH8M000000000000000203"); bot.AssignPortfolio(portfolioId, now); bot.ActivateConfiguration(config.Id, now); bot.Enable(now);
         var portfolio = new Portfolio(portfolioId, "smoke portfolio two", Currency.USD, new Money(1000, Currency.USD), 0, now); portfolio.AssignTradingBot(bot.Id);
         var snapshot = new PortfolioDecisionSnapshot(PortfolioDecisionSnapshotId.Parse("01J5QH8M000000000000000204"), portfolioId, bot.Id, config.Id, now, ReconciliationStatus.Reconciled, new Money(1000, Currency.USD), new Money(1000, Currency.USD), Money.Zero(Currency.USD), [], [], 0, [], new DataFreshness(now, now, TimeSpan.FromMinutes(5)), now);

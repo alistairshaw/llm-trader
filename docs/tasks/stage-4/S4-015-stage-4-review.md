@@ -3,14 +3,13 @@ schema_version: 1
 id: S4-015
 title: Complete Stage 4 acceptance and review
 stage: 4
-status: blocked
+status: ready
 priority: 1000
 type: acceptance
 depends_on: [S4-001, S4-002, S4-003, S4-004, S4-005, S4-006, S4-007, S4-008, S4-009, S4-010, S4-011, S4-012, S4-013, S4-014, S4-016]
 labels: [bdd, review, stage-gate]
 created: 2026-08-20
 updated: 2026-08-20
-blocked_reason: Stage 4 acceptance outcomes are derived from feature text instead of production Research workflows; S4-016 must pass before review can resume.
 ---
 
 # S4-015: Complete Stage 4 Acceptance and Review

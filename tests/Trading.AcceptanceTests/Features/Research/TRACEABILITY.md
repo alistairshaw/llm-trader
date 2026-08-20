@@ -1,6 +1,6 @@
 # Stage 4 Acceptance-Criteria Traceability
 
-All Stage 4 scenarios are tagged `@stage4`, `@acceptance`, `@research`, and `@cross-platform`. Recovery scenarios additionally use `@recovery`. Every scenario executes through the scenario-scoped application driver. Scenario names are unique within Stage 4.
+All Stage 4 scenarios are tagged `@stage4`, `@acceptance`, `@research`, and `@cross-platform`. Recovery scenarios additionally use `@recovery`. Thin scoped bindings map each Stage 4 arrangement and action to an explicit driver use case. The driver owns a fresh migrated file database, production composition, scripted/fixture substitutes, persistence inspection, canonical hashes, and stable diagnostics; no result is selected from a scenario title or assertion text. Scenario names are unique within Stage 4.
 
 Run the discoverable Stage 4 specifications with:
 
@@ -10,7 +10,7 @@ Run the discoverable Stage 4 specifications with:
 
 | Stage 4 acceptance criterion or deliverable | Feature and scenario(s) | Implementing task(s) |
 | --- | --- | --- |
-| All Stage 4 Reqnroll BDD scenarios run and pass on Windows and Linux. | Every Stage 4 scenario (`@cross-platform`) | `S4-014`, `S4-015` |
+| All Stage 4 Reqnroll BDD scenarios run and pass on Windows and Linux. | Every Stage 4 scenario (`@cross-platform`) | `S4-014`, `S4-016`, `S4-015` |
 | Equivalent concurrent requests produce one Research Bot run. | `DeduplicationAndReuse.feature` — Deduplicate equivalent concurrent shared requests; Do not merge requests with different private inputs | `S4-004`, `S4-005`, `S4-011`, `S4-014` |
 | A sufficiently fresh equivalent Report can satisfy a later request without another run. | `DeduplicationAndReuse.feature` — Reuse a sufficiently fresh equivalent Report; Refresh an expired equivalent Report | `S4-004`, `S4-005`, `S4-009`, `S4-014` |
 | Private Reports remain inaccessible to unauthorized bots. | `PublicationAndVisibility.feature` — Enforce private Report visibility; `SharedReportJourney.feature` — Complete shared, private, and refreshed Research in the headless host | `S4-004`, `S4-009`, `S4-012`–`S4-014` |

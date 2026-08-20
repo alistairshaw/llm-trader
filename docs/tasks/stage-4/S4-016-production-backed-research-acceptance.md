@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-016
 title: Bind Stage 4 acceptance to production Research workflows
 stage: 4
-status: ready
+status: done
 priority: 1100
 type: defect
 depends_on: [S4-013]
@@ -64,4 +64,21 @@ Inspect `Stage4ResearchDriver` and the Stage 4 step definitions to confirm scena
 
 ## Completion Notes
 
-Pending implementation.
+Implemented explicit Stage 4 Reqnroll routing and a scenario-scoped production application driver. Each case now executes its request, deduplication/reuse, publication, source, Research tool, bounded loop, notification, trigger, recovery, Trading Bot Research tool, or headless-host workflow through production services and observes returned results plus migrated SQLite facts. The driver uses deterministic IDs, fixed clocks, scripted model responses, approved embedded fixtures, canonical business hashes, and identity-rich diagnostics. The former scenario-title/keyword expected-value state machine was removed.
+
+The work also bound the headless host's `IToolDispatcher` to `TradingBotResearchToolDispatcher`, granted the deterministic smoke Bots the pinned Stage 4 Research tools, and added explicit platform Research-request ceilings aligned with validated host limits. README, Research Bot authority, traceability, and repository acceptance-driver guidance remain current.
+
+Validation performed in Linux Docker:
+
+- `./dev.ps1 build` — passed, zero warnings and errors.
+- `./dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage4"` — passed twice consecutively, 39/39 each time, zero skipped; deterministic IDs produce identical canonical business hashes.
+- `./dev.ps1 test -Project tests/Trading.Research.Tests` — 56/56 passed.
+- `./dev.ps1 test -Project tests/Trading.Engine.Tests` — 57/57 passed.
+- `./dev.ps1 test -Project tests/Trading.Data.Tests` — 130/130 passed.
+- `./dev.ps1 test -Project tests/Trading.IntegrationTests` — 23/23 passed.
+- `./dev.ps1 test -Project tests/Trading.Architecture.Tests` — 15/15 passed.
+- `./dev.ps1 test` — 805/805 passed, zero skipped.
+- `./dev.ps1 format` — passed after applying reported whitespace/import ordering.
+- `docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null && dotnet ef migrations has-pending-model-changes --project src/Trading.Data"` — build succeeded; no pending model changes.
+
+No scope deviations, follow-up tasks, or ADRs were required. Hosted Windows validation remains assigned to `S4-015`.

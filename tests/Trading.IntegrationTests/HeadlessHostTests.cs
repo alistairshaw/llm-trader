@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using Trading.Engine.Runtime;
 using Trading.Host;
 
 namespace Trading.IntegrationTests;
@@ -43,6 +44,9 @@ public sealed class HeadlessHostTests
         {
             using var host = HostBootstrap.Build([], builder => builder.Configuration.AddInMemoryCollection(Configuration(directory, smoke: true)));
             var readiness = host.Services.GetRequiredService<RuntimeReadiness>();
+            using (var scope = host.Services.CreateScope())
+                Assert.That(scope.ServiceProvider.GetRequiredService<IToolDispatcher>().Definitions.Select(x => x.Name),
+                    Does.Contain(StageFourTradingTools.GetReport));
             await host.RunAsync();
             await using var connection = new SqliteConnection($"Data Source={Path.Combine(directory, "smoke.db")}");
             await connection.OpenAsync();

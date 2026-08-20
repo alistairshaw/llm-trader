@@ -72,6 +72,8 @@ A request must ask a bounded question rather than name only a company or ticker.
 
 The request service validates identity, scope, permissions, budget, and data-access policy before starting a run.
 
+Stage 4 admission applies the same platform ceilings accepted by the validated headless configuration: at most 15 minutes, 100,000 tokens, 1,000 USD, 100 tool calls, 20 documents, 1,000,000 retained bytes, and 10 consecutive failures. A request above any ceiling is rejected before persistence; a lower pinned Bot or account policy may impose stricter limits.
+
 ## 5. Deduplication and Reuse
 
 Before starting a Research Bot, the service searches the catalog for a completed, authorized, sufficiently fresh report matching a normalized research key. The canonical key includes every reuse-sensitive field:

@@ -12,7 +12,7 @@ Stages 1–3 are complete: the repository has its domain and persistence foundat
 
 Schema-1 reports are deterministically validated, citation-bound to sources retrieved by their run, canonically hashed, and atomically published as immutable series versions. Queued Research work is claimed atomically with increasing attempt numbers, runs outside database transactions under global concurrency limits, and recovers abandoned attempts by retaining them as failed audit history before requeueing the request.
 
-All 39 Stage 4 Research specifications are active and deterministic against a fresh migrated SQLite file. The Stage 4 review identified that their driver must be rebound to production Research workflows before their passing results can close the stage; that stage-gate repair is tracked as `S4-016`.
+All 39 Stage 4 Research specifications are active and deterministic against a fresh migrated SQLite file. Thin Stage-specific bindings select explicit business use cases; the scenario-scoped driver composes production request, catalog, publication, tool-loop, notification, recovery, and host services and asserts returned results or durable facts. It never derives expected outcomes from feature wording or scenario titles.
 
 The current backlog and next eligible task are recorded in [Stage 4 Backlog](docs/tasks/stage-4.md).
 
