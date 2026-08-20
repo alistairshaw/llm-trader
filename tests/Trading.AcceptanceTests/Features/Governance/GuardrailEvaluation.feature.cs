@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Governance
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Evaluate proposals through hierarchical guardrails")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage5")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("risk")]
@@ -34,8 +33,7 @@ namespace Trading.AcceptanceTests.Features.Governance
                 "stage5",
                 "acceptance",
                 "risk",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Governance", "Evaluate proposals through hierarchical guardrails", "  Deterministic policy evaluates every proposal from platform through bot level w" +
                 "ithout weakening parent limits.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

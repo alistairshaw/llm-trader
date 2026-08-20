@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Governance
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Keep proposal governance outside model and broker authority")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage5")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("proposals")]
@@ -36,8 +35,7 @@ namespace Trading.AcceptanceTests.Features.Governance
                 "acceptance",
                 "proposals",
                 "risk",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Governance", "Keep proposal governance outside model and broker authority", "  Execution mode and architecture prevent an LLM proposal from becoming a broker " +
                 "operation.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

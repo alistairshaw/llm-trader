@@ -1,6 +1,6 @@
 # Stage 5 Acceptance-Criteria Traceability
 
-All Stage 5 scenarios are tagged `@stage5`, `@acceptance`, and `@cross-platform`. Relevant scenarios additionally use `@proposals`, `@risk`, `@concurrency`, and `@recovery`. The temporary `@ignore` tag keeps implementation-dependent specifications explicitly pending until `S5-014` supplies production-backed scenario drivers and activates them. Scenario names are unique within Stage 5.
+All Stage 5 scenarios are active and tagged `@stage5`, `@acceptance`, and `@cross-platform`. Relevant scenarios additionally use `@proposals`, `@risk`, `@concurrency`, and `@recovery`. Scenario names are unique within Stage 5. Thin steps select explicit business use cases; the scenario-scoped driver owns production host composition, deterministic inputs, migrated temporary SQLite, application queries, and durable inspection.
 
 Run the discoverable Stage 5 specifications with:
 

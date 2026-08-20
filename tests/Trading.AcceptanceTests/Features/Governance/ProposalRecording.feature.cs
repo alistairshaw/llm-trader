@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Governance
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Record structured trade proposals")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage5")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("proposals")]
@@ -34,8 +33,7 @@ namespace Trading.AcceptanceTests.Features.Governance
                 "stage5",
                 "acceptance",
                 "proposals",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Governance", "Record structured trade proposals", "  Trading Bot suggestions become immutable proposals bound to the exact decision " +
                 "context and evidence.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

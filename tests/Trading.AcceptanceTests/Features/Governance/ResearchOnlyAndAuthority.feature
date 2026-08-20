@@ -1,4 +1,4 @@
-@stage5 @acceptance @proposals @risk @cross-platform @ignore
+@stage5 @acceptance @proposals @risk @cross-platform
 Feature: Keep proposal governance outside model and broker authority
   Execution mode and architecture prevent an LLM proposal from becoming a broker operation.
 
@@ -25,4 +25,3 @@ Feature: Keep proposal governance outside model and broker authority
     When deterministic proposal processing begins
     Then guardrail evaluation, human decision, and capital reservation should use application services
     And the completed model session should receive no authority to alter their results
-

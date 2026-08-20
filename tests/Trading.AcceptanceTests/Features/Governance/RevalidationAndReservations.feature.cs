@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Governance
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Revalidate proposals and reserve capital atomically")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage5")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("risk")]
@@ -36,8 +35,7 @@ namespace Trading.AcceptanceTests.Features.Governance
                 "acceptance",
                 "risk",
                 "concurrency",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Governance", "Revalidate proposals and reserve capital atomically", "  Approval becomes actionable only after fresh deterministic validation and an ex" +
                 "clusive capital claim.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

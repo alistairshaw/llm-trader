@@ -1,4 +1,4 @@
-@stage5 @acceptance @proposals @cross-platform @ignore
+@stage5 @acceptance @proposals @cross-platform
 Feature: Record structured trade proposals
   Trading Bot suggestions become immutable proposals bound to the exact decision context and evidence.
 
@@ -42,4 +42,3 @@ Feature: Record structured trade proposals
     When Bot Alpha proposes a buy of 12 units from Run Beta and Snapshot Alpha version 8
     Then a distinct Proposal Beta version 1 should be recorded
     And Proposal Alpha version 1 should remain unchanged
-

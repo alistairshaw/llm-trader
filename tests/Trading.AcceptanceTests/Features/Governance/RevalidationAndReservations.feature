@@ -1,4 +1,4 @@
-@stage5 @acceptance @risk @concurrency @cross-platform @ignore
+@stage5 @acceptance @risk @concurrency @cross-platform
 Feature: Revalidate proposals and reserve capital atomically
   Approval becomes actionable only after fresh deterministic validation and an exclusive capital claim.
 
@@ -43,4 +43,3 @@ Feature: Revalidate proposals and reserve capital atomically
     When recovery retries the same reservation command after restart at 2026-08-20T14:36:00.000Z
     Then Reservation Alpha should remain the proposal's only active reservation
     And Portfolio Alpha active reservations should remain 1000.00000000 USD
-

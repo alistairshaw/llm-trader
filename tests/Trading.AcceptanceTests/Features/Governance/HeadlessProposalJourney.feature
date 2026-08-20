@@ -1,4 +1,4 @@
-@stage5 @acceptance @proposals @risk @concurrency @cross-platform @ignore
+@stage5 @acceptance @proposals @risk @concurrency @cross-platform
 Feature: Demonstrate proposal governance in the headless host
   The deterministic fixture-backed host shows valid, invalid, and competing proposals without broker submission.
 
@@ -23,4 +23,3 @@ Feature: Demonstrate proposal governance in the headless host
     When the host shuts down and restarts with injected time 2026-08-20T15:05:00.000Z
     Then each immutable governance record should retain its exact identity and version
     And recovery should neither duplicate reservations nor invoke a broker
-

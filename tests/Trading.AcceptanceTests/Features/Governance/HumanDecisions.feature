@@ -1,4 +1,4 @@
-@stage5 @acceptance @proposals @risk @cross-platform @ignore
+@stage5 @acceptance @proposals @risk @cross-platform
 Feature: Apply authorized human proposal decisions
   A human decision binds one actor to the exact proposal content and reviewed state.
 
@@ -36,4 +36,3 @@ Feature: Apply authorized human proposal decisions
     When User Alice attempts approval at 2026-08-20T14:24:01.000Z
     Then the approval should be rejected with reason ProposalExpired
     And Proposal Alpha should become expired without a reservation
-

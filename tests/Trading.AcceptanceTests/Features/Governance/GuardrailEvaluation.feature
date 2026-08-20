@@ -1,4 +1,4 @@
-@stage5 @acceptance @risk @cross-platform @ignore
+@stage5 @acceptance @risk @cross-platform
 Feature: Evaluate proposals through hierarchical guardrails
   Deterministic policy evaluates every proposal from platform through bot level without weakening parent limits.
 
@@ -34,4 +34,3 @@ Feature: Evaluate proposals through hierarchical guardrails
     When Proposal Alpha is evaluated against State Risk Alpha version 1 at 2026-08-20T14:13:00.000Z
     Then Evaluation Alpha sequence 1 should contain separate rejected rule results for cash reserve and concentration
     And no model output should alter either rule result
-
