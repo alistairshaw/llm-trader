@@ -350,6 +350,50 @@ internal sealed class ResearchReportSourceConfiguration : EntityConfiguration<Re
     }
 }
 
+internal sealed class HypothesisConfiguration : EntityConfiguration<HypothesisEntity>
+{
+    public HypothesisConfiguration() : base("hypotheses") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<HypothesisEntity> b) { b.Property(x => x.Name).IsRequired(); b.Property(x => x.Status).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken(); b.HasOne<HypothesisVersionEntity>().WithMany().HasForeignKey(x => x.CurrentVersionId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_hypotheses_status", "status IN ('Draft','Active','Retired')"); t.HasCheckConstraint("ck_hypotheses_version", "version > 0"); }); }
+}
+internal sealed class HypothesisVersionConfiguration : EntityConfiguration<HypothesisVersionEntity>
+{
+    public HypothesisVersionConfiguration() : base("hypothesis_versions") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<HypothesisVersionEntity> b) { b.Property(x => x.HypothesisId).IsRequired(); b.Property(x => x.SpecificationJson).IsRequired(); b.Property(x => x.ContentHash).IsRequired(); b.HasIndex(x => new { x.HypothesisId, x.VersionNumber }).IsUnique(); b.HasIndex(x => new { x.HypothesisId, x.ContentHash }).IsUnique(); b.HasOne<HypothesisEntity>().WithMany().HasForeignKey(x => x.HypothesisId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_hypothesis_versions_number", "version_number > 0 AND specification_schema_version > 0"); t.HasCheckConstraint("ck_hypothesis_versions_hash", "length(content_hash)=64 AND content_hash=lower(content_hash)"); }); }
+}
+internal sealed class HypothesisEvidenceReportConfiguration : IEntityTypeConfiguration<HypothesisEvidenceReportEntity>
+{
+    public void Configure(EntityTypeBuilder<HypothesisEvidenceReportEntity> b) { b.ToTable("hypothesis_evidence_reports", t => t.HasCheckConstraint("ck_hypothesis_evidence_relationship", "relationship_type IN ('Supporting','Contradictory','Contextual')")); b.HasKey(x => new { x.HypothesisVersionId, x.ResearchReportId }); b.Property(x => x.HypothesisVersionId).HasColumnName("hypothesis_version_id"); b.Property(x => x.ResearchReportId).HasColumnName("research_report_id"); b.Property(x => x.RelationshipType).HasColumnName("relationship_type").IsRequired(); b.HasOne<HypothesisVersionEntity>().WithMany().HasForeignKey(x => x.HypothesisVersionId).OnDelete(DeleteBehavior.Restrict); b.HasOne<ResearchReportEntity>().WithMany().HasForeignKey(x => x.ResearchReportId).OnDelete(DeleteBehavior.Restrict); }
+}
+internal sealed class HypothesisTestResultConfiguration : EntityConfiguration<HypothesisTestResultEntity>
+{
+    public HypothesisTestResultConfiguration() : base("hypothesis_test_results") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<HypothesisTestResultEntity> b) { b.Property(x => x.HypothesisVersionId).IsRequired(); b.Property(x => x.DatasetVersion).IsRequired(); b.Property(x => x.CodeVersion).IsRequired(); b.Property(x => x.ParametersHash).IsRequired(); b.Property(x => x.Status).IsRequired(); b.Property(x => x.MetricsJson).IsRequired(); b.Property(x => x.ArtifactsJson).IsRequired(); b.Property(x => x.ResultHash).IsRequired(); b.HasOne<HypothesisVersionEntity>().WithMany().HasForeignKey(x => x.HypothesisVersionId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_hypothesis_test_status", "status IN ('Pending','Running','Completed','Failed','Cancelled')"); t.HasCheckConstraint("ck_hypothesis_test_hashes", "length(parameters_hash)=64 AND parameters_hash=lower(parameters_hash) AND length(result_hash)=64 AND result_hash=lower(result_hash)"); }); }
+}
+internal sealed class TradeProposalConfiguration : EntityConfiguration<TradeProposalEntity>
+{
+    public TradeProposalConfiguration() : base("trade_proposals") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<TradeProposalEntity> b) { b.Property(x => x.TradingBotId).IsRequired(); b.Property(x => x.BotRunId).IsRequired(); b.Property(x => x.PortfolioId).IsRequired(); b.Property(x => x.PortfolioSnapshotId).IsRequired(); b.Property(x => x.ConfigurationVersionId).IsRequired(); b.Property(x => x.InstrumentId).IsRequired(); b.Property(x => x.ProposalType).IsRequired(); b.Property(x => x.RequestedActionJson).IsRequired(); b.Property(x => x.Rationale).IsRequired(); b.Property(x => x.Status).IsRequired(); b.Property(x => x.IdempotencyKey).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken(); b.HasIndex(x => x.IdempotencyKey).IsUnique(); b.HasIndex(x => new { x.PortfolioId, x.Status, x.CreatedAt }); b.HasOne<TradingBotEntity>().WithMany().HasForeignKey(x => x.TradingBotId).OnDelete(DeleteBehavior.Restrict); b.HasOne<BotRunEntity>().WithMany().HasForeignKey(x => x.BotRunId).OnDelete(DeleteBehavior.Restrict); b.HasOne<PortfolioEntity>().WithMany().HasForeignKey(x => x.PortfolioId).OnDelete(DeleteBehavior.Restrict); b.HasOne<PortfolioDecisionSnapshotEntity>().WithMany().HasForeignKey(x => x.PortfolioSnapshotId).OnDelete(DeleteBehavior.Restrict); b.HasOne<TradingBotConfigurationVersionEntity>().WithMany().HasForeignKey(x => x.ConfigurationVersionId).OnDelete(DeleteBehavior.Restrict); b.HasOne<InstrumentEntity>().WithMany().HasForeignKey(x => x.InstrumentId).OnDelete(DeleteBehavior.Restrict); b.HasOne<HypothesisVersionEntity>().WithMany().HasForeignKey(x => x.HypothesisVersionId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_trade_proposals_type", "proposal_type IN ('DirectTrade','TargetAllocation')"); t.HasCheckConstraint("ck_trade_proposals_status", "status IN ('Recorded','Validating','AwaitingApproval','Approved','Rejected','Reserved','Expired','Cancelled','ResearchOnly')"); t.HasCheckConstraint("ck_trade_proposals_time", "valid_until > created_at"); t.HasCheckConstraint("ck_trade_proposals_version", "version > 0"); }); }
+}
+internal sealed class TradeProposalEvidenceReportConfiguration : IEntityTypeConfiguration<TradeProposalEvidenceReportEntity>
+{
+    public void Configure(EntityTypeBuilder<TradeProposalEvidenceReportEntity> b) { b.ToTable("trade_proposal_evidence_reports"); b.HasKey(x => new { x.TradeProposalId, x.ResearchReportId }); b.Property(x => x.TradeProposalId).HasColumnName("trade_proposal_id"); b.Property(x => x.ResearchReportId).HasColumnName("research_report_id"); b.HasOne<TradeProposalEntity>().WithMany().HasForeignKey(x => x.TradeProposalId).OnDelete(DeleteBehavior.Restrict); b.HasOne<ResearchReportEntity>().WithMany().HasForeignKey(x => x.ResearchReportId).OnDelete(DeleteBehavior.Restrict); }
+}
+internal sealed class GuardrailEvaluationConfiguration : EntityConfiguration<GuardrailEvaluationEntity>
+{
+    public GuardrailEvaluationConfiguration() : base("guardrail_evaluations") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<GuardrailEvaluationEntity> b) { b.Property(x => x.TradeProposalId).IsRequired(); b.Property(x => x.EvaluationStage).IsRequired(); b.Property(x => x.PolicyVersion).IsRequired(); b.Property(x => x.Outcome).IsRequired(); b.Property(x => x.StateSnapshotId).IsRequired(); b.Property(x => x.RuleResultsJson).IsRequired(); b.HasIndex(x => new { x.TradeProposalId, x.EvaluationSequence }).IsUnique(); b.HasOne<TradeProposalEntity>().WithMany().HasForeignKey(x => x.TradeProposalId).OnDelete(DeleteBehavior.Restrict); b.HasOne<PortfolioDecisionSnapshotEntity>().WithMany().HasForeignKey(x => x.StateSnapshotId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_guardrail_evaluation_sequence", "evaluation_sequence > 0"); t.HasCheckConstraint("ck_guardrail_evaluation_stage", "evaluation_stage IN ('Initial','ApprovalRevalidation','ReservationRevalidation')"); t.HasCheckConstraint("ck_guardrail_evaluation_outcome", "outcome IN ('Passed','Failed','RequiresApproval')"); }); }
+}
+internal sealed class ProposalApprovalConfiguration : EntityConfiguration<ProposalApprovalEntity>
+{
+    public ProposalApprovalConfiguration() : base("proposal_approvals") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<ProposalApprovalEntity> b) { b.Property(x => x.TradeProposalId).IsRequired(); b.Property(x => x.Decision).IsRequired(); b.Property(x => x.ActorType).IsRequired(); b.Property(x => x.ActorId).IsRequired(); b.Property(x => x.StateSnapshotId).IsRequired(); b.HasOne<TradeProposalEntity>().WithMany().HasForeignKey(x => x.TradeProposalId).OnDelete(DeleteBehavior.Restrict); b.HasOne<PortfolioDecisionSnapshotEntity>().WithMany().HasForeignKey(x => x.StateSnapshotId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_proposal_approvals_decision", "decision IN ('Approved','Rejected')"); t.HasCheckConstraint("ck_proposal_approvals_actor", "actor_type IN ('User','AuthorizedPolicy')"); t.HasCheckConstraint("ck_proposal_approvals_version", "proposal_version > 0"); }); }
+}
+internal sealed class CapitalReservationConfiguration : EntityConfiguration<CapitalReservationEntity>
+{
+    public CapitalReservationConfiguration() : base("capital_reservations") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<CapitalReservationEntity> b) { b.Property(x => x.PortfolioId).IsRequired(); b.Property(x => x.TradeProposalId).IsRequired(); b.Property(x => x.Amount).IsRequired().HasColumnType("TEXT"); b.Property(x => x.Currency).IsRequired(); b.Property(x => x.Status).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken(); b.HasIndex(x => x.TradeProposalId).IsUnique().HasFilter("status = 'Active'"); b.HasIndex(x => new { x.PortfolioId, x.Status, x.ExpiresAt }); b.HasOne<PortfolioEntity>().WithMany().HasForeignKey(x => x.PortfolioId).OnDelete(DeleteBehavior.Restrict); b.HasOne<TradeProposalEntity>().WithMany().HasForeignKey(x => x.TradeProposalId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_capital_reservations_amount", "CAST(amount AS NUMERIC) > 0"); t.HasCheckConstraint("ck_capital_reservations_status", "status IN ('Active','Consumed','Released','Expired')"); t.HasCheckConstraint("ck_capital_reservations_time", "expires_at > created_at"); t.HasCheckConstraint("ck_capital_reservations_terminal", "(status='Active' AND consumed_at IS NULL AND released_at IS NULL) OR (status='Consumed' AND consumed_at IS NOT NULL AND released_at IS NULL) OR (status IN ('Released','Expired') AND released_at IS NOT NULL AND consumed_at IS NULL)"); t.HasCheckConstraint("ck_capital_reservations_version", "version > 0"); }); }
+}
+
 internal sealed class SchemaMetadataConfiguration : IEntityTypeConfiguration<SchemaMetadataEntity>
 {
     public void Configure(EntityTypeBuilder<SchemaMetadataEntity> builder)
@@ -357,6 +401,6 @@ internal sealed class SchemaMetadataConfiguration : IEntityTypeConfiguration<Sch
         builder.ToTable("schema_metadata"); builder.HasKey(x => x.Key);
         builder.Property(x => x.Key).HasColumnName("key"); builder.Property(x => x.Value).HasColumnName("value").IsRequired();
         builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
-        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "4", UpdatedAt = 0 });
+        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "5", UpdatedAt = 0 });
     }
 }

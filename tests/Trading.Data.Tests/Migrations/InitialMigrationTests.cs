@@ -31,6 +31,15 @@ internal sealed class InitialMigrationTests
             ["research_tool_invocations"] = ["id", "research_run_id", "sequence_number", "tool_name", "tool_schema_version", "arguments_json", "status", "started_at", "completed_at", "result_json", "result_artifact_id", "error_code", "error_detail", "usage_json"],
             ["research_reports"] = ["id", "report_series_id", "version_number", "research_request_id", "research_run_id", "subject_type", "subject_id", "question", "visibility", "data_cutoff", "generated_at", "expires_at", "status", "supersedes_report_id", "report_schema_version", "content_json", "content_markdown", "content_hash", "generator_metadata_json"],
             ["research_report_sources"] = ["id", "research_report_id", "source_sequence", "source_type", "source_uri", "stable_source_id", "title", "publisher", "published_at", "retrieved_at", "content_hash", "metadata_json"],
+            ["hypotheses"] = ["id", "name", "status", "current_version_id", "created_at", "updated_at", "version"],
+            ["hypothesis_versions"] = ["id", "hypothesis_id", "version_number", "specification_schema_version", "specification_json", "content_hash", "created_at", "frozen_at"],
+            ["hypothesis_evidence_reports"] = ["hypothesis_version_id", "research_report_id", "relationship_type"],
+            ["hypothesis_test_results"] = ["id", "hypothesis_version_id", "dataset_version", "code_version", "parameters_hash", "status", "started_at", "completed_at", "metrics_json", "artifacts_json", "result_hash"],
+            ["trade_proposals"] = ["id", "trading_bot_id", "bot_run_id", "portfolio_id", "portfolio_snapshot_id", "configuration_version_id", "instrument_id", "proposal_type", "requested_action_json", "rationale", "hypothesis_version_id", "status", "created_at", "valid_until", "idempotency_key", "version"],
+            ["trade_proposal_evidence_reports"] = ["trade_proposal_id", "research_report_id"],
+            ["guardrail_evaluations"] = ["id", "trade_proposal_id", "evaluation_sequence", "evaluation_stage", "policy_version", "outcome", "state_snapshot_id", "rule_results_json", "evaluated_at"],
+            ["proposal_approvals"] = ["id", "trade_proposal_id", "decision", "actor_type", "actor_id", "reason", "decided_at", "proposal_version", "state_snapshot_id"],
+            ["capital_reservations"] = ["id", "portfolio_id", "trade_proposal_id", "order_id", "amount", "currency", "status", "created_at", "expires_at", "consumed_at", "released_at", "version"],
             ["schema_metadata"] = ["key", "value", "updated_at"],
         };
 
@@ -43,8 +52,8 @@ internal sealed class InitialMigrationTests
         await initializer.InitializeAsync();
         await initializer.InitializeAsync();
 
-        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(4));
-        Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("4"));
+        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(5));
+        Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("5"));
     }
 
     [Test]
@@ -64,7 +73,7 @@ internal sealed class InitialMigrationTests
             await new DatabaseInitializer(context).InitializeAsync();
 
             Assert.That(await TableNamesAsync(context.Database.GetDbConnection()), Does.Contain("portfolios"));
-            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(4));
+            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(5));
         }
         finally
         {
@@ -118,11 +127,11 @@ internal sealed class InitialMigrationTests
             foreignKeys.AddRange(await ForeignKeysAsync(connection, table));
         }
 
-        Assert.That(foreignKeys, Has.Count.EqualTo(33));
+        Assert.That(foreignKeys, Has.Count.EqualTo(53));
         Assert.That(foreignKeys.Select(key => key.DeleteAction), Is.All.EqualTo("RESTRICT"));
         Assert.That(foreignKeys, Does.Contain(("portfolio_ledger_entries", "portfolio_ledger_entries", "RESTRICT")));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_AddStage4ResearchPersistence"));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("4"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_AddStage5ProposalGovernance"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("5"));
     }
 
     private static async Task<string[]> TableNamesAsync(DbConnection connection) =>

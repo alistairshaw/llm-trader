@@ -24,6 +24,15 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
     internal DbSet<ResearchToolInvocationEntity> ResearchToolInvocations => Set<ResearchToolInvocationEntity>();
     internal DbSet<ResearchReportEntity> ResearchReports => Set<ResearchReportEntity>();
     internal DbSet<ResearchReportSourceEntity> ResearchReportSources => Set<ResearchReportSourceEntity>();
+    internal DbSet<HypothesisEntity> Hypotheses => Set<HypothesisEntity>();
+    internal DbSet<HypothesisVersionEntity> HypothesisVersions => Set<HypothesisVersionEntity>();
+    internal DbSet<HypothesisEvidenceReportEntity> HypothesisEvidenceReports => Set<HypothesisEvidenceReportEntity>();
+    internal DbSet<HypothesisTestResultEntity> HypothesisTestResults => Set<HypothesisTestResultEntity>();
+    internal DbSet<TradeProposalEntity> TradeProposals => Set<TradeProposalEntity>();
+    internal DbSet<TradeProposalEvidenceReportEntity> TradeProposalEvidenceReports => Set<TradeProposalEvidenceReportEntity>();
+    internal DbSet<GuardrailEvaluationEntity> GuardrailEvaluations => Set<GuardrailEvaluationEntity>();
+    internal DbSet<ProposalApprovalEntity> ProposalApprovals => Set<ProposalApprovalEntity>();
+    internal DbSet<CapitalReservationEntity> CapitalReservations => Set<CapitalReservationEntity>();
     internal DbSet<SchemaMetadataEntity> SchemaMetadata => Set<SchemaMetadataEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
@@ -42,5 +51,13 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
         }
         if (ChangeTracker.Entries<ResearchReportSourceEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted))
             throw new InvalidOperationException("Published report provenance is immutable.");
+        if (ChangeTracker.Entries<HypothesisVersionEntity>().Any(x => x.State == EntityState.Deleted || (x.State == EntityState.Modified && x.OriginalValues.GetValue<long?>(nameof(HypothesisVersionEntity.FrozenAt)) is not null)))
+            throw new InvalidOperationException("Frozen hypothesis versions are immutable.");
+        if (ChangeTracker.Entries<HypothesisEvidenceReportEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
+            ChangeTracker.Entries<HypothesisTestResultEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
+            ChangeTracker.Entries<TradeProposalEvidenceReportEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
+            ChangeTracker.Entries<GuardrailEvaluationEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
+            ChangeTracker.Entries<ProposalApprovalEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("Proposal governance audit facts are immutable.");
     }
 }

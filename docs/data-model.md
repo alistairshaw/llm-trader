@@ -528,6 +528,8 @@ An approval of one proposal version cannot authorize changed content or a materi
 
 A unique partial index permits at most one active reservation per proposal. Reservation creation and proposal approval occur atomically. Available-capital queries include every active reservation.
 
+The Stage 5 schema stores `order_id` without a foreign key because the `orders` table is introduced by Stage 6. The Stage 6 execution migration adds that restrictive relationship after the principal table exists.
+
 ## 10. Execution Tables
 
 ### 10.1 `orders`

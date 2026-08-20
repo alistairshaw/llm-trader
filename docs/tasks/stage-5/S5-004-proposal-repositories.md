@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-004
 title: Implement proposal governance repositories
 stage: 5
-status: planned
+status: ready
 priority: 900
 type: feature
 depends_on: [S5-003]

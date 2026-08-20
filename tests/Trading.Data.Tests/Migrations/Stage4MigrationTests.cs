@@ -36,8 +36,8 @@ internal sealed class Stage4MigrationTests
             Assert.That(await SchemaAsync(upgraded.Context), Is.EqualTo(freshSchema));
             Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT id||'|'||content_hash FROM portfolio_decision_snapshots"), Is.EqualTo(before));
             Assert.That(await ScalarAsync<long>(upgraded.Context, "SELECT COUNT(*) FROM bot_runs"), Is.EqualTo(1));
-            Assert.That(await ScalarAsync<long>(upgraded.Context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(4));
-            Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("4"));
+            Assert.That(await ScalarAsync<long>(upgraded.Context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(5));
+            Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("5"));
         });
     }
 
