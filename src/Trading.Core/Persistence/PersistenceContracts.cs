@@ -164,6 +164,22 @@ public interface IResearchRequestRepository
     Task<ResearchClaimResult> TryClaimQueuedAsync(ResearchRequestId requestId, ResearchAttemptClaim claim, CancellationToken token);
 }
 
+public sealed record AuthorizedResearchRequest(ResearchRequest Request, ResearchSubscriptionId SubscriptionId,
+    string CanonicalSpecification, ResearchReportId? RefreshReportId);
+public abstract record ResearchRequestPersistenceDecision
+{
+    private ResearchRequestPersistenceDecision() { }
+    public sealed record Reused(ResearchReportId ReportId) : ResearchRequestPersistenceDecision;
+    public sealed record Subscribed(ResearchRequestId RequestId, ResearchSubscriptionId SubscriptionId) : ResearchRequestPersistenceDecision;
+    public sealed record Queued(ResearchRequestId RequestId, ResearchSubscriptionId SubscriptionId) : ResearchRequestPersistenceDecision;
+    public sealed record RefreshUnauthorized : ResearchRequestPersistenceDecision;
+}
+public interface IResearchRequestDecisionRepository
+{
+    Task<ResearchRequestPersistenceDecision> DecideAsync(AuthorizedResearchRequest candidate,
+        ResearchPrincipal principal, DateTimeOffset now, CancellationToken token);
+}
+
 public interface IResearchRunAttemptRepository
 {
     Task<ResearchRunAttempt?> GetAsync(ResearchRunAttemptId id, CancellationToken token);

@@ -74,7 +74,7 @@ The request service validates identity, scope, permissions, budget, and data-acc
 
 ## 5. Deduplication and Reuse
 
-Before starting a Research Bot, the service searches the catalog for a completed, authorized, sufficiently fresh report matching a normalized research key. The key may include:
+Before starting a Research Bot, the service searches the catalog for a completed, authorized, sufficiently fresh report matching a normalized research key. The canonical key includes every reuse-sensitive field:
 
 - Subject and instrument identity.
 - Normalized question and requested sections.
@@ -82,6 +82,8 @@ Before starting a Research Bot, the service searches the catalog for a completed
 - Required source types and methodology.
 - Visibility and private-input constraints.
 - Report schema version.
+
+It also includes the exact freshness maximum age, methodology version, private-input fingerprint when present, and the Bot owner or restricted group for narrowed visibility. Sets are normalized, deduplicated, and sorted before hashing. Equivalent request decisions are made in one short database transaction: reuse an authorized fresh report, add one idempotent subscription to authorized in-flight work, or create one queued request with its initial subscription. Explicit refreshes name an authorized existing report and always create linked queued work rather than silently returning that report.
 
 If a suitable report exists, it is returned without a new LLM run. If an equivalent request is already running, the new requester subscribes to that job. All subscribers receive completion or failure notification.
 

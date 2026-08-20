@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,103 @@ using Trading.Core.Policies;
 using Trading.Core.Research;
 
 namespace Trading.Data;
+
+public sealed class ResearchRequestDecisionRepository(TradingDbContext db) : IResearchRequestDecisionRepository
+{
+    public async Task<ResearchRequestPersistenceDecision> DecideAsync(AuthorizedResearchRequest candidate,
+        ResearchPrincipal principal, DateTimeOffset now, CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+        await db.Database.OpenConnectionAsync(token).ConfigureAwait(false);
+        await using var transaction = ((SqliteConnection)db.Database.GetDbConnection())
+            .BeginTransaction(IsolationLevel.Serializable, deferred: false);
+        await db.Database.UseTransactionAsync(transaction, token).ConfigureAwait(false);
+        try
+        {
+            var request = candidate.Request;
+            if (candidate.RefreshReportId is not null)
+            {
+                var refresh = await db.ResearchReports.AsNoTracking()
+                    .Join(db.ResearchRequests.AsNoTracking(), r => r.ResearchRequestId, q => q.Id, (r, q) => new { r, q })
+                    .SingleOrDefaultAsync(x => x.r.Id == candidate.RefreshReportId.ToString(), token).ConfigureAwait(false);
+                if (refresh is null || !Authorized(principal, refresh.r.Visibility, refresh.q.RequestingBotId, refresh.q.RequestJson) ||
+                    !string.Equals(refresh.r.SubjectId ?? refresh.r.SubjectType, request.Subject, StringComparison.Ordinal))
+                {
+                    await transaction.RollbackAsync(token).ConfigureAwait(false);
+                    await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
+                    return new ResearchRequestPersistenceDecision.RefreshUnauthorized();
+                }
+            }
+            else
+            {
+                var at = UtcUnixMilliseconds.ToProvider(now);
+                var reports = await db.ResearchReports.AsNoTracking()
+                    .Join(db.ResearchRequests.AsNoTracking(), r => r.ResearchRequestId, q => q.Id, (r, q) => new { r, q })
+                    .Where(x => x.q.NormalizedResearchKey == request.NormalizedResearchKey && x.r.Status == "Published" && x.r.ExpiresAt >= at)
+                    .OrderByDescending(x => x.r.GeneratedAt).ThenByDescending(x => x.r.VersionNumber).ToListAsync(token).ConfigureAwait(false);
+                var reusable = reports.FirstOrDefault(x => Authorized(principal, x.r.Visibility, x.q.RequestingBotId, x.q.RequestJson));
+                if (reusable is not null)
+                {
+                    await transaction.CommitAsync(token).ConfigureAwait(false);
+                    await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
+                    return new ResearchRequestPersistenceDecision.Reused(ResearchReportId.Parse(reusable.r.Id));
+                }
+
+                var active = await db.ResearchRequests.AsNoTracking()
+                    .Where(x => x.NormalizedResearchKey == request.NormalizedResearchKey &&
+                        (x.Status == "Queued" || x.Status == "Running" || x.Status == "WaitingForTool"))
+                    .OrderBy(x => x.CreatedAt).FirstOrDefaultAsync(token).ConfigureAwait(false);
+                if (active is not null && Authorized(principal, active.Visibility, active.RequestingBotId, active.RequestJson))
+                {
+                    var botId = request.RequestingBotId.ToString();
+                    var existing = await db.ResearchSubscriptions.AsNoTracking()
+                        .SingleOrDefaultAsync(x => x.ResearchRequestId == active.Id && x.TradingBotId == botId, token).ConfigureAwait(false);
+                    if (existing is not null)
+                    {
+                        await transaction.CommitAsync(token).ConfigureAwait(false);
+                        await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
+                        return new ResearchRequestPersistenceDecision.Subscribed(ResearchRequestId.Parse(active.Id), ResearchSubscriptionId.Parse(existing.Id));
+                    }
+                    db.ResearchSubscriptions.Add(new ResearchSubscriptionEntity
+                    {
+                        Id = candidate.SubscriptionId.ToString(),
+                        ResearchRequestId = active.Id,
+                        TradingBotId = botId,
+                        SubscribedAt = UtcUnixMilliseconds.ToProvider(now),
+                        NotificationStatus = "Pending"
+                    });
+                    await db.SaveChangesAsync(token).ConfigureAwait(false);
+                    await transaction.CommitAsync(token).ConfigureAwait(false);
+                    await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
+                    return new ResearchRequestPersistenceDecision.Subscribed(ResearchRequestId.Parse(active.Id), candidate.SubscriptionId);
+                }
+            }
+
+            var entity = ResearchPersistenceMapper.ToEntity(request, 1);
+            entity.RequestJson = ResearchPersistenceMapper.WithDecisionMetadata(entity.RequestJson,
+                candidate.CanonicalSpecification, candidate.RefreshReportId);
+            db.ResearchRequests.Add(entity);
+            db.ResearchSubscriptions.Add(ResearchPersistenceMapper.ToEntity(request.Id, request.Subscriptions.Single()));
+            await db.SaveChangesAsync(token).ConfigureAwait(false);
+            await transaction.CommitAsync(token).ConfigureAwait(false);
+            await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
+            return new ResearchRequestPersistenceDecision.Queued(request.Id, candidate.SubscriptionId);
+        }
+        catch
+        {
+            try { await transaction.RollbackAsync(token).ConfigureAwait(false); } catch (InvalidOperationException) { }
+            await db.Database.UseTransactionAsync(null, token).ConfigureAwait(false);
+            db.ChangeTracker.Clear();
+            throw;
+        }
+    }
+
+    private static bool Authorized(ResearchPrincipal principal, string visibility, string? owner, string requestJson) =>
+        principal.Kind == ResearchPrincipalKind.Administrator ||
+        visibility == "Shared" && principal.Kind == ResearchPrincipalKind.TradingBot ||
+        visibility == "BotPrivate" && principal.Id == owner ||
+        visibility == "Restricted" && principal.RestrictedGroups.Contains(ResearchPersistenceMapper.RestrictedGroup(requestJson)!, StringComparer.Ordinal);
+}
 
 public sealed class ResearchRequestRepository(TradingDbContext db) : IResearchRequestRepository
 {
@@ -180,12 +278,18 @@ internal static class ResearchPersistenceMapper
     internal static ResearchRequestEntity ToEntity(ResearchRequest x, long version) { var e = new ResearchRequestEntity { Id = x.Id.ToString(), Version = version }; Copy(x, e); return e; }
     internal static void Copy(ResearchRequest x, ResearchRequestEntity e)
     {
+        var existing = string.IsNullOrEmpty(e.RequestJson) ? null : CanonicalJsonSerializer.Deserialize<RequestDto>(Schema, e.RequestJson);
         e.SubjectType = "Instrument"; e.SubjectId = x.Subject; e.Question = x.Question; e.NormalizedResearchKey = x.NormalizedResearchKey;
         e.AsOf = UtcUnixMilliseconds.ToProvider(x.AsOf); e.Status = CanonicalEnumeration.Format(x.Status); e.Visibility = CanonicalEnumeration.Format(x.Visibility);
         e.RequestingBotId = x.RequestingBotId.ToString(); e.FreshnessRequirementJson = CanonicalJsonSerializer.Serialize(Schema, new FreshnessDto(x.FreshnessRequirement.SourceAsOf, x.FreshnessRequirement.RetrievedAt, x.FreshnessRequirement.MaximumAge.Ticks));
-        e.RequestJson = CanonicalJsonSerializer.Serialize(Schema, new RequestDto(x.HasPrivateInputs, x.AuthorizedSubscriberIds.Select(i => i.ToString()).Order(StringComparer.Ordinal).ToArray(), x.RestrictedGroup));
+        e.RequestJson = CanonicalJsonSerializer.Serialize(Schema, new RequestDto(x.HasPrivateInputs, x.AuthorizedSubscriberIds.Select(i => i.ToString()).Order(StringComparer.Ordinal).ToArray(), x.RestrictedGroup, existing?.CanonicalSpecification, existing?.RefreshReportId));
         e.StartedAt = x.StartedAt is null ? null : UtcUnixMilliseconds.ToProvider(x.StartedAt.Value); e.CompletedAt = x.CompletedAt is null ? null : UtcUnixMilliseconds.ToProvider(x.CompletedAt.Value);
         e.ResultReportId = x.ResultReportId?.ToString(); e.CreatedAt = UtcUnixMilliseconds.ToProvider(x.RequestedAt);
+    }
+    internal static string WithDecisionMetadata(string requestJson, string specification, ResearchReportId? refreshReportId)
+    {
+        var request = CanonicalJsonSerializer.Deserialize<RequestDto>(Schema, requestJson);
+        return CanonicalJsonSerializer.Serialize(Schema, request with { CanonicalSpecification = specification, RefreshReportId = refreshReportId?.ToString() });
     }
     internal static ResearchSubscriptionEntity ToEntity(ResearchRequestId requestId, ResearchSubscription x) => new() { Id = x.Id.ToString(), ResearchRequestId = requestId.ToString(), TradingBotId = x.TradingBotId.ToString(), SubscribedAt = UtcUnixMilliseconds.ToProvider(x.SubscribedAt), NotificationStatus = CanonicalEnumeration.Format(x.NotificationStatus) };
     internal static ResearchRequest ToDomain(ResearchRequestEntity e, IReadOnlyList<ResearchSubscriptionEntity> subscriptions)
@@ -230,7 +334,8 @@ internal static class ResearchPersistenceMapper
     }
     private sealed record FreshnessDto(DateTimeOffset SourceAsOf, DateTimeOffset RetrievedAt, long MaximumAgeTicks);
     internal static string? RestrictedGroup(string requestJson) => CanonicalJsonSerializer.Deserialize<RequestDto>(Schema, requestJson).RestrictedGroup;
-    private sealed record RequestDto(bool HasPrivateInputs, string[] AuthorizedSubscribers, string? RestrictedGroup);
+    private sealed record RequestDto(bool HasPrivateInputs, string[] AuthorizedSubscribers, string? RestrictedGroup,
+        string? CanonicalSpecification = null, string? RefreshReportId = null);
     private sealed record AttemptDto(string Provider, string ModelId, string ModelVersion, long WallClockTicks, long TokenLimit, decimal CostLimit, string Currency, int ToolCallLimit, int DocumentLimit, long RetainedByteLimit, int FailureLimit, DateTimeOffset CreatedAt);
     private sealed record UsageDto(bool HasValue, long ElapsedTicks, long Tokens, decimal Cost, string Currency, int ToolCalls, int Documents, long RetainedBytes, int Failures);
     private sealed record GeneratorDto(string Provider, string Model, decimal Temperature, int MaximumTokens, string PromptVersion, string ToolSetVersion, string SchemaVersion);

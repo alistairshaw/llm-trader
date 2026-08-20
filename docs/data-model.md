@@ -719,6 +719,17 @@ Insert/deduplicate Fill
 
 Fill processing intentionally coordinates several aggregates because partial persistence would corrupt financial state. This is a documented application-level consistency boundary, not permission to create arbitrary cross-aggregate transactions.
 
+### 13.5 Decide a Research Request
+
+```text
+Authorize an exact fresh report or equivalent active request
+    + insert one idempotent Bot subscription when active work exists
+    or insert one queued request and its initial subscription
+    = one short immediate-write transaction
+```
+
+The transaction serializes equivalent request decisions on SQLite. Report visibility and private-input boundaries are checked before reuse or subscription, and explicit refresh linkage is retained in the canonical request metadata.
+
 Never keep a database transaction open during an LLM, web, market-data, or broker network call.
 
 ## 14. Concurrency and SQLite Operation
