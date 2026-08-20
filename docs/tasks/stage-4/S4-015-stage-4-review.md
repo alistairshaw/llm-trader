@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-015
 title: Complete Stage 4 acceptance and review
 stage: 4
-status: ready
+status: review
 priority: 1000
 type: acceptance
 depends_on: [S4-001, S4-002, S4-003, S4-004, S4-005, S4-006, S4-007, S4-008, S4-009, S4-010, S4-011, S4-012, S4-013, S4-014, S4-016]
@@ -59,11 +59,13 @@ Use [Implementation Plan — Stage 4](../../implementation-plan.md#6-stage-4-sha
 
 ## Completion Notes
 
-Blocked during local review on 2026-08-20.
+Local review passed on 2026-08-20 after `S4-016` repaired the production-backed acceptance boundary.
 
-- The complete prescribed local command matrix passed: locked restore; Release build with 0 warnings and 0 errors; format; Architecture 15/15; Core 391/391; Data 130/130; Research 55/55; Engine 57/57; Integration 23/23; Stage 4 acceptance 39/39; Stage 4 migration/persistence 5/5; full suite 804/804 with zero skipped; EF model drift empty; and deterministic headless smoke completed.
-- Review found that `Stage4ResearchDriver` derives scenario state and assertions by matching Gherkin text and scenario titles. It does not invoke the production Research, Engine, notification, recovery, Trading Bot Research, or host workflows required by `S4-014`; its application setup only validates host options and migrates SQLite.
-- The passing Stage 4 scenario count therefore does not satisfy the production-backed acceptance evidence required by the implementation plan, test plan, `S4-014`, or this stage gate.
-- Follow-up task: `S4-016`.
-- Remaining work after `S4-016`: repeat the complete local review matrix, create the Stage 4 Review Record, publish the reviewed revision, and record exact-revision Windows, Linux, and security evidence.
-- Scope deviations: none. ADRs: none.
+- Locked restore passed; Release build passed with 0 warnings and 0 errors; format passed.
+- Architecture 15/15, Core 391/391, Data 130/130, Research 56/56, Engine 57/57, Integration 23/23, and full suite 805/805 passed with zero failed or skipped tests.
+- Stage 4 acceptance passed twice consecutively at 39/39 with zero failed or skipped tests. Explicit feature-case routing executes production application workflows and asserts returned results plus durable migrated-SQLite facts.
+- Stage 4 migrations passed 5/5 for fresh and completed Stage 3 upgrade paths; EF model drift is empty.
+- Deterministic headless smoke passed shared reuse, private isolation, immutable refresh versioning, exact identities and hash, recoverable shutdown, and graceful deadline completion.
+- The Stage 4 Review Record contains exact commands, counts, migration identity, runtime identities, audit evidence, documentation reconciliation, and the pending decision.
+- Remaining gate: publish this reviewed revision and record exact-revision hosted Windows, Linux, and security success.
+- Deviations: none. Follow-up tasks: none. ADRs: none.
