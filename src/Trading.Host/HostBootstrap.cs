@@ -4,12 +4,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Trading.Core.Bots;
+using Trading.Core.Brokers;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
 using Trading.Core.Persistence;
 using Trading.Core.Policies;
 using Trading.Core.Portfolios;
+using Trading.Core.Proposals;
 using Trading.Data;
+using Trading.Engine.Proposals;
 using Trading.Engine.Runtime;
 using Trading.Research;
 using Trading.Research.Contracts;
@@ -103,6 +106,9 @@ public static class HostBootstrap
         builder.Services.AddDbContext<TradingDbContext>(x => x.UseSqlite($"Data Source={path};Default Timeout=5"));
         builder.Services.AddScoped<DatabaseInitializer>();
         builder.Services.AddScoped<ITradingBotRepository, TradingBotRepository>();
+        builder.Services.AddScoped<IBrokerConnectionRepository, BrokerConnectionRepository>();
+        builder.Services.AddScoped<IBrokerAccountRepository, BrokerAccountRepository>();
+        builder.Services.AddScoped<IInstrumentRepository, InstrumentRepository>();
         builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
         builder.Services.AddScoped<IPortfolioDecisionSnapshotRepository, PortfolioDecisionSnapshotRepository>();
         builder.Services.AddScoped<IPortfolioQueries, PortfolioQueries>();
@@ -119,6 +125,20 @@ public static class HostBootstrap
         builder.Services.AddScoped<BotRunOrchestrationService>();
         builder.Services.AddScoped<IHypothesisRepository, HypothesisRepository>();
         builder.Services.AddScoped<ITradeProposalRepository, TradeProposalRepository>();
+        builder.Services.AddScoped<ICapitalReservationRepository, CapitalReservationRepository>();
+        builder.Services.AddScoped<IAtomicCapitalReservationRepository, AtomicCapitalReservationRepository>();
+        builder.Services.AddScoped<IProposalQueries, ProposalQueries>();
+        builder.Services.AddSingleton<ProposalSmokeState>();
+        builder.Services.AddSingleton<IProposalGovernanceClock>(x => x.GetRequiredService<ProposalSmokeState>());
+        builder.Services.AddSingleton<IProposalGovernanceIdentifierSource>(x => x.GetRequiredService<ProposalSmokeState>());
+        builder.Services.AddSingleton<IFreshProposalStateProvider>(x => x.GetRequiredService<ProposalSmokeState>());
+        builder.Services.AddSingleton<IProposalGovernanceContextProvider>(x => x.GetRequiredService<ProposalSmokeState>());
+        builder.Services.AddSingleton<IProposalDecisionAuthorizer, SmokeProposalDecisionAuthorizer>();
+        builder.Services.AddScoped<IGuardrailPolicyEvaluator, DeterministicGuardrailPolicyEvaluator>();
+        builder.Services.AddScoped<IGuardrailEvaluationService, GuardrailEvaluationService>();
+        builder.Services.AddScoped<IHumanProposalDecisionService, HumanProposalDecisionService>();
+        builder.Services.AddScoped<ICapitalReservationService, CapitalReservationService>();
+        builder.Services.AddScoped<IProposalGovernanceOrchestrator, ProposalGovernanceOrchestrator>();
         AddResearch(builder.Services, research, options.SmokeMode);
         builder.Services.AddScoped<TradingBotResearchToolDispatcher>();
         builder.Services.AddScoped<IToolDispatcher, ProposalToolDispatcher>();
@@ -184,7 +204,7 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
             if (options.SmokeMode) await SmokeFixture.SeedAsync(services, stoppingToken);
             var researchRecovery = await services.GetRequiredService<ResearchRestartRecovery>().RecoverAsync(stoppingToken);
             var recovery = await services.GetRequiredService<RuntimeRecoveryService>().RecoverExpiredLeasesAsync(stoppingToken);
-            var ids = options.SmokeMode ? [SmokeFixture.BotId] : options.BotIds.Select(TradingBotId.Parse).ToArray();
+            var ids = options.SmokeMode ? [SmokeFixture.BotId, SmokeFixture.BotTwoId] : options.BotIds.Select(TradingBotId.Parse).ToArray();
             foreach (var id in ids) await ValidateBotAsync(services, id, stoppingToken);
             supervisor = new MultiBotSupervisor(new MultiBotSupervisorOptions { GlobalRunConcurrency = options.GlobalRunConcurrency, QueueCapacity = options.QueueCapacity }, services.GetRequiredService<BotRunOrchestrationService>());
             readiness.IsReady = true;
@@ -195,7 +215,11 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
                 if (options.SmokeMode) await services.GetRequiredService<BotTriggerIngestionService>().IngestAsync(
                     new(id, BotRunTriggerType.Manual, "deterministic smoke", clock.UtcNow), stoppingToken);
                 var queued = await supervisor.QueueAsync(new(id, Environment.MachineName, TimeSpan.FromSeconds(options.LeaseSeconds), SmokeSession()), stoppingToken);
-                if (queued.Completion is not null) completions.Add(queued.Completion);
+                if (queued.Completion is not null)
+                {
+                    completions.Add(queued.Completion);
+                    if (options.SmokeMode) _ = await queued.Completion;
+                }
             }
             if (options.SmokeMode)
             {
@@ -207,6 +231,7 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
                     throw new InvalidOperationException("One or more smoke Bots did not complete.");
                 }
                 await ResearchSmoke.RunAsync(services, logger, stoppingToken);
+                await ProposalSmoke.RunAsync(services, results, logger, stoppingToken);
                 lifetime.StopApplication();
             }
             else await Task.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
@@ -255,6 +280,13 @@ internal static class SmokeFixture
 {
     public static TradingBotId BotId { get; } = TradingBotId.Parse("01J5QH8M000000000000000101");
     public static TradingBotId BotTwoId { get; } = TradingBotId.Parse("01J5QH8M000000000000000201");
+    public static PortfolioId PortfolioId { get; } = PortfolioId.Parse("01J5QH8M000000000000000103");
+    public static PortfolioId PortfolioTwoId { get; } = PortfolioId.Parse("01J5QH8M000000000000000203");
+    public static PortfolioDecisionSnapshotId SnapshotId { get; } = PortfolioDecisionSnapshotId.Parse("01J5QH8M000000000000000104");
+    public static PortfolioDecisionSnapshotId SnapshotTwoId { get; } = PortfolioDecisionSnapshotId.Parse("01J5QH8M000000000000000204");
+    public static InstrumentId InstrumentId { get; } = InstrumentId.Parse("01J5QH8M000000000000000301");
+    public static BrokerAccountId AccountId { get; } = BrokerAccountId.Parse("01J5QH8M000000000000000302");
+    public static BrokerAccountId AccountTwoId { get; } = BrokerAccountId.Parse("01J5QH8M000000000000000303");
     public static async Task SeedAsync(IServiceProvider services, CancellationToken token)
     {
         var bots = services.GetRequiredService<ITradingBotRepository>();
@@ -262,10 +294,11 @@ internal static class SmokeFixture
         var now = new DateTimeOffset(2026, 8, 19, 12, 0, 0, TimeSpan.Zero);
         var bot = new TradingBot(BotId, "smoke-bot", now);
         var config = bot.AddConfiguration(TradingBotConfigurationVersionId.Parse("01J5QH8M000000000000000102"), new InvestmentMandate("smoke", TimeSpan.FromDays(30), new UniverseDefinition(["Equity"], ["US"], [Currency.USD])), new RiskPolicy([]), new ToolPolicy([new ToolAllowance(StageThreeTools.GetPortfolioSnapshot, 1), new ToolAllowance(StageThreeTools.Finish, 1), new ToolAllowance(StageFourTradingTools.RequestResearch, 1), new ToolAllowance(StageFourTradingTools.ListReports, 1), new ToolAllowance(StageFourTradingTools.GetReport, 1)]), new RunBudget(TimeSpan.FromMinutes(1), 1000, new Money(10, Currency.USD), 5, 1, 0), new SchedulingPolicy(TimeSpan.FromHours(4), TimeSpan.FromMinutes(5), TimeSpan.FromDays(1)), ExecutionMode.ResearchOnly, new ModelConfiguration("scripted", "smoke", 0, 1000), "smoke-v1", now);
-        var portfolioId = PortfolioId.Parse("01J5QH8M000000000000000103");
+        var portfolioId = PortfolioId;
         bot.AssignPortfolio(portfolioId, now); bot.ActivateConfiguration(config.Id, now); bot.Enable(now);
-        var portfolio = new Portfolio(portfolioId, "smoke portfolio", Currency.USD, new Money(1000, Currency.USD), 0, now); portfolio.AssignTradingBot(bot.Id);
-        var snapshot = new PortfolioDecisionSnapshot(PortfolioDecisionSnapshotId.Parse("01J5QH8M000000000000000104"), portfolioId, bot.Id, config.Id, now, ReconciliationStatus.Reconciled, new Money(1000, Currency.USD), new Money(1000, Currency.USD), Money.Zero(Currency.USD), [], [], 0, [], new DataFreshness(now, now, TimeSpan.FromMinutes(5)), now);
+        await SeedMarketAsync(services, now, token);
+        var portfolio = new Portfolio(portfolioId, "smoke portfolio", Currency.USD, new Money(1000, Currency.USD), 0, now); portfolio.AssignTradingBot(bot.Id); portfolio.AssociateBrokerAccount(AccountId);
+        var snapshot = new PortfolioDecisionSnapshot(SnapshotId, portfolioId, bot.Id, config.Id, now, ReconciliationStatus.Reconciled, new Money(1000, Currency.USD), new Money(1000, Currency.USD), Money.Zero(Currency.USD), [], [], 0, [], new DataFreshness(now, now, TimeSpan.FromMinutes(5)), now);
         _ = await bots.AddAsync(bot, token);
         _ = await services.GetRequiredService<IPortfolioRepository>().AddAsync(portfolio, token);
         _ = await services.GetRequiredService<IPortfolioDecisionSnapshotRepository>().PublishAsync(snapshot, token);
@@ -277,10 +310,20 @@ internal static class SmokeFixture
         var bots = services.GetRequiredService<ITradingBotRepository>();
         if (await bots.GetAsync(BotTwoId, token) is not null) return;
         var bot = new TradingBot(BotTwoId, "smoke-bot-two", now);
-        var config = bot.AddConfiguration(TradingBotConfigurationVersionId.Parse("01J5QH8M000000000000000202"), new InvestmentMandate("smoke", TimeSpan.FromDays(30), new UniverseDefinition(["Equity"], ["US"], [Currency.USD])), new RiskPolicy([]), new ToolPolicy([new ToolAllowance(StageThreeTools.GetPortfolioSnapshot, 1), new ToolAllowance(StageThreeTools.Finish, 1), new ToolAllowance(StageFourTradingTools.RequestResearch, 1), new ToolAllowance(StageFourTradingTools.ListReports, 1), new ToolAllowance(StageFourTradingTools.GetReport, 1)]), new RunBudget(TimeSpan.FromMinutes(1), 1000, new Money(10, Currency.USD), 5, 1, 0), new SchedulingPolicy(TimeSpan.FromHours(4), TimeSpan.FromMinutes(5), TimeSpan.FromDays(1)), ExecutionMode.ResearchOnly, new ModelConfiguration("scripted", "smoke", 0, 1000), "smoke-v1", now);
-        var portfolioId = PortfolioId.Parse("01J5QH8M000000000000000203"); bot.AssignPortfolio(portfolioId, now); bot.ActivateConfiguration(config.Id, now); bot.Enable(now);
-        var portfolio = new Portfolio(portfolioId, "smoke portfolio two", Currency.USD, new Money(1000, Currency.USD), 0, now); portfolio.AssignTradingBot(bot.Id);
-        var snapshot = new PortfolioDecisionSnapshot(PortfolioDecisionSnapshotId.Parse("01J5QH8M000000000000000204"), portfolioId, bot.Id, config.Id, now, ReconciliationStatus.Reconciled, new Money(1000, Currency.USD), new Money(1000, Currency.USD), Money.Zero(Currency.USD), [], [], 0, [], new DataFreshness(now, now, TimeSpan.FromMinutes(5)), now);
+        var config = bot.AddConfiguration(TradingBotConfigurationVersionId.Parse("01J5QH8M000000000000000202"), new InvestmentMandate("smoke", TimeSpan.FromDays(30), new UniverseDefinition(["Equity"], ["US"], [Currency.USD])), new RiskPolicy([]), new ToolPolicy([new ToolAllowance(StageThreeTools.GetPortfolioSnapshot, 1), new ToolAllowance(StageThreeTools.Finish, 1), new ToolAllowance(StageFiveTradingTools.ProposeTrade, 2), new ToolAllowance(StageFiveTradingTools.ProposeTargetAllocation, 1)]), new RunBudget(TimeSpan.FromMinutes(1), 1000, new Money(10, Currency.USD), 5, 1, 3), new SchedulingPolicy(TimeSpan.FromHours(4), TimeSpan.FromMinutes(5), TimeSpan.FromDays(1)), ExecutionMode.HumanApproval, new ModelConfiguration("scripted", "smoke", 0, 1000), "smoke-v1", now);
+        var portfolioId = PortfolioTwoId; bot.AssignPortfolio(portfolioId, now); bot.ActivateConfiguration(config.Id, now); bot.Enable(now);
+        var portfolio = new Portfolio(portfolioId, "smoke portfolio two", Currency.USD, new Money(1000, Currency.USD), 0, now); portfolio.AssignTradingBot(bot.Id); portfolio.AssociateBrokerAccount(AccountTwoId);
+        var snapshot = new PortfolioDecisionSnapshot(SnapshotTwoId, portfolioId, bot.Id, config.Id, now, ReconciliationStatus.Reconciled, new Money(1000, Currency.USD), new Money(1000, Currency.USD), Money.Zero(Currency.USD), [], [], 0, [], new DataFreshness(now, now, TimeSpan.FromMinutes(5)), now);
         _ = await bots.AddAsync(bot, token); _ = await services.GetRequiredService<IPortfolioRepository>().AddAsync(portfolio, token); _ = await services.GetRequiredService<IPortfolioDecisionSnapshotRepository>().PublishAsync(snapshot, token);
+    }
+
+    private static async Task SeedMarketAsync(IServiceProvider services, DateTimeOffset now, CancellationToken token)
+    {
+        var connection = new BrokerConnection(BrokerConnectionId.Parse("01J5QH8M000000000000000304"), "fixture", "Deterministic paper fixture", BrokerEnvironment.Paper, "fixture://no-secret", [], now);
+        connection.Enable();
+        _ = await services.GetRequiredService<IBrokerConnectionRepository>().AddAsync(connection, token);
+        _ = await services.GetRequiredService<IBrokerAccountRepository>().AddAsync(new(AccountId, connection.Id, "paper-a", "Paper A", "Cash", Currency.USD, createdAt: now), token);
+        _ = await services.GetRequiredService<IBrokerAccountRepository>().AddAsync(new(AccountTwoId, connection.Id, "paper-b", "Paper B", "Cash", Currency.USD, createdAt: now), token);
+        _ = await services.GetRequiredService<IInstrumentRepository>().AddAsync(new(InstrumentId, InstrumentType.Equity, "ACME", "ACME fixture", Currency.USD, "FIXTURE", createdAt: now), token);
     }
 }

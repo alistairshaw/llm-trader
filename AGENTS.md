@@ -56,13 +56,15 @@ S1-002 defines the repository-root `dev.ps1` interface. Once implemented, use th
 - `.\dev.ps1 test -Project <path> [-Filter <expression>]` — run a focused project or category in Linux Docker.
 - `.\dev.ps1 solution-list` — list solution projects in Linux Docker.
 - `.\dev.ps1 reference-list` — list project references in Linux Docker.
-- `.\dev.ps1 run` — build and run the deterministic fixture-backed Trading and Research headless smoke through Docker Compose.
+- `.\dev.ps1 run` — build and run the deterministic fixture-backed Trading, Research, and proposal-governance headless smoke through Docker Compose.
 - `.\dev.ps1 publish-wpf` — publish a self-contained `win-x64` artifact from Linux Docker to an ignored host-visible directory when introduced.
 - `.\dev.ps1 run-wpf` — launch the published artifact on the Windows host for manual testing when introduced.
 
 The wrapper is orchestration, not a replacement build system: it validates arguments, calls Docker Compose, and returns the underlying exit code. Keep build and dependency truth in the .NET solution, project files, central build files, manifests, and lock files.
 
 The test targets run the current Release outputs without rebuilding them. After adding or changing production code, tests, categories, or projects, run `.\dev.ps1 build` before focused or full tests so validation cannot accidentally exercise stale binaries or report a new filter as unmatched.
+
+Deterministic smoke workflows that resolve scoped persistence services from one host scope must await each Bot run before starting the next. Production multi-bot concurrency uses independent scopes; a shared EF Core context must never be used concurrently.
 
 WPF can be compiled and self-contained-published from Linux by enabling Windows targeting. It runs on the Windows host for manual testing. Do not attempt to launch a GUI inside the Linux development container. Interactive debugging, designer support, and FlaUI/UIA3 journeys require an interactive Windows environment and are not reasons to install host tooling during ordinary tasks.
 

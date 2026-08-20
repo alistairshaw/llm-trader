@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-013
 title: Demonstrate proposal governance in the headless host
 stage: 5
-status: planned
+status: done
 priority: 720
 type: feature
 depends_on: [S5-011, S5-012]
@@ -50,4 +50,30 @@ Use [Implementation Plan — Stage 5 Demonstration](../../implementation-plan.md
 
 ## Completion Notes
 
-Pending implementation.
+Implemented the Stage 5 deterministic headless demonstration with validated Generic Host registrations, scripted
+Trading sessions, fixture Research, paper-neutral account/instrument state, fixed governance time and identifiers,
+fresh migrated SQLite snapshots, production guardrail/decision/reservation orchestration, authorized projections,
+and no broker or order-submission implementation. The smoke records a valid direct proposal, a competing target
+allocation, an oversized invalid proposal, and a ResearchOnly proposal. It prints bounded proposal, evaluation,
+approval, reservation, projection, contention, shutdown, and zero-submission facts and verifies them against durable
+state before stopping.
+
+Stable smoke facts: proposal `01J5QH8M000000000000000401`, proposal hash
+`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`, initial evaluation hash
+`dfa7fa03e563744be5beca6cac195989eb5348d08950bdd445ebcd8f0a6473b5`, fresh evaluation hash
+`0ac55f8861006267665e6ee2920a9fef5273f64da8dae258a3cfd0cf32b91334`, 44 rule results per complete
+hierarchical evaluation, reservation `01J5QH8M000000000000000701` for `700 USD`, competing outcome
+`proposal_governance.insufficient_capital`, invalid outcome `proposal_governance.policy_rejected`, ResearchOnly
+outcome `proposal_governance.research_only`, four projected proposals, one active reservation totaling `700`, zero
+broker submissions, and recoverable graceful shutdown.
+
+Validation completed on 2026-08-20: `.\dev.ps1 build` passed with zero warnings/errors; focused
+`Category=Stage5Host` passed 1/1; `Trading.IntegrationTests` passed 25/25; `.\dev.ps1 run` passed twice from its clean
+database with identical business IDs, hashes, rule, reservation, contention, and safety outcomes; the full suite
+passed 965 with the 32 intentionally pending S5-014 scenarios and no failures; focused `Category=Stage5Migrations`
+passed 5/5 including EF model drift; and `.\dev.ps1 format` passed.
+
+The implementation serializes the two deterministic smoke Bot runs because they intentionally share one host scope;
+production concurrency continues to require independent scopes. README, AGENTS.md, architecture, local-development,
+and test-plan guidance were updated. No scope deviations, follow-up tasks, or ADRs were created. Hosted Windows and
+Linux validation remains delegated to S5-015.

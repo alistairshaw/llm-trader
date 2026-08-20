@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-014
 title: Complete Stage 5 acceptance bindings
 stage: 5
-status: planned
+status: ready
 priority: 700
 type: acceptance
 depends_on: [S5-013]
