@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S5-012` is ready: build proposal queue and risk projections.
+`S5-013` is ready: demonstrate proposal governance in the headless host.
 
 ## Ordered Backlog
 
@@ -23,8 +23,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S5-009`](stage-5/S5-009-capital-reservations.md) | Implement atomic capital reservations | Done | 800 | `S5-004`, `S5-008` |
 | [`S5-010`](stage-5/S5-010-research-only-governance.md) | Enforce ResearchOnly proposal governance | Done | 780 | `S5-005`, `S5-007` |
 | [`S5-011`](stage-5/S5-011-proposal-orchestration.md) | Orchestrate proposal validation and approval | Done | 760 | `S5-005`, `S5-007`, `S5-008`, `S5-009`, `S5-010` |
-| [`S5-012`](stage-5/S5-012-proposal-projections.md) | Build proposal queue and risk projections | Ready | 740 | `S5-004`, `S5-011` |
-| [`S5-013`](stage-5/S5-013-headless-stage-5-demo.md) | Demonstrate proposal governance in the headless host | Planned | 720 | `S5-011`, `S5-012` |
+| [`S5-012`](stage-5/S5-012-proposal-projections.md) | Build proposal queue and risk projections | Done | 740 | `S5-004`, `S5-011` |
+| [`S5-013`](stage-5/S5-013-headless-stage-5-demo.md) | Demonstrate proposal governance in the headless host | Ready | 720 | `S5-011`, `S5-012` |
 | [`S5-014`](stage-5/S5-014-stage-5-acceptance.md) | Complete Stage 5 acceptance bindings | Planned | 700 | `S5-013` |
 | [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Planned | 1000 | `S5-001`–`S5-014` |
 
@@ -42,4 +42,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Stage 5 is in progress. `S5-001` defined 32 discoverable proposal-governance acceptance cases, all temporarily pending until `S5-014`; `S5-002` established the proposal-governance domain and application authority boundary; `S5-003` added the Stage 5 SQLite governance schema and immutable audit safeguards; `S5-004` implemented deterministic domain repositories and atomic governance persistence; `S5-005` added authorized, versioned structured-proposal tools with durable audit and no execution authority; `S5-006` implemented pure deterministic hierarchical guardrails with monotonic child policies and complete structured rule results; `S5-007` added canonically hashed, reconstructable, immutable evaluation artifacts with atomic lifecycle disposition and retry/concurrency semantics; `S5-008` implemented authorization-before-disclosure human decisions bound to exact immutable proposal and reviewed-state artifacts; `S5-009` added exact, idempotent, serializable capital reservation with real-SQLite contention isolation and deterministic release/expiration; `S5-010` pinned execution mode on proposals and made ResearchOnly evaluation durably non-executable across approval, reservation, conversion, and broker boundaries; and `S5-011` now orchestrates initial validation, exact human review, post-approval fresh-state revalidation, atomic reservation, retry, bounded failure, and recoverable expiration without order or broker authority. `S5-012` is ready.
+Stage 5 is in progress. `S5-001` defined 32 discoverable proposal-governance acceptance cases, all temporarily pending until `S5-014`; `S5-002` established the proposal-governance domain and application authority boundary; `S5-003` added the Stage 5 SQLite governance schema and immutable audit safeguards; `S5-004` implemented deterministic domain repositories and atomic governance persistence; `S5-005` added authorized, versioned structured-proposal tools with durable audit and no execution authority; `S5-006` implemented pure deterministic hierarchical guardrails with monotonic child policies and complete structured rule results; `S5-007` added canonically hashed, reconstructable, immutable evaluation artifacts with atomic lifecycle disposition and retry/concurrency semantics; `S5-008` implemented authorization-before-disclosure human decisions bound to exact immutable proposal and reviewed-state artifacts; `S5-009` added exact, idempotent, serializable capital reservation with real-SQLite contention isolation and deterministic release/expiration; `S5-010` pinned execution mode on proposals and made ResearchOnly evaluation durably non-executable across approval, reservation, conversion, and broker boundaries; `S5-011` now orchestrates initial validation, exact human review, post-approval fresh-state revalidation, atomic reservation, retry, bounded failure, and recoverable expiration without order or broker authority; and `S5-012` added bounded, no-tracking proposal queues and exact governance-detail projections with Bot, Portfolio, account, actor, and report-visibility authorization. `S5-013` is ready.

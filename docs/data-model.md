@@ -847,6 +847,14 @@ WPF dashboards, report catalogs, and operational listings should not load aggreg
 
 These projections may query the same SQLite database for the MVP. Separate CQRS infrastructure or a separate read database is not yet justified.
 
+The proposal query service returns immutable Core projection records rather than EF entities or `IQueryable`.
+Queue rows are ordered by expiry, creation time, and proposal identity, then paged only after report-evidence
+visibility has been evaluated. Every non-administrator read requires the intersection of explicit Trading Bot,
+Portfolio, and broker-account grants with the persisted Portfolio assignment. Detail reads return the exact action,
+proposal/configuration/snapshot versions, immutable report and Hypothesis evidence, ordered evaluations and policy
+versions, decision history, and reservation lifecycle. An inaccessible proposal or evidence artifact produces the
+same empty result as a missing proposal so the read boundary does not disclose private governance facts.
+
 ## 19. Migration Order
 
 1. Instruments and broker connections/accounts.
