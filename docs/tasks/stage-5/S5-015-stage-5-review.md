@@ -1,0 +1,63 @@
+---
+schema_version: 1
+id: S5-015
+title: Complete Stage 5 acceptance and review
+stage: 5
+status: planned
+priority: 1000
+type: test
+depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014]
+labels: [review, ci, security, stage-gate]
+created: 2026-08-20
+updated: 2026-08-20
+---
+
+# S5-015: Complete Stage 5 Acceptance and Review
+
+## Objective
+
+Audit Stage 5 against every exit criterion, close discovered defects, and publish an exact-revision review record.
+
+## Context
+
+Use [Implementation Plan — Acceptance Rules](../../implementation-plan.md#2-acceptance-rules-for-every-stage), [Implementation Plan — Stage 5](../../implementation-plan.md#7-stage-5-trade-proposals-approvals-and-risk), [Task Management — Stage Completion](../../task-management.md#15-stage-completion), and [Test Plan](../../test-plan.md).
+
+## Scope
+
+- Audit every Stage 5 criterion against production code, deterministic tests, durable evidence, traceability, and the headless demonstration.
+- Run restore, Release build, formatting, architecture, focused project suites, migration upgrade/drift, complete tests, repeated Stage 5 acceptance, and headless smoke.
+- Inspect proposal authority, evidence binding, policy hierarchy, immutable audit, authorization, fresh-state revalidation, reservation concurrency, ResearchOnly behavior, and broker-boundary isolation for critical or high-severity defects.
+- Reconcile README, AGENTS.md, architecture, domain, data model, Trading Bot, Research Bot, test plan, implementation plan, local development, task metadata, and traceability with observed behavior.
+- Create the Stage 5 Review Record with migration identity, exact commands/results, demonstration identities, limitations, decisions, ADRs, and Stage 6 decision.
+- Validate the exact pushed revision through hosted Windows/Linux CI and security workflows and record direct run links.
+
+## Acceptance Criteria
+
+- Every Stage 5 task and stage criterion has objective passing evidence.
+- Stage 5 acceptance passes twice locally and on applicable hosted platforms with zero failed, pending, or skipped scenarios.
+- Fresh and Stage 4 upgrade migrations, EF drift, full suite, build, format, architecture, headless demonstration, and security gates pass.
+- The review finds zero unresolved critical or high-severity defects in financial integrity, authorization, idempotency, audit, isolation, and broker-boundary safety.
+- The review record identifies the exact validated revision and hosted workflow results and makes an explicit Stage 6 commencement decision.
+
+## Validation
+
+```powershell
+.\dev.ps1 restore
+.\dev.ps1 build
+.\dev.ps1 format
+.\dev.ps1 test -Project tests/Trading.Architecture.Tests
+.\dev.ps1 test -Project tests/Trading.Core.Tests
+.\dev.ps1 test -Project tests/Trading.Data.Tests
+.\dev.ps1 test -Project tests/Trading.Research.Tests
+.\dev.ps1 test -Project tests/Trading.Engine.Tests
+.\dev.ps1 test -Project tests/Trading.IntegrationTests
+.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage5"
+.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage5"
+.\dev.ps1 test
+.\dev.ps1 run
+docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null && dotnet ef migrations has-pending-model-changes --project src/Trading.Data"
+```
+
+## Completion Notes
+
+Pending implementation.
