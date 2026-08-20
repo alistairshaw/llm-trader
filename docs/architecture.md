@@ -346,6 +346,9 @@ The Trading Bot workflow is specified in [Trading Bot](trading-bot.md). Research
 Key rules:
 
 - An LLM creates a structured trade proposal; it never receives a broker-order submission tool.
+- The versioned proposal-tool dispatcher records only immutable proposals after validating canonical
+  arguments against the Bot Run's pinned identity, configuration, Portfolio snapshot, evidence
+  visibility, tool policy, and budgets; it has no approval, reservation, order, or broker port.
 - The deterministic engine converts an approved proposal into an order intent only after validation against fresh state.
 - The risk pipeline is mandatory and cannot be bypassed by a strategy or UI command.
 - A bot-requested next-run time is advisory and is bounded by platform scheduling policy and a baseline schedule.

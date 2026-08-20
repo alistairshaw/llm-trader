@@ -117,8 +117,11 @@ public static class HostBootstrap
         builder.Services.AddScoped<DeterministicSchedulingPolicy>();
         builder.Services.AddScoped<RuntimeRecoveryService>();
         builder.Services.AddScoped<BotRunOrchestrationService>();
+        builder.Services.AddScoped<IHypothesisRepository, HypothesisRepository>();
+        builder.Services.AddScoped<ITradeProposalRepository, TradeProposalRepository>();
         AddResearch(builder.Services, research, options.SmokeMode);
-        builder.Services.AddScoped<IToolDispatcher, TradingBotResearchToolDispatcher>();
+        builder.Services.AddScoped<TradingBotResearchToolDispatcher>();
+        builder.Services.AddScoped<IToolDispatcher, ProposalToolDispatcher>();
         builder.Services.AddHostedService<TradingRuntimeHostedService>();
         return builder.Build();
     }

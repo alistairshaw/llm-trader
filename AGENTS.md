@@ -132,6 +132,7 @@ If documents disagree, identify the disagreement explicitly and resolve it in do
 - Mark a Research subscription delivered only in the same transaction that creates its source-keyed Trading Bot trigger; retry subscriber delivery independently and never expose report facts outside the subscription's visibility.
 - Execute Research model and tool I/O only after the claim transaction commits. On restart, terminalize each abandoned active attempt with the stable recovery reason before requeueing its request; never overwrite or reuse the abandoned attempt.
 - Keep Trading Bot Research access asynchronous and limited to the versioned `RequestResearch`, `ListReports`, and exact-version `GetReport` tools. Authorize from the Bot Run's pinned identity, configuration, policy, budgets, and report visibility; record the exact consumed version in durable tool audit.
+- Keep Trading Bot proposal access limited to the versioned `ProposeTrade` and `ProposeTargetAllocation` tools. Validate canonical exact-decimal arguments and authorize pinned run, configuration, Portfolio snapshot, evidence visibility, policy, and budgets before idempotently recording a proposal; never expose approval, reservation, order, broker, or policy-mutation authority through these tools.
 - Never add a test that contacts a real LLM, the public web, live market data, or a live broker to the default or commit-gating suite.
 - Never submit a live-money order during development or automated validation.
 

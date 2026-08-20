@@ -1,6 +1,7 @@
 using System.Reflection;
 using Trading.Core.Proposals;
 using Trading.Engine.Proposals;
+using Trading.Engine.Runtime;
 
 namespace Trading.Architecture.Tests;
 
@@ -34,6 +35,18 @@ public sealed class ProposalGovernanceAuthorityTests
             name is not null && (name.Contains("EntityFrameworkCore", StringComparison.Ordinal) ||
                                  name.Contains("Sqlite", StringComparison.Ordinal) ||
                                  name.Contains("WindowsDesktop", StringComparison.Ordinal))));
+    }
+
+    [Test]
+    public void ProposalToolDispatcherHasNoBrokerAssemblyReferenceOrSubmissionSurface()
+    {
+        var assemblyReferences = typeof(ProposalToolDispatcher).Assembly.GetReferencedAssemblies().Select(x => x.Name);
+        var tools = ProposalToolDispatcher.Definitions.Select(x => x.Name);
+        Assert.Multiple(() =>
+        {
+            Assert.That(assemblyReferences, Does.Not.Contain("Trading.Brokers"));
+            Assert.That(tools, Has.None.Matches<string>(x => x.Contains("Submit", StringComparison.Ordinal) || x.Contains("Broker", StringComparison.Ordinal)));
+        });
     }
 
     private static IEnumerable<Type> TypeGraph(Type root)

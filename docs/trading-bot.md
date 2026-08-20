@@ -112,7 +112,7 @@ The LLM can complete successfully with no proposal. If it does not call `Finish`
 
 ## 8. Tool Contract
 
-### 8.1 `ProposeTrade`
+### 8.1 `ProposeTrade` version 1
 
 Creates a proposal only. Required fields should include:
 
@@ -132,11 +132,20 @@ Creates a proposal only. Required fields should include:
 }
 ```
 
-The tool validates syntax and records the proposal. Its result must not imply approval or execution.
+The closed schema uses canonical JSON and exact decimal strings. It pins `proposalId`, `portfolioId`,
+`portfolioSnapshotId`, exact Report identities/series/versions, and an optional frozen Hypothesis version.
+The dispatcher authorizes those identities against the active Bot Run's pinned Bot, configuration,
+Portfolio assignment, decision snapshot, tool policy, proposal/call budgets, and Report visibility. A
+`ProposalNotional` risk limit in the snapshot currency bounds a priced direct proposal; the platform
+ceiling applies when that pinned policy does not define a narrower value. The durable result is always
+a `Recorded` proposal and never implies approval, capital reservation, order conversion, or execution.
 
-### 8.2 `ProposeTargetAllocation`
+### 8.2 `ProposeTargetAllocation` version 1
 
-Expresses a desired portfolio state rather than a broker instruction. A deterministic portfolio constructor calculates any required trades and submits them to the same guardrail pipeline. This is preferred for long-horizon investment bots.
+Expresses one instrument's desired percentage as a canonical exact-decimal string; cash is the
+remainder. Its identity, evidence, expiration, authorization, audit, and idempotency rules are the same
+as `ProposeTrade`. A deterministic portfolio constructor calculates any required trades downstream and
+submits them to the same guardrail pipeline. This is preferred for long-horizon investment bots.
 
 ### 8.3 Market and reference data
 

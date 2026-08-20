@@ -12,11 +12,11 @@ Stages 1–4 are complete: the repository has its domain and persistence foundat
 
 Schema-1 reports are deterministically validated, citation-bound to sources retrieved by their run, canonically hashed, and atomically published as immutable series versions. Queued Research work is claimed atomically with increasing attempt numbers, runs outside database transactions under global concurrency limits, and recovers abandoned attempts by retaining them as failed audit history before requeueing the request.
 
-Stage 5 persistence now provides the relational foundation for versioned Hypotheses, structured Trade Proposals, exact Report evidence, append-only guardrail evaluations and approvals, and concurrency-protected capital reservations. SQLite constraints and triggers preserve immutable governance facts and exact decimal storage; proposal workflows are added by the remaining Stage 5 tasks.
+Stage 5 persistence now provides the relational foundation for versioned Hypotheses, structured Trade Proposals, exact Report evidence, append-only guardrail evaluations and approvals, and concurrency-protected capital reservations. SQLite constraints and triggers preserve immutable governance facts and exact decimal storage. The version-1 `ProposeTrade` and `ProposeTargetAllocation` tools record audited immutable proposals bound to the exact run, configuration, Portfolio snapshot, and visible evidence; they expose no approval, reservation, order, broker, or policy-mutation authority.
 
 All 39 Stage 4 Research specifications are active and deterministic against a fresh migrated SQLite file. Thin Stage-specific bindings select explicit business use cases; the scenario-scoped driver composes production request, catalog, publication, tool-loop, notification, recovery, and host services and asserts returned results or durable facts. It never derives expected outcomes from feature wording or scenario titles.
 
-The current backlog and next eligible task are recorded in [Stage 4 Backlog](docs/tasks/stage-4.md).
+The current backlog and next eligible task are recorded in [Stage 5 Backlog](docs/tasks/stage-5.md).
 
 ## Development Environment
 
