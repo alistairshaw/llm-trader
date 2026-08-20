@@ -18,6 +18,12 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
     internal DbSet<PositionAppliedFillEntity> PositionAppliedFills => Set<PositionAppliedFillEntity>();
     internal DbSet<PortfolioLedgerEntryEntity> PortfolioLedgerEntries => Set<PortfolioLedgerEntryEntity>();
     internal DbSet<PortfolioDecisionSnapshotEntity> PortfolioDecisionSnapshots => Set<PortfolioDecisionSnapshotEntity>();
+    internal DbSet<ResearchRequestEntity> ResearchRequests => Set<ResearchRequestEntity>();
+    internal DbSet<ResearchSubscriptionEntity> ResearchSubscriptions => Set<ResearchSubscriptionEntity>();
+    internal DbSet<ResearchRunEntity> ResearchRuns => Set<ResearchRunEntity>();
+    internal DbSet<ResearchToolInvocationEntity> ResearchToolInvocations => Set<ResearchToolInvocationEntity>();
+    internal DbSet<ResearchReportEntity> ResearchReports => Set<ResearchReportEntity>();
+    internal DbSet<ResearchReportSourceEntity> ResearchReportSources => Set<ResearchReportSourceEntity>();
     internal DbSet<SchemaMetadataEntity> SchemaMetadata => Set<SchemaMetadataEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>

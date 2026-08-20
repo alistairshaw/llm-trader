@@ -263,6 +263,93 @@ internal sealed class PortfolioDecisionSnapshotConfiguration : EntityConfigurati
     }
 }
 
+internal sealed class ResearchRequestConfiguration : EntityConfiguration<ResearchRequestEntity>
+{
+    public ResearchRequestConfiguration() : base("research_requests") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<ResearchRequestEntity> builder)
+    {
+        builder.Property(x => x.SubjectType).IsRequired(); builder.Property(x => x.Question).IsRequired();
+        builder.Property(x => x.NormalizedResearchKey).IsRequired(); builder.Property(x => x.Status).IsRequired();
+        builder.Property(x => x.Visibility).IsRequired(); builder.Property(x => x.FreshnessRequirementJson).IsRequired();
+        builder.Property(x => x.RequestJson).IsRequired(); builder.Property(x => x.Version).IsConcurrencyToken();
+        builder.HasIndex(x => new { x.NormalizedResearchKey, x.Status });
+        builder.HasOne<TradingBotEntity>().WithMany().HasForeignKey(x => x.RequestingBotId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<ResearchReportEntity>().WithMany().HasForeignKey(x => x.ResultReportId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t => { t.HasCheckConstraint("ck_research_requests_status", "status IN ('Requested','Validating','Queued','Running','Completed','Failed','TimedOut','BudgetExceeded','Cancelled')"); t.HasCheckConstraint("ck_research_requests_visibility", "visibility IN ('Shared','BotPrivate','Restricted')"); t.HasCheckConstraint("ck_research_requests_version", "version > 0"); });
+    }
+}
+
+internal sealed class ResearchSubscriptionConfiguration : EntityConfiguration<ResearchSubscriptionEntity>
+{
+    public ResearchSubscriptionConfiguration() : base("research_subscriptions") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<ResearchSubscriptionEntity> builder)
+    {
+        builder.Property(x => x.ResearchRequestId).IsRequired(); builder.Property(x => x.TradingBotId).IsRequired();
+        builder.Property(x => x.NotificationStatus).IsRequired(); builder.HasIndex(x => new { x.ResearchRequestId, x.TradingBotId }).IsUnique();
+        builder.HasOne<ResearchRequestEntity>().WithMany().HasForeignKey(x => x.ResearchRequestId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<TradingBotEntity>().WithMany().HasForeignKey(x => x.TradingBotId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t => t.HasCheckConstraint("ck_research_subscriptions_notification", "notification_status IN ('Pending','Delivered','Failed')"));
+    }
+}
+
+internal sealed class ResearchRunConfiguration : EntityConfiguration<ResearchRunEntity>
+{
+    public ResearchRunConfiguration() : base("research_runs") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<ResearchRunEntity> builder)
+    {
+        builder.Property(x => x.ResearchRequestId).IsRequired(); builder.Property(x => x.Status).IsRequired();
+        builder.Property(x => x.ModelConfigurationJson).IsRequired(); builder.Property(x => x.PromptVersion).IsRequired();
+        builder.Property(x => x.ToolSetVersion).IsRequired(); builder.Property(x => x.ReportSchemaVersion).IsRequired(); builder.Property(x => x.UsageJson).IsRequired();
+        builder.Property(x => x.Version).IsConcurrencyToken(); builder.HasIndex(x => new { x.ResearchRequestId, x.AttemptNumber }).IsUnique();
+        builder.HasOne<ResearchRequestEntity>().WithMany().HasForeignKey(x => x.ResearchRequestId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t => { t.HasCheckConstraint("ck_research_runs_attempt", "attempt_number > 0"); t.HasCheckConstraint("ck_research_runs_status", "status IN ('Pending','Running','WaitingForTool','Completed','Failed','TimedOut','BudgetExceeded','Cancelled')"); t.HasCheckConstraint("ck_research_runs_version", "version > 0"); });
+    }
+}
+
+internal sealed class ResearchToolInvocationConfiguration : EntityConfiguration<ResearchToolInvocationEntity>
+{
+    public ResearchToolInvocationConfiguration() : base("research_tool_invocations") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<ResearchToolInvocationEntity> builder)
+    {
+        builder.Property(x => x.ResearchRunId).IsRequired(); builder.Property(x => x.ToolName).IsRequired();
+        builder.Property(x => x.ArgumentsJson).IsRequired(); builder.Property(x => x.Status).IsRequired();
+        builder.HasIndex(x => new { x.ResearchRunId, x.SequenceNumber }).IsUnique();
+        builder.HasOne<ResearchRunEntity>().WithMany().HasForeignKey(x => x.ResearchRunId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t => { t.HasCheckConstraint("ck_research_tool_invocations_sequence", "sequence_number > 0"); t.HasCheckConstraint("ck_research_tool_invocations_schema", "tool_schema_version > 0"); t.HasCheckConstraint("ck_research_tool_invocations_status", "status IN ('Started','Succeeded','Failed','Rejected','Cancelled')"); });
+    }
+}
+
+internal sealed class ResearchReportConfiguration : EntityConfiguration<ResearchReportEntity>
+{
+    public ResearchReportConfiguration() : base("research_reports") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<ResearchReportEntity> builder)
+    {
+        builder.Property(x => x.ReportSeriesId).IsRequired(); builder.Property(x => x.ResearchRequestId).IsRequired(); builder.Property(x => x.ResearchRunId).IsRequired();
+        builder.Property(x => x.SubjectType).IsRequired(); builder.Property(x => x.Question).IsRequired(); builder.Property(x => x.Visibility).IsRequired();
+        builder.Property(x => x.Status).IsRequired(); builder.Property(x => x.ReportSchemaVersion).IsRequired(); builder.Property(x => x.ContentJson).IsRequired();
+        builder.Property(x => x.ContentHash).IsRequired(); builder.Property(x => x.GeneratorMetadataJson).IsRequired();
+        builder.HasIndex(x => new { x.ReportSeriesId, x.VersionNumber }).IsUnique(); builder.HasIndex(x => new { x.ReportSeriesId, x.ContentHash }).IsUnique();
+        builder.HasIndex(x => new { x.SubjectId, x.GeneratedAt }).IsDescending(false, true);
+        builder.HasOne<ResearchRequestEntity>().WithMany().HasForeignKey(x => x.ResearchRequestId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<ResearchRunEntity>().WithMany().HasForeignKey(x => x.ResearchRunId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<ResearchReportEntity>().WithMany().HasForeignKey(x => x.SupersedesReportId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t => { t.HasCheckConstraint("ck_research_reports_version", "version_number > 0"); t.HasCheckConstraint("ck_research_reports_visibility", "visibility IN ('Shared','BotPrivate','Restricted')"); t.HasCheckConstraint("ck_research_reports_status", "status IN ('Published','Expired','Superseded','Retracted')"); t.HasCheckConstraint("ck_research_reports_hash", "length(content_hash) = 64 AND content_hash = lower(content_hash)"); });
+    }
+}
+
+internal sealed class ResearchReportSourceConfiguration : EntityConfiguration<ResearchReportSourceEntity>
+{
+    public ResearchReportSourceConfiguration() : base("research_report_sources") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<ResearchReportSourceEntity> builder)
+    {
+        builder.Property(x => x.ResearchReportId).IsRequired(); builder.Property(x => x.SourceType).IsRequired(); builder.Property(x => x.Title).IsRequired();
+        builder.Property(x => x.ContentHash).IsRequired(); builder.Property(x => x.MetadataJson).IsRequired();
+        builder.HasIndex(x => new { x.ResearchReportId, x.SourceSequence }).IsUnique();
+        builder.HasOne<ResearchReportEntity>().WithMany().HasForeignKey(x => x.ResearchReportId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t => { t.HasCheckConstraint("ck_research_report_sources_sequence", "source_sequence > 0"); t.HasCheckConstraint("ck_research_report_sources_hash", "length(content_hash) = 64 AND content_hash = lower(content_hash)"); });
+    }
+}
+
 internal sealed class SchemaMetadataConfiguration : IEntityTypeConfiguration<SchemaMetadataEntity>
 {
     public void Configure(EntityTypeBuilder<SchemaMetadataEntity> builder)
@@ -270,6 +357,6 @@ internal sealed class SchemaMetadataConfiguration : IEntityTypeConfiguration<Sch
         builder.ToTable("schema_metadata"); builder.HasKey(x => x.Key);
         builder.Property(x => x.Key).HasColumnName("key"); builder.Property(x => x.Value).HasColumnName("value").IsRequired();
         builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
-        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "3", UpdatedAt = 0 });
+        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "4", UpdatedAt = 0 });
     }
 }

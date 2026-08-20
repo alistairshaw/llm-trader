@@ -17,7 +17,7 @@ internal sealed class CanonicalPersistenceConverterTests
         typeof(ToolInvocationId), typeof(PortfolioId), typeof(PositionId), typeof(PortfolioDecisionSnapshotId),
         typeof(PortfolioLedgerEntryId), typeof(BrokerConnectionId), typeof(BrokerAccountId), typeof(InstrumentId),
         typeof(InstrumentBrokerMappingId), typeof(ResearchRequestId), typeof(ResearchSubscriptionId),
-        typeof(ResearchReportId), typeof(HypothesisId), typeof(HypothesisVersionId), typeof(TradeProposalId),
+        typeof(ResearchReportId), typeof(ResearchRunAttemptId), typeof(HypothesisId), typeof(HypothesisVersionId), typeof(TradeProposalId),
         typeof(GuardrailEvaluationId), typeof(ProposalApprovalId), typeof(CapitalReservationId), typeof(OrderId),
         typeof(OrderTransitionId), typeof(FillId),
     ];

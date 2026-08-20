@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-004
 title: Implement Research repositories and authorized catalog
 stage: 4
-status: planned
+status: ready
 priority: 890
 type: feature
 depends_on: [S4-003]

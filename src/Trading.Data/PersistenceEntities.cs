@@ -159,6 +159,55 @@ internal sealed class PortfolioDecisionSnapshotEntity : PersistenceEntity
     public string SnapshotJson { get; set; } = string.Empty;
     public string ContentHash { get; set; } = string.Empty; public long CreatedAt { get; set; }
 }
+internal sealed class ResearchRequestEntity : PersistenceEntity
+{
+    public string SubjectType { get; set; } = string.Empty; public string? SubjectId { get; set; }
+    public string Question { get; set; } = string.Empty; public string NormalizedResearchKey { get; set; } = string.Empty;
+    public long AsOf { get; set; } public string Status { get; set; } = string.Empty; public string Visibility { get; set; } = string.Empty;
+    public string? RequestingBotId { get; set; } public string FreshnessRequirementJson { get; set; } = string.Empty;
+    public string RequestJson { get; set; } = string.Empty; public long? StartedAt { get; set; } public long? CompletedAt { get; set; }
+    public string? ResultReportId { get; set; } public long CreatedAt { get; set; } public long Version { get; set; }
+}
+internal sealed class ResearchSubscriptionEntity : PersistenceEntity
+{
+    public string ResearchRequestId { get; set; } = string.Empty; public string TradingBotId { get; set; } = string.Empty;
+    public long SubscribedAt { get; set; } public string NotificationStatus { get; set; } = string.Empty; public long? NotifiedAt { get; set; }
+}
+internal sealed class ResearchRunEntity : PersistenceEntity
+{
+    public string ResearchRequestId { get; set; } = string.Empty; public int AttemptNumber { get; set; }
+    public string Status { get; set; } = string.Empty; public string ModelConfigurationJson { get; set; } = string.Empty;
+    public string PromptVersion { get; set; } = string.Empty; public string ToolSetVersion { get; set; } = string.Empty;
+    public string ReportSchemaVersion { get; set; } = string.Empty; public long StartedAt { get; set; } public long? CompletedAt { get; set; }
+    public string? TerminalReason { get; set; } public string UsageJson { get; set; } = string.Empty; public long Version { get; set; }
+}
+internal sealed class ResearchToolInvocationEntity : PersistenceEntity
+{
+    public string ResearchRunId { get; set; } = string.Empty; public int SequenceNumber { get; set; }
+    public string ToolName { get; set; } = string.Empty; public int ToolSchemaVersion { get; set; }
+    public string ArgumentsJson { get; set; } = string.Empty; public string Status { get; set; } = string.Empty;
+    public long StartedAt { get; set; } public long? CompletedAt { get; set; } public string? ResultJson { get; set; }
+    public string? ResultArtifactId { get; set; } public string? ErrorCode { get; set; } public string? ErrorDetail { get; set; }
+    public string? UsageJson { get; set; }
+}
+internal sealed class ResearchReportEntity : PersistenceEntity
+{
+    public string ReportSeriesId { get; set; } = string.Empty; public int VersionNumber { get; set; }
+    public string ResearchRequestId { get; set; } = string.Empty; public string ResearchRunId { get; set; } = string.Empty;
+    public string SubjectType { get; set; } = string.Empty; public string? SubjectId { get; set; } public string Question { get; set; } = string.Empty;
+    public string Visibility { get; set; } = string.Empty; public long DataCutoff { get; set; } public long GeneratedAt { get; set; }
+    public long? ExpiresAt { get; set; } public string Status { get; set; } = string.Empty; public string? SupersedesReportId { get; set; }
+    public string ReportSchemaVersion { get; set; } = string.Empty; public string ContentJson { get; set; } = string.Empty;
+    public string? ContentMarkdown { get; set; } public string ContentHash { get; set; } = string.Empty;
+    public string GeneratorMetadataJson { get; set; } = string.Empty;
+}
+internal sealed class ResearchReportSourceEntity : PersistenceEntity
+{
+    public string ResearchReportId { get; set; } = string.Empty; public int SourceSequence { get; set; }
+    public string SourceType { get; set; } = string.Empty; public string? SourceUri { get; set; } public string? StableSourceId { get; set; }
+    public string Title { get; set; } = string.Empty; public string? Publisher { get; set; } public long? PublishedAt { get; set; }
+    public long RetrievedAt { get; set; } public string ContentHash { get; set; } = string.Empty; public string MetadataJson { get; set; } = string.Empty;
+}
 internal sealed class SchemaMetadataEntity
 {
     public string Key { get; set; } = string.Empty; public string Value { get; set; } = string.Empty; public long UpdatedAt { get; set; }
