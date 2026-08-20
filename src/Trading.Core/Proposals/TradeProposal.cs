@@ -195,6 +195,27 @@ public sealed class TradeProposal
         return approval;
     }
 
+    public ProposalApproval Reject(ProposalApprovalId id, DecisionActor actor, string reason,
+        DateTimeOffset decidedAt, ProposalContentVersion reviewedContentVersion, FreshStateReference reviewedState)
+    {
+        ArgumentNullException.ThrowIfNull(actor);
+        ArgumentNullException.ThrowIfNull(reviewedContentVersion);
+        ArgumentNullException.ThrowIfNull(reviewedState);
+        if (reviewedContentVersion != ContentVersion)
+            throw new InvalidOperationException(ProposalGovernanceCodes.VersionMismatch);
+        if (Status != ProposalStatus.AwaitingHumanApproval)
+            throw new InvalidOperationException("Proposal is not eligible for rejection.");
+        EnsureNotExpired(decidedAt);
+        if (reviewedState.SnapshotId != PortfolioSnapshotId)
+            throw new InvalidOperationException(ProposalGovernanceCodes.StateMismatch);
+        var approval = new ProposalApproval(id, ApprovalDecision.Rejected, actor.Type, actor.Id, reason, decidedAt,
+            Version, reviewedState.SnapshotId, reviewedContentVersion, reviewedState);
+        _approvals.Add(approval);
+        Status = ProposalStatus.Rejected;
+        Version++;
+        return approval;
+    }
+
     public bool Expire(DateTimeOffset at)
     {
         ProposalValidation.Utc(at, nameof(at));

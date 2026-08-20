@@ -88,6 +88,7 @@ public interface IGuardrailEvaluationService
 
 public sealed record ProposalDecisionAuthorizationRequest(
     DecisionActor Actor,
+    IReadOnlySet<string> Roles,
     TradeProposalId ProposalId,
     ProposalContentVersion ReviewedContentVersion,
     FreshStateReference ReviewedState,
@@ -99,6 +100,41 @@ public interface IProposalDecisionAuthorizer
 {
     Task<ProposalDecisionAuthorizationResult> AuthorizeAsync(
         ProposalDecisionAuthorizationRequest request,
+        CancellationToken cancellationToken);
+}
+
+public sealed record HumanProposalDecisionCommand(
+    TradeProposalId ProposalId,
+    ProposalContentVersion ReviewedContentVersion,
+    TradingBotConfigurationVersionId ReviewedConfigurationVersionId,
+    FreshStateReference ReviewedState,
+    GuardrailEvaluationId ReviewedEvaluationId,
+    string ReviewedEvaluationHash,
+    ApprovalDecision Decision,
+    string? Reason,
+    DecisionActor Actor,
+    IReadOnlySet<string> ActorRoles);
+
+public enum HumanProposalDecisionOutcome
+{
+    Applied,
+    AlreadyApplied,
+    NotFound,
+    Unauthorized,
+    Expired,
+    StaleReview,
+    Conflict
+}
+
+public sealed record HumanProposalDecisionResult(
+    HumanProposalDecisionOutcome Outcome,
+    string Code,
+    ProposalApproval? Approval);
+
+public interface IHumanProposalDecisionService
+{
+    Task<HumanProposalDecisionResult> DecideAsync(
+        HumanProposalDecisionCommand command,
         CancellationToken cancellationToken);
 }
 

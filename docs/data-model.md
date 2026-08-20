@@ -516,6 +516,9 @@ Immutable `TradeProposal` children:
 | `state_snapshot_id` | Exact state shown to actor |
 
 An approval of one proposal version cannot authorize changed content or a materially different state snapshot.
+The repository reconstructs the reviewed content and fresh-state reference from the proposal's immutable content
+and the immutable guardrail evaluation for `state_snapshot_id`; authorization roles remain transient inputs while
+the stable actor type and identity form the durable decision audit.
 
 ### 9.5 `capital_reservations`
 

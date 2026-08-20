@@ -206,7 +206,7 @@ Recorded proposal
     -> bot mandate guardrails
     -> price, liquidity, market-hours, and proposal-expiry checks
     -> duplicate/idempotency check
-    -> human approval when required
+    -> authorization-before-disclosure human decision bound to the exact proposal content and latest passing evaluation when required
     -> reserve capital
     -> create durable order intent
     -> submit and reconcile with broker

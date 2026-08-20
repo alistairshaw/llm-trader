@@ -137,6 +137,38 @@ internal sealed class ProposalGovernanceRepositoryTests
         Assert.That(async () => await database.Context.SaveChangesAsync(), Throws.InvalidOperationException);
     }
 
+    [Test, Category("ProposalApprovalPersistence")]
+    public async Task HumanDecisionRoundTripsExactReviewedStateAndIsImmutable()
+    {
+        await using var database = await CreateAsync();
+        var proposals = new TradeProposalRepository(database.Context);
+        var proposal = Proposal();
+        await proposals.RecordAsync(proposal, "human-decision", default);
+        proposal.StartValidation(Now.AddMinutes(1));
+        var policies = new[] { new GuardrailPolicyReference(GuardrailPolicyLevel.Platform, "platform", "v1") };
+        var fresh = new FreshStateReference(proposal.PortfolioSnapshotId, Now.AddMinutes(1), Hash('s'));
+        proposal.RecordEvaluation(GuardrailEvaluationId.New(), policies, GuardrailOutcome.Passed,
+            [new GuardrailRuleResult("notional", GuardrailOutcome.Passed, "within limit")],
+            Now.AddMinutes(1), fresh, Hash('e'), "guardrail.passed");
+        proposal.CompleteValidation(GuardrailOutcome.Passed, Now.AddMinutes(1));
+        proposal.Approve(ProposalApprovalId.New(), new DecisionActor(ApprovalActorType.User, "operator-1"),
+            "reviewed", Now.AddMinutes(2), proposal.ContentVersion, fresh);
+
+        Assert.That(await proposals.SaveAsync(proposal, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        database.Context.ChangeTracker.Clear();
+        var loaded = (await proposals.GetAsync(proposal.Id, default))!;
+        Assert.Multiple(() =>
+        {
+            Assert.That(loaded.ApprovalHistory.Single().ReviewedContentVersion, Is.EqualTo(proposal.ContentVersion));
+            Assert.That(loaded.ApprovalHistory.Single().ReviewedState, Is.EqualTo(fresh));
+            Assert.That(loaded.ApprovalHistory.Single().Actor, Is.EqualTo(new DecisionActor(ApprovalActorType.User, "operator-1")));
+        });
+
+        var row = await database.Context.ProposalApprovals.SingleAsync();
+        row.Reason = "changed";
+        Assert.That(async () => await database.Context.SaveChangesAsync(), Throws.InvalidOperationException);
+    }
+
     [Test]
     public async Task ReservationUniquenessFailureRollsBackProposalDecision()
     {

@@ -66,7 +66,7 @@ public sealed class ProposalReservationAggregateTests
         });
     }
 
-    [Test]
+    [Test, Category("HumanProposalApproval")]
     public void ApprovalPinsExactImmutableContentAndFreshState()
     {
         var proposal = ExactProposal();
@@ -84,7 +84,7 @@ public sealed class ProposalReservationAggregateTests
         });
     }
 
-    [Test]
+    [Test, Category("HumanProposalApproval")]
     public void ApprovalRequiresExactVersionAndReviewedSnapshotAndCannotBypassHumanReview()
     {
         var proposal = NewProposal();
