@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-002
 title: Define Research runtime and publication contracts
 stage: 4
-status: planned
+status: ready
 priority: 930
 type: feature
 depends_on: [S4-001]

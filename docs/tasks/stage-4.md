@@ -6,14 +6,14 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S4-001` — Write Stage 4 executable Gherkin specifications.
+`S4-002` — Define Research runtime and publication contracts.
 
 ## Ordered Backlog
 
 | ID | Task | Status | Priority | Depends on |
 | --- | --- | --- | ---: | --- |
-| [`S4-001`](stage-4/S4-001-write-stage-4-gherkin.md) | Write Stage 4 executable Gherkin specifications | Ready | 1000 | — |
-| [`S4-002`](stage-4/S4-002-research-contracts.md) | Define Research runtime and publication contracts | Planned | 930 | `S4-001` |
+| [`S4-001`](stage-4/S4-001-write-stage-4-gherkin.md) | Write Stage 4 executable Gherkin specifications | Done | 1000 | — |
+| [`S4-002`](stage-4/S4-002-research-contracts.md) | Define Research runtime and publication contracts | Ready | 930 | `S4-001` |
 | [`S4-003`](stage-4/S4-003-research-persistence.md) | Add the Stage 4 Research persistence migration | Planned | 910 | `S4-002` |
 | [`S4-004`](stage-4/S4-004-research-repositories.md) | Implement Research repositories and authorized catalog | Planned | 890 | `S4-003` |
 | [`S4-005`](stage-4/S4-005-request-service.md) | Implement authorized request deduplication and reuse | Planned | 870 | `S4-004` |

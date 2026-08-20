@@ -3,7 +3,7 @@ schema_version: 1
 id: S4-001
 title: Write Stage 4 executable Gherkin specifications
 stage: 4
-status: ready
+status: done
 priority: 1000
 type: acceptance
 depends_on: []
@@ -46,4 +46,14 @@ Use [Implementation Plan — Stage 4](../../implementation-plan.md#6-stage-4-sha
 
 ## Completion Notes
 
-Pending implementation.
+Completed on 2026-08-20.
+
+- Added six Stage 4 feature files containing 39 unique deterministic Reqnroll test cases: 21 standalone scenarios plus 18 examples across three scenario outlines.
+- Covered bounded request validation and authorization, normalized keys, subscriptions, equivalent concurrent deduplication, fresh reuse, private-input isolation, immutable publication, refresh/versioning, exact-version access, provenance, failed-run audit, prompt-injection resistance, Research tool authority, all seven Research budgets, durable completion/failure notification, idempotent Bot triggers, restart recovery, graceful shutdown, and the two-Bot fixture-backed demonstration.
+- Tagged every scenario for Stage 4, Research acceptance, and cross-platform execution; recovery scenarios also carry `@recovery`. Applied the acceptance harness's temporary `@ignore` tag so all implementation-dependent tests remain explicitly pending until `S4-014` binds and activates them.
+- Added a traceability matrix mapping every Stage 4 criterion and Research deliverable to named scenarios and implementing tasks.
+- Generated and committed the Reqnroll/NUnit test cases for discovery.
+- Validation: `.\dev.ps1 build` passed with 0 warnings and 0 errors. `.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage4"` discovered 39 tests and reported all 39 explicitly skipped/pending, with 0 failures. `.\dev.ps1 format` passed with no formatter or analyzer findings.
+- All inputs are deterministic and fixture-backed; no scenario contacts a real LLM, public web, live market data, broker, credential store, network, or wall clock.
+- Documentation: the traceability document is the only durable guidance added; implementation introduced no architectural or workflow decision requiring changes to `README.md`, `AGENTS.md`, or the authoritative design documents.
+- Deviations: none. Follow-up tasks: none. ADRs: none.
