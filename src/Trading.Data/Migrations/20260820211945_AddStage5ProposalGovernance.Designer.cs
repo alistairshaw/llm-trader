@@ -589,7 +589,7 @@ namespace Trading.Data.Migrations
 
                     b.ToTable("hypotheses", null, t =>
                         {
-                            t.HasCheckConstraint("ck_hypotheses_status", "status IN ('Draft','Active','Retired')");
+                                    t.HasCheckConstraint("ck_hypotheses_status", "status IN ('Draft','Frozen','Testing','Validated','Rejected','Retired')");
 
                             t.HasCheckConstraint("ck_hypotheses_version", "version > 0");
                         });
@@ -1846,7 +1846,7 @@ namespace Trading.Data.Migrations
 
                     b.ToTable("trade_proposals", null, t =>
                         {
-                            t.HasCheckConstraint("ck_trade_proposals_status", "status IN ('Recorded','Validating','AwaitingApproval','Approved','Rejected','Reserved','Expired','Cancelled','ResearchOnly')");
+                                    t.HasCheckConstraint("ck_trade_proposals_status", "status IN ('Recorded','Validating','AwaitingHumanApproval','Approved','Rejected','Expired','Cancelled','ConvertedToOrder')");
 
                             t.HasCheckConstraint("ck_trade_proposals_time", "valid_until > created_at");
 

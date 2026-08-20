@@ -373,6 +373,7 @@ Hypothesis
     Status
     CurrentVersionId
     CreatedAt
+    Version
 
 HypothesisVersion
     Id: HypothesisVersionId

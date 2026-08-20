@@ -200,7 +200,15 @@ public sealed class GuardrailEvaluation
     public PortfolioDecisionSnapshotId StateSnapshotId { get; }
     public GuardrailPolicyReference? PolicyReference { get; }
     public FreshStateReference? FreshState { get; }
+    internal static GuardrailEvaluation Rehydrate(GuardrailEvaluationState state) => new(state.Id, state.Sequence,
+        state.EvaluationStage, state.PolicyVersion, state.Outcome, state.RuleResults, state.EvaluatedAt,
+        state.StateSnapshotId, state.PolicyReference, state.FreshState);
 }
+
+public sealed record GuardrailEvaluationState(GuardrailEvaluationId Id, int Sequence, string EvaluationStage,
+    string PolicyVersion, GuardrailOutcome Outcome, IReadOnlyList<GuardrailRuleResult> RuleResults,
+    DateTimeOffset EvaluatedAt, PortfolioDecisionSnapshotId StateSnapshotId,
+    GuardrailPolicyReference? PolicyReference = null, FreshStateReference? FreshState = null);
 
 public sealed class ProposalApproval
 {
@@ -232,7 +240,15 @@ public sealed class ProposalApproval
     public ProposalContentVersion? ReviewedContentVersion { get; }
     public FreshStateReference? ReviewedState { get; }
     public DecisionActor Actor => new(ActorType, ActorId);
+    internal static ProposalApproval Rehydrate(ProposalApprovalState state) => new(state.Id, state.Decision,
+        state.ActorType, state.ActorId, state.Reason, state.DecidedAt, state.ProposalVersion,
+        state.StateSnapshotId, state.ReviewedContentVersion, state.ReviewedState);
 }
+
+public sealed record ProposalApprovalState(ProposalApprovalId Id, ApprovalDecision Decision,
+    ApprovalActorType ActorType, string ActorId, string? Reason, DateTimeOffset DecidedAt,
+    long ProposalVersion, PortfolioDecisionSnapshotId StateSnapshotId,
+    ProposalContentVersion? ReviewedContentVersion = null, FreshStateReference? ReviewedState = null);
 
 internal static class ProposalValidation
 {

@@ -23,6 +23,20 @@ public sealed class CapitalReservation
         if (expiresAt <= createdAt) throw new ArgumentException("Reservation expiry must follow creation.", nameof(expiresAt));
         Status = CapitalReservationStatus.Active;
     }
+    private CapitalReservation(CapitalReservationState state)
+    {
+        Id = state.Id; PortfolioId = state.PortfolioId; TradeProposalId = state.TradeProposalId;
+        OrderId = state.OrderId; Amount = state.Amount; Status = state.Status;
+        CreatedAt = state.CreatedAt; ExpiresAt = state.ExpiresAt; ConsumedAt = state.ConsumedAt;
+        ReleasedAt = state.ReleasedAt; Version = state.Version;
+    }
+    public static CapitalReservation Rehydrate(CapitalReservationState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        if (state.Amount.Amount <= 0 || state.ExpiresAt <= state.CreatedAt || state.Version < 0)
+            throw new ArgumentException("Persisted reservation state is invalid.", nameof(state));
+        return new CapitalReservation(state);
+    }
     public CapitalReservationId Id { get; }
     public PortfolioId PortfolioId { get; }
     public TradeProposalId TradeProposalId { get; }
@@ -79,3 +93,8 @@ public sealed class CapitalReservation
         if (at < CreatedAt) throw new ArgumentException("Transition cannot precede creation.", nameof(at));
     }
 }
+
+public sealed record CapitalReservationState(CapitalReservationId Id, PortfolioId PortfolioId,
+    TradeProposalId TradeProposalId, OrderId? OrderId, Money Amount, CapitalReservationStatus Status,
+    DateTimeOffset CreatedAt, DateTimeOffset ExpiresAt, DateTimeOffset? ConsumedAt,
+    DateTimeOffset? ReleasedAt, long Version);

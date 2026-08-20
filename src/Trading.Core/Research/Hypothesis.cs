@@ -14,11 +14,29 @@ public sealed class Hypothesis
         Name = ResearchValidation.Required(name, nameof(name), 300);
         CreatedAt = ResearchValidation.Utc(createdAt, nameof(createdAt));
     }
+    private Hypothesis(HypothesisState state)
+    {
+        Id = state.Id; Name = ResearchValidation.Required(state.Name, nameof(state.Name), 300);
+        CreatedAt = ResearchValidation.Utc(state.CreatedAt, nameof(state.CreatedAt));
+        Status = state.Status; CurrentVersionId = state.CurrentVersionId; Version = state.Version;
+        _versions.AddRange(state.Versions.Select(HypothesisVersion.Rehydrate).OrderBy(x => x.VersionNumber));
+    }
+    public static Hypothesis Rehydrate(HypothesisState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        var value = new Hypothesis(state);
+        if (value._versions.Select(x => x.VersionNumber).Where((number, index) => number != index + 1).Any())
+            throw new ArgumentException("Hypothesis version numbers must be contiguous.", nameof(state));
+        if (value.CurrentVersionId is not null && value._versions.All(x => x.Id != value.CurrentVersionId))
+            throw new ArgumentException("Current version must belong to the hypothesis.", nameof(state));
+        return value;
+    }
     public HypothesisId Id { get; }
     public string Name { get; }
     public HypothesisStatus Status { get; private set; } = HypothesisStatus.Draft;
     public HypothesisVersionId? CurrentVersionId { get; private set; }
     public DateTimeOffset CreatedAt { get; }
+    public long Version { get; private set; }
     public IReadOnlyList<HypothesisVersion> Versions => _versions.AsReadOnly();
 
     public HypothesisVersion AddVersion(HypothesisVersionId id, string claim, UniverseDefinition universe,
@@ -34,6 +52,7 @@ public sealed class Hypothesis
         _versions.Add(version);
         CurrentVersionId = version.Id;
         Status = HypothesisStatus.Draft;
+        Version++;
         return version;
     }
 
@@ -42,12 +61,12 @@ public sealed class Hypothesis
         var version = Current();
         if (Status != HypothesisStatus.Draft) throw new InvalidOperationException("Only a draft can be frozen.");
         version.Freeze(frozenAt);
-        Status = HypothesisStatus.Frozen;
+        Status = HypothesisStatus.Frozen; Version++;
     }
-    public void StartTesting() { if (Status != HypothesisStatus.Frozen) throw new InvalidOperationException("Only a frozen hypothesis can be tested."); Status = HypothesisStatus.Testing; }
-    public void Validate() { if (Status != HypothesisStatus.Testing) throw new InvalidOperationException("Only a tested hypothesis can be validated."); Status = HypothesisStatus.Validated; }
-    public void Reject() { if (Status != HypothesisStatus.Testing) throw new InvalidOperationException("Only a tested hypothesis can be rejected."); Status = HypothesisStatus.Rejected; }
-    public void Retire() { if (Status != HypothesisStatus.Validated) throw new InvalidOperationException("Only a validated hypothesis can be retired."); Status = HypothesisStatus.Retired; }
+    public void StartTesting() { if (Status != HypothesisStatus.Frozen) throw new InvalidOperationException("Only a frozen hypothesis can be tested."); Status = HypothesisStatus.Testing; Version++; }
+    public void Validate() { if (Status != HypothesisStatus.Testing) throw new InvalidOperationException("Only a tested hypothesis can be validated."); Status = HypothesisStatus.Validated; Version++; }
+    public void Reject() { if (Status != HypothesisStatus.Testing) throw new InvalidOperationException("Only a tested hypothesis can be rejected."); Status = HypothesisStatus.Rejected; Version++; }
+    public void Retire() { if (Status != HypothesisStatus.Validated) throw new InvalidOperationException("Only a validated hypothesis can be retired."); Status = HypothesisStatus.Retired; Version++; }
     private HypothesisVersion Current() => _versions.SingleOrDefault(version => version.Id == CurrentVersionId)
         ?? throw new InvalidOperationException("A hypothesis version is required.");
 }
@@ -92,4 +111,20 @@ public sealed class HypothesisVersion
         if (IsFrozen) throw new InvalidOperationException("Version is already frozen.");
         FrozenAt = at;
     }
+    public static HypothesisVersion Rehydrate(HypothesisVersionState state)
+    {
+        var value = new HypothesisVersion(state.Id, state.VersionNumber, state.Claim, state.UniverseDefinition,
+            state.InputDefinitions, state.SignalRules, state.EvaluationPlan, state.SuccessCriteria,
+            state.InvalidationCriteria, state.EvidenceReportIds, state.CreatedAt);
+        if (state.FrozenAt is not null) value.Freeze(state.FrozenAt.Value);
+        return value;
+    }
 }
+
+public sealed record HypothesisState(HypothesisId Id, string Name, HypothesisStatus Status,
+    HypothesisVersionId? CurrentVersionId, DateTimeOffset CreatedAt, long Version,
+    IReadOnlyList<HypothesisVersionState> Versions);
+public sealed record HypothesisVersionState(HypothesisVersionId Id, int VersionNumber, string Claim,
+    UniverseDefinition UniverseDefinition, string InputDefinitions, string SignalRules, string EvaluationPlan,
+    string SuccessCriteria, string InvalidationCriteria, IReadOnlyList<ResearchReportId> EvidenceReportIds,
+    DateTimeOffset CreatedAt, DateTimeOffset? FrozenAt);

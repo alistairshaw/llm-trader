@@ -87,7 +87,7 @@ public partial class AddStage5ProposalGovernance : Migration
             constraints: table =>
             {
                 table.PrimaryKey("PK_hypotheses", x => x.id);
-                table.CheckConstraint("ck_hypotheses_status", "status IN ('Draft','Active','Retired')");
+                table.CheckConstraint("ck_hypotheses_status", "status IN ('Draft','Frozen','Testing','Validated','Rejected','Retired')");
                 table.CheckConstraint("ck_hypotheses_version", "version > 0");
             });
 
@@ -196,7 +196,7 @@ public partial class AddStage5ProposalGovernance : Migration
             constraints: table =>
             {
                 table.PrimaryKey("PK_trade_proposals", x => x.id);
-                table.CheckConstraint("ck_trade_proposals_status", "status IN ('Recorded','Validating','AwaitingApproval','Approved','Rejected','Reserved','Expired','Cancelled','ResearchOnly')");
+                table.CheckConstraint("ck_trade_proposals_status", "status IN ('Recorded','Validating','AwaitingHumanApproval','Approved','Rejected','Expired','Cancelled','ConvertedToOrder')");
                 table.CheckConstraint("ck_trade_proposals_time", "valid_until > created_at");
                 table.CheckConstraint("ck_trade_proposals_type", "proposal_type IN ('DirectTrade','TargetAllocation')");
                 table.CheckConstraint("ck_trade_proposals_version", "version > 0");

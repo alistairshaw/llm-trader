@@ -37,6 +37,22 @@ public sealed class TradeProposal
         if (validUntil <= createdAt) throw new ArgumentException("Proposal validity must end after creation.", nameof(validUntil));
         Status = ProposalStatus.Recorded;
     }
+    private TradeProposal(TradeProposalState state)
+        : this(state.Id, state.TradingBotId, state.BotRunId, state.PortfolioId, state.ConfigurationVersionId,
+            state.PortfolioSnapshotId, state.InstrumentId, state.RequestedAction, state.Rationale,
+            state.ContentVersion, state.HypothesisEvidence, state.ReportEvidence, state.CreatedAt, state.ValidUntil)
+    {
+        Status = state.Status; Version = state.Version;
+        _evaluations.AddRange(state.Evaluations.OrderBy(x => x.Sequence).Select(GuardrailEvaluation.Rehydrate));
+        _approvals.AddRange(state.Approvals.OrderBy(x => x.DecidedAt).ThenBy(x => x.Id.ToString(), StringComparer.Ordinal)
+            .Select(ProposalApproval.Rehydrate));
+    }
+    public static TradeProposal Rehydrate(TradeProposalState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        if (state.Version < 0) throw new ArgumentException("Proposal version cannot be negative.", nameof(state));
+        return new TradeProposal(state);
+    }
 
     public TradeProposalId Id { get; }
     public TradingBotId TradingBotId { get; }
@@ -185,3 +201,11 @@ public sealed class TradeProposal
     }
     private static bool IsTerminal(ProposalStatus status) => status is ProposalStatus.Rejected or ProposalStatus.Expired or ProposalStatus.Cancelled or ProposalStatus.ConvertedToOrder;
 }
+
+public sealed record TradeProposalState(TradeProposalId Id, TradingBotId TradingBotId, BotRunId BotRunId,
+    PortfolioId PortfolioId, TradingBotConfigurationVersionId ConfigurationVersionId,
+    PortfolioDecisionSnapshotId PortfolioSnapshotId, InstrumentId InstrumentId, RequestedAction RequestedAction,
+    string Rationale, ProposalContentVersion ContentVersion, HypothesisEvidenceReference? HypothesisEvidence,
+    IReadOnlyList<ReportEvidenceReference> ReportEvidence, ProposalStatus Status, DateTimeOffset CreatedAt,
+    DateTimeOffset ValidUntil, long Version, IReadOnlyList<GuardrailEvaluationState> Evaluations,
+    IReadOnlyList<ProposalApprovalState> Approvals);

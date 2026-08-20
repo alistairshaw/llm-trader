@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S5-004` and `S5-006` are ready and may proceed in parallel: implement proposal repositories and hierarchical guardrails.
+`S5-005` and `S5-006` are ready and may proceed in parallel: implement structured proposal dispatch and hierarchical guardrails.
 
 ## Ordered Backlog
 
@@ -15,8 +15,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S5-001`](stage-5/S5-001-write-stage-5-gherkin.md) | Write Stage 5 executable Gherkin specifications | Done | 1000 | — |
 | [`S5-002`](stage-5/S5-002-proposal-domain-contracts.md) | Define proposal governance domain and contracts | Done | 940 | `S5-001` |
 | [`S5-003`](stage-5/S5-003-proposal-persistence.md) | Add the Stage 5 proposal persistence migration | Done | 920 | `S5-002` |
-| [`S5-004`](stage-5/S5-004-proposal-repositories.md) | Implement proposal governance repositories | Ready | 900 | `S5-003` |
-| [`S5-005`](stage-5/S5-005-proposal-tool-dispatch.md) | Implement structured proposal tool dispatch | Planned | 880 | `S5-002`, `S5-004` |
+| [`S5-004`](stage-5/S5-004-proposal-repositories.md) | Implement proposal governance repositories | Done | 900 | `S5-003` |
+| [`S5-005`](stage-5/S5-005-proposal-tool-dispatch.md) | Implement structured proposal tool dispatch | Ready | 880 | `S5-002`, `S5-004` |
 | [`S5-006`](stage-5/S5-006-hierarchical-guardrails.md) | Implement hierarchical guardrail policies | Ready | 860 | `S5-002` |
 | [`S5-007`](stage-5/S5-007-guardrail-evaluations.md) | Persist immutable guardrail evaluations | Planned | 840 | `S5-004`, `S5-006` |
 | [`S5-008`](stage-5/S5-008-human-approvals.md) | Implement authorized human proposal decisions | Planned | 820 | `S5-004`, `S5-007` |
@@ -42,4 +42,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Stage 5 is in progress. `S5-001` defined 32 discoverable proposal-governance acceptance cases, all temporarily pending until `S5-014`; `S5-002` established the proposal-governance domain and application authority boundary; and `S5-003` added the Stage 5 SQLite governance schema and immutable audit safeguards. `S5-004` and `S5-006` are ready for parallel execution.
+Stage 5 is in progress. `S5-001` defined 32 discoverable proposal-governance acceptance cases, all temporarily pending until `S5-014`; `S5-002` established the proposal-governance domain and application authority boundary; `S5-003` added the Stage 5 SQLite governance schema and immutable audit safeguards; and `S5-004` implemented deterministic domain repositories and atomic governance persistence. `S5-005` and `S5-006` are ready for parallel execution.

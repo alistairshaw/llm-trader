@@ -4,6 +4,7 @@ using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
 using Trading.Core.Policies;
 using Trading.Core.Portfolios;
+using Trading.Core.Proposals;
 using Trading.Core.Research;
 
 namespace Trading.Core.Persistence;
@@ -244,6 +245,46 @@ public interface IResearchOrchestrationRepository
         CancellationToken token);
     Task<PersistenceWriteResult> RecoverAndRequeueAsync(ResearchRunAttemptId attemptId, DateTimeOffset recoveredAt,
         string resultCode, CancellationToken token);
+}
+
+public interface IHypothesisRepository
+{
+    Task<Hypothesis?> GetAsync(HypothesisId id, CancellationToken token);
+    Task<HypothesisVersion?> GetVersionAsync(HypothesisVersionId id, CancellationToken token);
+    Task<PersistenceWriteResult> AddAsync(Hypothesis hypothesis, CancellationToken token);
+    Task<PersistenceWriteResult> SaveAsync(Hypothesis hypothesis, long expectedVersion, CancellationToken token);
+}
+
+public abstract record ProposalRecordResult
+{
+    private ProposalRecordResult() { }
+    public sealed record Recorded(TradeProposal Proposal) : ProposalRecordResult;
+    public sealed record AlreadyRecorded(TradeProposal Proposal) : ProposalRecordResult;
+    public sealed record IdempotencyConflict(TradeProposalId ExistingProposalId) : ProposalRecordResult;
+}
+
+public interface ITradeProposalRepository
+{
+    Task<TradeProposal?> GetAsync(TradeProposalId id, CancellationToken token);
+    Task<ProposalRecordResult> RecordAsync(TradeProposal proposal, string idempotencyKey, CancellationToken token);
+    Task<PersistenceWriteResult> SaveAsync(TradeProposal proposal, long expectedVersion, CancellationToken token);
+}
+
+public interface ICapitalReservationRepository
+{
+    Task<CapitalReservation?> GetAsync(CapitalReservationId id, CancellationToken token);
+    Task<CapitalReservation?> GetActiveAsync(TradeProposalId proposalId, CancellationToken token);
+    Task<IReadOnlyList<CapitalReservation>> GetActiveForPortfolioAsync(PortfolioId portfolioId,
+        DateTimeOffset at, CancellationToken token);
+    Task<PersistenceWriteResult> AddAsync(CapitalReservation reservation, CancellationToken token);
+    Task<PersistenceWriteResult> SaveAsync(CapitalReservation reservation, long expectedVersion, CancellationToken token);
+    Task<int> ExpireAsync(PortfolioId portfolioId, DateTimeOffset at, CancellationToken token);
+}
+
+public interface IProposalGovernanceTransactionRepository
+{
+    Task<PersistenceWriteResult> SaveDecisionAndReservationAsync(TradeProposal proposal, long expectedProposalVersion,
+        CapitalReservation? reservation, CancellationToken token);
 }
 
 public sealed record PortfolioSummary(

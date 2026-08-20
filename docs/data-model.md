@@ -442,6 +442,11 @@ Unique `(research_report_id, source_sequence)`. Provenance remains queryable wit
 
 Columns: `id` PK, `name`, `status`, nullable `current_version_id`, `created_at`, `updated_at`, and concurrency `version`.
 
+The persisted status vocabulary is identical to the domain lifecycle: `Draft`, `Frozen`, `Testing`, `Validated`,
+`Rejected`, and `Retired`. Creating the root, appending immutable versions and evidence links, and selecting the
+current version occur inside one repository transaction. Exact-version reads return a domain `HypothesisVersion`
+without attaching persistence entities.
+
 ### 8.8 `hypothesis_versions`
 
 Columns: `id` PK, `hypothesis_id` FK, `version_number`, `specification_schema_version`, canonical `specification_json`, `content_hash`, `created_at`, and nullable `frozen_at`.
@@ -480,6 +485,9 @@ Immutable records with `id`, `hypothesis_version_id`, exact `dataset_version`, `
 | `version` | Concurrency token |
 
 Unique `idempotency_key`. Proposal content is immutable after recording; only lifecycle state and concurrency metadata change.
+The persisted lifecycle names are the domain names, including `AwaitingHumanApproval` and `ConvertedToOrder`.
+The recording repository treats the idempotency key as an intent boundary: the same key and proposal identity
+returns the recorded aggregate, while the same key for another proposal returns an explicit conflict.
 
 ### 9.2 `trade_proposal_evidence_reports`
 
@@ -527,6 +535,11 @@ An approval of one proposal version cannot authorize changed content or a materi
 | `version` | Concurrency token |
 
 A unique partial index permits at most one active reservation per proposal. Reservation creation and proposal approval occur atomically. Available-capital queries include every active reservation.
+
+Stage 5 repositories reconstruct proposal evidence, evaluations, decisions, and reservations with deterministic
+ordering. Evaluation and decision rows are appended while the proposal concurrency token is advanced; they are
+never replaced. Cross-aggregate decision-and-reservation writes use the explicit governance transaction repository,
+so a uniqueness or concurrency failure rolls back both the lifecycle change and every appended audit fact.
 
 The Stage 5 schema stores `order_id` without a foreign key because the `orders` table is introduced by Stage 6. The Stage 6 execution migration adds that restrictive relationship after the principal table exists.
 

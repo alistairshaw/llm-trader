@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-004
 title: Implement proposal governance repositories
 stage: 5
-status: ready
+status: done
 priority: 900
 type: feature
 depends_on: [S5-003]
@@ -48,4 +48,22 @@ Use [Architecture — Persistence](../../architecture.md#62-tradingdata), [Domai
 
 ## Completion Notes
 
-Pending implementation.
+Implemented domain-only repositories for Hypothesis, TradeProposal, and CapitalReservation with exact-version
+rehydration, deterministic evidence/audit ordering, explicit idempotency and optimistic-concurrency outcomes,
+append-only evaluation and decision persistence, active-reservation queries and expiration, and an atomic
+proposal-decision/reservation transaction boundary. Corrected the unreleased Stage 5 migration's Hypothesis and
+TradeProposal status constraints to use the authoritative domain lifecycle names.
+
+Validation completed on 2026-08-20:
+
+- `.\dev.ps1 build` — passed with zero warnings and errors.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=ProposalRepositories"` — 5 passed.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests` — 140 passed.
+- `.\dev.ps1 test -Project tests/Trading.Core.Tests` — 473 passed.
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests` — 61 passed.
+- `.\dev.ps1 test -Project tests/Trading.Architecture.Tests` — 17 passed.
+- `.\dev.ps1 test` — 903 passed; 32 Stage 5 acceptance scenarios remain intentionally pending S5-014.
+- `.\dev.ps1 format` — passed.
+- EF model drift — passed through `StageFiveSchemaHasRestrictionsIndexesAndNoModelDrift` in the Data suite.
+
+No deviations, follow-up tasks, or ADRs.
