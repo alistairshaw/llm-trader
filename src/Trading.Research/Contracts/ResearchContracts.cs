@@ -66,3 +66,8 @@ public interface IResearchNotificationSink { Task DeliverAsync(ResearchNotificat
 public interface IResearchRequestStore { Task<ResearchRequest?> GetAsync(ResearchRequestId id, CancellationToken cancellationToken); Task SaveAsync(ResearchRequest request, CancellationToken cancellationToken); }
 public interface IResearchAttemptStore { Task<ResearchRunAttempt?> GetAsync(ResearchRunAttemptId id, CancellationToken cancellationToken); Task SaveAsync(ResearchRunAttempt attempt, CancellationToken cancellationToken); }
 public interface IResearchArtifactStore { Task WriteDraftAsync(ResearchRunAttemptId attemptId, ResearchReportDraft draft, CancellationToken cancellationToken); }
+
+public interface IResearchModelSessionFactory
+{
+    IResearchModelSession Create(ResearchRequest request, ResearchRunAttempt attempt);
+}

@@ -230,6 +230,22 @@ public interface IResearchNotificationRepository
         BotRunTriggerId triggerId, DateTimeOffset deliveredAt, CancellationToken token);
 }
 
+public sealed record ResearchOrchestrationWork(ResearchRequest Request, ResearchRunAttempt Attempt,
+    long RequestVersion, long AttemptVersion, int AttemptNumber, ResearchReportId? RefreshReportId);
+
+public interface IResearchOrchestrationRepository
+{
+    Task<IReadOnlyList<ResearchRequestId>> GetQueuedAsync(int limit, CancellationToken token);
+    Task<ResearchOrchestrationWork?> TryClaimAsync(ResearchRequestId requestId, ResearchRunAttempt attempt,
+        CancellationToken token);
+    Task<PersistenceWriteResult> TerminalizeAsync(ResearchRequestId requestId, ResearchRunAttempt attempt,
+        ResearchRequestStatus requestStatus, long expectedAttemptVersion, CancellationToken token);
+    Task<IReadOnlyList<ResearchRunAttemptId>> GetOrphanedAsync(DateTimeOffset recoveryBefore, int limit,
+        CancellationToken token);
+    Task<PersistenceWriteResult> RecoverAndRequeueAsync(ResearchRunAttemptId attemptId, DateTimeOffset recoveredAt,
+        string resultCode, CancellationToken token);
+}
+
 public sealed record PortfolioSummary(
     PortfolioId Id,
     string Name,

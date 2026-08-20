@@ -739,6 +739,10 @@ The transaction serializes equivalent request decisions on SQLite. Report visibi
 
 For one pending subscription, an immediate SQLite transaction reads the terminal request and authorized report version, inserts a `bot_run_triggers` row with source type `ResearchSubscription` and source ID equal to the subscription ID, and marks the subscription delivered with its timestamp. The trigger stores bounded canonical facts: request/correlation ID, terminal outcome, and exact report ID/version when present. The filtered trigger-source uniqueness constraint is the idempotency boundary. Delivery is never marked before the trigger is durable; retry returns the existing trigger identity. Subscribers are committed independently so a rollback or contention failure for one does not undo another subscriber's outcome.
 
+### 13.7 Claim and Recover Research Work
+
+A short immediate transaction changes one queued request to running and inserts its next numbered attempt. A request has at most one pending or active attempt. Provider and tool I/O never occurs in this transaction. Recovery uses one transaction to mark an abandoned attempt failed with its recovery reason and return its request to queued state; the retained attempt and append-only tool audit remain the reconstruction record.
+
 Never keep a database transaction open during an LLM, web, market-data, or broker network call.
 
 ## 14. Concurrency and SQLite Operation

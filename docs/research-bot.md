@@ -119,6 +119,8 @@ Accept bounded request
 
 A partial or failed draft is retained for audit but is not published as a completed report.
 
+The runtime claims queued requests in short atomic transactions and assigns monotonically increasing attempt numbers. Model and tool I/O occurs after that transaction commits. Startup recovery marks abandoned active attempts failed with `research.recovery.expired_lease`, retains their tool audit, and requeues the request for a new attempt; publication and subscriber-trigger uniqueness prevent recovery from duplicating durable effects.
+
 ## 7. Tooling
 
 Initial research tools may include:
