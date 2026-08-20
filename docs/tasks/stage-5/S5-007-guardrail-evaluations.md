@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-007
 title: Persist immutable guardrail evaluations
 stage: 5
-status: planned
+status: ready
 priority: 840
 type: feature
 depends_on: [S5-004, S5-006]

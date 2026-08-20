@@ -169,6 +169,23 @@ public sealed record GuardrailRuleResult
     public string Rule { get; }
     public GuardrailOutcome Outcome { get; }
     public string Reason { get; }
+
+    public GuardrailRuleResult(string rule, GuardrailOutcome outcome, string reason,
+        GuardrailPolicyLevel policyLevel, string policyVersion, string observedValue,
+        string thresholdValue, string reasonCode) : this(rule, outcome, reason)
+    {
+        PolicyLevel = policyLevel;
+        PolicyVersion = ProposalValidation.Required(policyVersion, nameof(policyVersion), 100);
+        ObservedValue = ProposalValidation.Required(observedValue, nameof(observedValue), 1000);
+        ThresholdValue = ProposalValidation.Required(thresholdValue, nameof(thresholdValue), 1000);
+        ReasonCode = ProposalValidation.Required(reasonCode, nameof(reasonCode), 200);
+    }
+
+    public GuardrailPolicyLevel? PolicyLevel { get; }
+    public string? PolicyVersion { get; }
+    public string? ObservedValue { get; }
+    public string? ThresholdValue { get; }
+    public string? ReasonCode { get; }
 }
 
 public sealed class GuardrailEvaluation

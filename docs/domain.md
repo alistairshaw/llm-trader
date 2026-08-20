@@ -572,6 +572,8 @@ PlatformRiskPolicy
 
 Lower layers may tighten but not weaken parent constraints. Kill switches exist at each level. Evaluations record policy versions, input snapshots, measured values, limits, outcomes, reasons, and timestamps. Passing evaluation establishes policy compliance, not investment quality.
 
+The effective policy is composed in the fixed `Platform -> Account -> Portfolio -> TradingBot` order. Maximum values use the lowest inherited value, minimum reserves and liquidity use the highest inherited value, eligible-instrument sets intersect, and kill switches and open-market requirements combine restrictively. Evaluation uses the stable `guardrail.*` rule and reason namespaces for authority, kill switch, mandate, instrument eligibility, expiry, position notional, concentration, available capital, price freshness, liquidity, and market hours. Missing or uncertain price, liquidity, market, identity, or mandate state fails restrictively. A rejection makes the proposal non-executable immediately, while the pure evaluator still returns the complete ordered result set required for audit.
+
 ## 11. Core Value Objects
 
 Explicit immutable value-object classes or record classes include:

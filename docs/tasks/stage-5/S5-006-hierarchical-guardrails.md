@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-006
 title: Implement hierarchical guardrail policies
 stage: 5
-status: ready
+status: done
 priority: 860
 type: feature
 depends_on: [S5-002]
@@ -51,4 +51,8 @@ Use [Architecture — Core Execution Flow](../../architecture.md#9-core-executio
 
 ## Completion Notes
 
-Pending implementation.
+- Added immutable versioned policy definitions for the platform, account, Portfolio, and Trading Bot hierarchy with monotonic composition of kill switches, eligible universes, maximum position/concentration/price-age limits, minimum capital/liquidity limits, and market-hours requirements.
+- Added the pure deterministic evaluator and Engine adapter. The eleven stable rule IDs are `guardrail.authority`, `guardrail.kill_switch`, `guardrail.mandate`, `guardrail.instrument_eligibility`, `guardrail.proposal_expiry`, `guardrail.position_notional`, `guardrail.concentration`, `guardrail.available_capital`, `guardrail.price_freshness`, `guardrail.liquidity`, and `guardrail.market_hours`; every policy level emits the complete ordered set with version, observed value, threshold, outcome, and stable reason code.
+- Updated README, Domain Model, and Trading Bot documentation with the durable merge and restrictive unknown-state semantics.
+- Validation: `./dev.ps1 build` passed with zero warnings and errors; focused `HierarchicalGuardrails` passed 15/15; focused `GuardrailPipeline` passed 2/2; Core passed 488/488; Engine passed 72/72; architecture passed 18/18; the full suite passed 930 with 32 intentionally pending Stage 5 scenarios and no failures; `./dev.ps1 format` passed.
+- Deviations: none. Follow-up tasks: none. ADRs: none.

@@ -214,6 +214,8 @@ Recorded proposal
 
 Validation produces structured approvals or rejections. A proposal that was valid during reasoning may be rejected if state or prices changed. Passing deterministic rules establishes policy compliance, not investment quality.
 
+Policy composition is monotonic: child maximums can only decrease, child minimums can only increase, eligible universes can only intersect, and inherited kill switches or market-open requirements cannot be cleared. Each of the four policy levels emits the same stable ordered rule set with its exact policy version, observed value, threshold, outcome, and reason code. Unknown price, liquidity, market-hours, identity, or mandate state is a rejection rather than an implicit pass. The evaluator is provider-neutral, deterministic, and side-effect free; persistence of its immutable decision is a separate application operation.
+
 Each proposal pins an immutable content version, its Bot Run/configuration/Portfolio/decision snapshot, and exact Report and Hypothesis evidence versions. Guardrail inputs name the platform, account, Portfolio, and Trading Bot policy versions in that fixed order. Human decisions bind the actor, exact proposal content version, and reviewed state reference; reservation requests bind a subsequent fresh-state reference. These provider-neutral contracts expose no order-submission or broker authority.
 
 ## 11. Execution Modes

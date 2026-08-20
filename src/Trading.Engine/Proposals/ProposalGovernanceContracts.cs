@@ -56,7 +56,9 @@ public sealed record GuardrailPolicySet(
 public sealed record GuardrailEvaluationRequest(
     TradeProposal Proposal,
     GuardrailPolicySet Policies,
-    FreshStateReference FreshState);
+    FreshStateReference FreshState,
+    HierarchicalGuardrailPolicySet PolicyDefinitions,
+    GuardrailState State);
 
 public sealed record GuardrailEvaluationDecision(
     GuardrailOutcome Outcome,
