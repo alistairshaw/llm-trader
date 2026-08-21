@@ -20,7 +20,7 @@ All 39 Stage 4 Research specifications are active and deterministic against a fr
 
 All 32 Stage 5 proposal-governance specifications are active and pass on Windows and Linux. The complete local suite contains 1000 passing tests with zero skipped tests.
 
-The completed Stage 5 backlog and review evidence are recorded in [Stage 5 Backlog](docs/tasks/stage-5.md) and the [Stage 5 Review Record](docs/stage-5-review.md). Stage 6 planning may begin.
+The completed Stage 5 backlog and review evidence are recorded in [Stage 5 Backlog](docs/tasks/stage-5.md) and the [Stage 5 Review Record](docs/stage-5-review.md). The approved paper-order execution work is defined in the [Stage 6 Backlog](docs/tasks/stage-6.md); `S6-001` is ready.
 
 ## Development Environment
 
