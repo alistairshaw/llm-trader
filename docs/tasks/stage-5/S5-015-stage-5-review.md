@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-015
 title: Complete Stage 5 acceptance and review
 stage: 5
-status: planned
+status: review
 priority: 1000
 type: test
 depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014]
@@ -60,4 +60,10 @@ docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null &
 
 ## Completion Notes
 
-Pending implementation.
+Local review completed on 2026-08-20. All fourteen dependencies and every Stage 5 criterion were audited against production code, deterministic application-facing acceptance coverage, migrated SQLite evidence, the headless demonstration, and authoritative documentation. The review record is [Stage 5 Review Record](../../stage-5-review.md).
+
+Validation passed through Linux Docker: locked restore; Release build with zero warnings/errors; format; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 92/92; Integration 25/25; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 997/997 with zero failed or skipped; Stage 5 fresh/Stage-4-upgrade migration coverage 5/5; EF model drift clean; and the deterministic headless smoke twice with matching Stage 5 identities and hashes, one `700 USD` reservation, stable contention and ResearchOnly outcomes, zero broker submissions, and recoverable shutdown.
+
+The audit corrected the hosted CI gate so Windows and Linux execute the complete solution suite rather than only Core, Architecture, and Stage 1 acceptance, advanced the README documentation map to Stage 5, and reconciled task/index metadata. No ADR or follow-up task was created. The existing SQLite migration-runner warnings are recorded in the review and are covered by passing fresh/upgrade/immutability tests; they are not an unresolved integrity defect.
+
+S5-015 remains in `review`. Exact-review-revision hosted Windows, Linux, and security results are the sole remaining gate; Stage 6 commencement is not yet approved.

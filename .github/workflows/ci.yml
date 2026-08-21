@@ -52,33 +52,14 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: dotnet format TradingBot.sln --verify-no-changes --no-restore
 
-      - name: Run unit tests
+      - name: Run complete cross-platform test suite
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: >-
-          dotnet test tests/Trading.Core.Tests/Trading.Core.Tests.csproj
+          dotnet test TradingBot.sln
           --configuration Release
           --no-build
-          --logger "trx;LogFileName=unit.trx"
-          --results-directory artifacts/test-results/unit
-
-      - name: Run architecture tests
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: >-
-          dotnet test tests/Trading.Architecture.Tests/Trading.Architecture.Tests.csproj
-          --configuration Release
-          --no-build
-          --logger "trx;LogFileName=architecture.trx"
-          --results-directory artifacts/test-results/architecture
-
-      - name: Run Stage 1 non-UI acceptance tests
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: >-
-          dotnet test tests/Trading.AcceptanceTests/Trading.AcceptanceTests.csproj
-          --configuration Release
-          --no-build
-          --filter "TestCategory=stage1&TestCategory!=windows"
-          --logger "trx;LogFileName=stage1-acceptance.trx"
-          --results-directory artifacts/test-results/stage1-acceptance
+          --logger "trx"
+          --results-directory artifacts/test-results
 
       - name: Build WPF natively on Windows
         if: ${{ !cancelled() && matrix.os == 'windows-latest' && steps.build.outcome == 'success' }}
@@ -97,4 +78,3 @@ jobs:
             **/TestResults/**
           if-no-files-found: warn
           retention-days: 14
-

@@ -56,7 +56,7 @@ The container definitions and repository-root `dev.ps1` wrapper provide `restore
 | [Test Plan](docs/test-plan.md) | Test layers, fixtures, deterministic substitutes, platform matrix, CI gates, and UI automation strategy |
 | [Task Management](docs/task-management.md) | Task selection, metadata, status workflow, execution rules, completion evidence, and stage gates |
 | [Local Development](docs/local-development.md) | Docker-first build, test, execution, WPF publishing, host requirements, data, and secrets |
-| [Stage 4 Backlog](docs/tasks/stage-4.md) | Ordered Stage 4 task index, dependencies, current next task, and exit gate |
+| [Stage 5 Backlog](docs/tasks/stage-5.md) | Ordered Stage 5 task index, dependencies, current next task, and exit gate |
 
 Individual task specifications live under [`docs/tasks/`](docs/tasks/). Each task document is authoritative for its scope, acceptance criteria, validation, and completion notes.
 
