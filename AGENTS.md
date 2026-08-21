@@ -148,6 +148,7 @@ If documents disagree, identify the disagreement explicitly and resolve it in do
 - NUnit is the unit and integration test framework.
 - Reqnroll expresses executable Gherkin acceptance behavior.
 - EF Core integration tests use the real SQLite provider with isolated temporary databases, never the EF in-memory provider as a relational substitute.
+- Every temporary SQLite fixture must own and asynchronously dispose its scopes, contexts, connections, service providers, and hosts before deleting its directory. Windows cleanup must succeed immediately without sleeps, retries, swallowed exceptions, or skipped assertions; clear only the applicable closed SQLite pool when documented ownership requires it.
 - Cross-platform acceptance tests exercise application services and run in Linux Docker and Windows CI.
 - Keep Reqnroll steps thin: route Stage-specific vocabulary through scenario-scoped application drivers. Drivers own production composition, temporary migrated SQLite files, deterministic substitutes, persistence inspection, and stable diagnostics; feature steps must not call EF, repositories, or external providers directly.
 - WPF journeys use Reqnroll and FlaUI UIA3 only in an interactive Windows environment.

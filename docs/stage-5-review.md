@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 5 satisfies its local acceptance gate. Stage 6 commencement remains withheld until the exact review revision passes hosted Windows, Linux, and security workflows. No unresolved critical or high-severity defect was found in the delivered proposal-governance scope.
+Stage 5 satisfied its Linux-container local acceptance gate, but exact-revision hosted Windows validation exposed a cross-platform SQLite resource-lifetime defect. Stage 5 is blocked on `S5-016`, and Stage 6 commencement remains withheld.
 
 ## Reviewed Scope
 
@@ -54,14 +54,16 @@ The review corrected one high-severity validation-gap before review: hosted CI p
 
 The EF migration runner emits existing SQLite warnings for non-transactional `PRAGMA foreign_keys` operations and the staged guardrail-evaluation rebuild. Fresh and upgrade migration tests, immutable-trigger tests, full Data tests, repeated clean smoke migrations, and model-drift validation all pass. This is recorded as an operational diagnostic, not an unresolved data-integrity defect.
 
-No ADR was created or changed. No follow-up task is required from the local review.
+No ADR was created or changed. Hosted validation created follow-up defect task `S5-016`.
 
 ## Hosted Exact-Revision Gate
 
-Pending after the review commit is pushed:
+Revision `88681e512dcbde8f04a3e2865722f5646f0b073f` produced:
 
-- Windows complete-suite CI, including WPF build.
-- Linux complete-suite CI.
-- Security secret scan; dependency review is applicable only to pull requests.
+- Linux job `96622973099`: passed.
+- Security run `32431213636`, secret-scan job `96622973233`: passed.
+- Windows job `96622973230`: failed during test teardown.
 
-Direct workflow links and the exact validated commit will be appended before S5-015 and Stage 5 are marked `done`.
+Downloaded artifact `9429220872` shows recursive temporary-directory cleanup raising `IOException` because `test.db`, `runtime.db`, `smoke.db`, `workflow.db`, `capital.db`, `research.db`, and `recovery.db` remained open in another process. The breadth and consistent teardown signature establish a fixture/host resource-ownership defect rather than a Stage 5 business assertion failure.
+
+`S5-016` must make SQLite and host disposal Windows-safe without sleeps, skipped checks, cleanup retries, or swallowed failures. A new exact revision must then pass the complete local, hosted Windows/Linux, and security gates before this review can approve Stage 6.

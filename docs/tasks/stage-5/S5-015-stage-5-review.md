@@ -3,11 +3,12 @@ schema_version: 1
 id: S5-015
 title: Complete Stage 5 acceptance and review
 stage: 5
-status: review
+status: blocked
 priority: 1000
 type: test
 depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014]
 labels: [review, ci, security, stage-gate]
+blocked_reason: Hosted Windows job 96622973230 failed because SQLite files remained open during recursive fixture cleanup; S5-016 must complete before exact-revision validation can resume.
 created: 2026-08-20
 updated: 2026-08-20
 ---
@@ -66,4 +67,6 @@ Validation passed through Linux Docker: locked restore; Release build with zero 
 
 The audit corrected the hosted CI gate so Windows and Linux execute the complete solution suite rather than only Core, Architecture, and Stage 1 acceptance, advanced the README documentation map to Stage 5, and reconciled task/index metadata. No ADR or follow-up task was created. The existing SQLite migration-runner warnings are recorded in the review and are covered by passing fresh/upgrade/immutability tests; they are not an unresolved integrity defect.
 
-S5-015 remains in `review`. Exact-review-revision hosted Windows, Linux, and security results are the sole remaining gate; Stage 6 commencement is not yet approved.
+Hosted validation of revision `88681e512dcbde8f04a3e2865722f5646f0b073f` passed Linux job `96622973099` and Security run `32431213636` / secret-scan job `96622973233`, but Windows job `96622973230` failed. Artifact `9429220872` shows widespread teardown `IOException` failures while recursively deleting `test.db`, `runtime.db`, `smoke.db`, `workflow.db`, `capital.db`, `research.db`, and `recovery.db` because another process still held each file. The failure is not an assertion retry or environmental flake: it identifies incomplete SQLite connection/host resource ownership and disposal in cross-platform fixtures.
+
+S5-015 is blocked on `S5-016`. After that repair is done, the complete local gate and exact-revision hosted Windows, Linux, and security validation must pass before this task returns to review or done. Stage 6 commencement is not approved.

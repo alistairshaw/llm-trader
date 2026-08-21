@@ -160,6 +160,8 @@ Mocks are appropriate for verifying a narrow collaboration, but tests should pre
 
 `Trading.Data.Tests` uses temporary, isolated SQLite databases and the real EF Core SQLite provider. Do not use EF Core's in-memory provider as a substitute for relational behavior.
 
+Each fixture owns the complete lifetime of its temporary database. Teardown awaits host and scope shutdown, asynchronously disposes EF contexts and explicit SQLite connections, releases any justified pool for those closed connections, and only then deletes the temporary directory. Windows and Linux cleanup must succeed immediately on its first attempt; sleeps, retry loops, swallowed deletion failures, and skipped cleanup assertions are prohibited because they hide leaked resource ownership.
+
 Each test receives a unique database path, applies migrations, and disposes the database afterward. Failed CI tests may retain the database as an artifact.
 
 Required tests:
