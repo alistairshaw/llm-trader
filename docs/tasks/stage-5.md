@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S5-015` is ready: repeat the exact-revision Stage 5 review and hosted validation after the HostBootstrap smoke-database repair.
+`S5-015` is in review: the final HostBootstrap repair passed the complete local gate and exact-revision hosted Windows, Linux, and security results remain.
 
 ## Ordered Backlog
 
@@ -28,7 +28,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S5-014`](stage-5/S5-014-stage-5-acceptance.md) | Complete Stage 5 acceptance bindings | Done | 700 | `S5-013` |
 | [`S5-016`](stage-5/S5-016-windows-sqlite-fixture-disposal.md) | Make SQLite fixture and host disposal Windows-safe | Done | 1100 | `S5-014` |
 | [`S5-017`](stage-5/S5-017-release-headless-smoke-database.md) | Release the headless smoke database on host disposal | Done | 1100 | `S5-016` |
-| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Ready | 1000 | `S5-001`–`S5-014`, `S5-016`, `S5-017` |
+| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Review | 1000 | `S5-001`–`S5-014`, `S5-016`, `S5-017` |
 
 ## Stage Exit Gate
 
@@ -44,6 +44,6 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Current status superseding the historical narrative below: `S5-017` repaired the isolated HostBootstrap ownership-order defect after `S5-016` repaired the broad SQLite fixture lifecycle. Local validation is green, and `S5-015` is ready to repeat the exact-revision hosted Windows, Linux, and security gates.
+Current status superseding the historical narrative below: `S5-017` repaired the isolated HostBootstrap ownership-order defect after `S5-016` repaired the broad SQLite fixture lifecycle. `S5-015` repeated the complete local gate with 1000 passing tests and zero skipped and awaits exact-revision hosted Windows, Linux, and security validation.
 
-Stage 5 awaits the resumed `S5-015` exact-revision review and hosted validation. Proposal-governance behavior and all SQLite disposal coverage pass locally.
+Stage 5 is in review and awaits only the new exact-revision hosted gates. Proposal-governance behavior, HostBootstrap ownership, and all SQLite disposal coverage pass locally; both earlier failed hosted revisions are superseded.

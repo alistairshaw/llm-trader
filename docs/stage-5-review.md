@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 5 remains blocked after hosted Windows validation isolated one remaining `smoke.db` handle in the complete HostBootstrap lifecycle. `S5-017` must repair that ownership boundary before exact-revision review resumes, and Stage 6 commencement remains withheld.
+Stage 5 satisfies its complete local acceptance gate after `S5-017` repaired the final HostBootstrap `smoke.db` ownership boundary. A new exact-revision hosted Windows, Linux, and security gate remains, and Stage 6 commencement is withheld until it passes.
 
 ## Reviewed Scope
 
@@ -74,4 +74,8 @@ The failed revision `88681e512dcbde8f04a3e2865722f5646f0b073f` and its broad Win
 
 Revision `9ff1e6b58b5810266365c1eb5a6b19914e40ea0b` passed Linux job `96633639723` and Security run `32434776246` / secret-scan job `96633639400`. Windows job `96633639864` reported exactly one failure: `HeadlessHostTests.SmokeModeMigratesSeedsRunsAndStopsCleanly`. Artifact `9430431487` shows its first teardown deletion failed because `smoke.db` remained in use. All Data, Acceptance, other Integration, and fixture-disposal regressions passed, isolating the remaining owner to HostBootstrap, its root provider/background services, scoped DbContext/connection, or exact pool lifecycle.
 
-`S5-017` must close that lifecycle deterministically and preserve immediate first-attempt deletion without sleeps, retries, skips, swallowed errors, garbage-collection forcing, or process-wide pool clearing. A subsequent exact revision must pass the complete local, hosted Windows/Linux, and security gates before this review can approve Stage 6.
+`S5-017` closed that lifecycle deterministically. The inspection connection now leaves its asynchronous scope before the Generic Host/root provider is asynchronously disposed; cleanup then clears only the exact closed `smoke.db` pool and performs one immediate recursive deletion. The executable entry point applies the same host ownership on successful, cancelled, and failed runs. No sleeps, retries, skips, swallowed errors, garbage-collection forcing, or process-wide pool clearing were added.
+
+The complete local gate was repeated from repair commit `85669cd43c322a83d8a69584aaf3236fef054550`: locked restore; Release build with zero warnings/errors; format; HeadlessHost plus FixtureDisposal 5/5; MultiBotSupervisor 8/8; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 93/93; Integration 27/27; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 1000/1000 with zero failed or skipped; fresh/Stage-4-upgrade migrations 5/5; clean EF drift; and deterministic headless smoke with stable Stage 5 identities/hashes, `700 USD` reserved, zero broker submissions, and recoverable shutdown.
+
+The failed `88681e5` and `9ff1e6b` hosted revisions are superseded. The next docs-only review commit is the exact candidate that must pass hosted Windows, Linux, and security before this review can approve Stage 6.
