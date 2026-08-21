@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S5-018` is ready: enumerate and release every HostBootstrap smoke SQLite identity and owner before resuming `S5-015`.
+`S5-015` is ready: run the exact-revision Stage 5 review and hosted validation after the canonical smoke database ownership repair.
 
 ## Ordered Backlog
 
@@ -28,8 +28,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S5-014`](stage-5/S5-014-stage-5-acceptance.md) | Complete Stage 5 acceptance bindings | Done | 700 | `S5-013` |
 | [`S5-016`](stage-5/S5-016-windows-sqlite-fixture-disposal.md) | Make SQLite fixture and host disposal Windows-safe | Done | 1100 | `S5-014` |
 | [`S5-017`](stage-5/S5-017-release-headless-smoke-database.md) | Release the headless smoke database on host disposal | Done | 1100 | `S5-016` |
-| [`S5-018`](stage-5/S5-018-own-all-headless-sqlite-pools.md) | Own every headless smoke SQLite pool and context | Ready | 1100 | `S5-017` |
-| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Blocked | 1000 | `S5-001`–`S5-014`, `S5-016`, `S5-017`; blocked by `S5-018` |
+| [`S5-018`](stage-5/S5-018-own-all-headless-sqlite-pools.md) | Own every headless smoke SQLite pool and context | Done | 1100 | `S5-017` |
+| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Ready | 1000 | `S5-001`–`S5-014`, `S5-016`–`S5-018` |
 
 ## Stage Exit Gate
 
@@ -45,6 +45,6 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Current status superseding the historical narrative below: `S5-017` corrected HostBootstrap disposal ordering, but hosted Windows candidate `737103a` retained `smoke.db` in the same sole test. `S5-018` is ready to enumerate and own every connection identity, pool, factory, context, connection, and background path before exact cleanup.
+Current status superseding the historical narrative below: `S5-018` identified the remaining lock as a distinct inspection connection-string pool and established one canonical absolute `smoke.db` identity for production composition, inspection, diagnostics, and exact cleanup. The complete local gate passes; `S5-015` is ready for exact-revision hosted validation and closure.
 
-Stage 5 is blocked on the remaining unowned or differently identified `smoke.db` handle. Proposal-governance behavior, Linux validation, security, and all other SQLite disposal coverage remain passing.
+The prior hosted Windows failure is resolved locally by the canonical identity repair. Proposal-governance behavior, Linux validation, security, and all other SQLite disposal coverage remain passing; the exact repair revision now awaits the hosted gate owned by `S5-015`.

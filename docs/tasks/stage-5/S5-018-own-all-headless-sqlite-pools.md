@@ -3,13 +3,14 @@ schema_version: 1
 id: S5-018
 title: Own every headless smoke SQLite pool and context
 stage: 5
-status: ready
+status: done
 priority: 1100
 type: defect
 depends_on: [S5-017]
 labels: [windows, sqlite, host, diagnostics, resource-lifetime, ci]
 created: 2026-08-20
 updated: 2026-08-20
+owner: s5_018
 ---
 
 # S5-018: Own Every Headless Smoke SQLite Pool and Context
@@ -62,4 +63,11 @@ docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null &
 
 ## Completion Notes
 
-Pending implementation.
+Completed on 2026-08-20.
+
+- Root cause: the production EF composition used `Data Source=<absolute smoke.db>;Default Timeout=5`, while the test inspection connection used `Data Source=<absolute smoke.db>`. Microsoft.Data.Sqlite therefore returned the disposed inspection handle to a different pool, and cleanup cleared only the production pool.
+- `HostBootstrap` now constructs one normalized absolute database path and one canonical `ReadWriteCreate`, shared-cache, pooled connection string through `TradingDbContextFactory`; the connection interceptor retains the configured five-second busy timeout. The registered `DatabaseOptions`, EF context/repositories, hosted smoke scope, inspection connection, and exact-pool cleanup all consume that identity.
+- `HostDatabaseIdentity` enumerates the EF/repository, hosted-service, and external-inspection owners with explicit disposal boundaries. The production-composed regression asserts that bounded inventory and first-attempt deletion; deletion failures report only normalized SQLite settings and named owners.
+- Updated local-development lifecycle documentation. No process-wide pool clearing, sleeps, retries, skipped assertions, forced collection, broad pooling disablement, or swallowed cleanup errors were introduced.
+- Validation passed: locked restore; Release build with zero warnings/errors; HeadlessHost/FixtureDisposal 5/5; Integration 27/27; MultiBotSupervisor 8/8; Stage 5 acceptance 32/32; complete suite 1000/1000 with zero failed or skipped; format; EF pending-model drift; and deterministic proposal-governance headless smoke.
+- Hosted Windows/Linux and security validation of the exact repair revision remains assigned to `S5-015`, which owns the push and stage review. No ADR or additional follow-up task was required.

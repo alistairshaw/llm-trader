@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,6 +80,34 @@ public sealed class ResearchHostOptions
 
 public sealed class RuntimeReadiness { public bool IsReady { get; internal set; } }
 
+public sealed record HostDatabaseOwner(string Name, string DisposalBoundary);
+
+public sealed class HostDatabaseIdentity
+{
+    internal HostDatabaseIdentity(string databasePath, string connectionString)
+    {
+        DatabasePath = databasePath;
+        ConnectionString = connectionString;
+    }
+
+    public string DatabasePath { get; }
+    public string ConnectionString { get; }
+    public string DiagnosticIdentity
+    {
+        get
+        {
+            var value = new SqliteConnectionStringBuilder(ConnectionString);
+            return $"path={DatabasePath};mode={value.Mode};cache={value.Cache};pooling={value.Pooling};timeout={value.DefaultTimeout};owners={string.Join(',', Owners.Select(x => x.Name))}";
+        }
+    }
+    public IReadOnlyList<HostDatabaseOwner> Owners { get; } =
+    [
+        new("TradingDbContext registration and scoped repositories", "scope disposal, then host/root-provider disposal"),
+        new("TradingRuntimeHostedService smoke scope", "hosted-service completion and host disposal"),
+        new("external smoke inspection", "inspection connection disposal before exact-pool cleanup"),
+    ];
+}
+
 public static class HostBootstrap
 {
     public static IHost Build(string[] args, Action<IHostApplicationBuilder>? configure = null)
@@ -91,19 +120,28 @@ public static class HostBootstrap
         options.Validate();
         research.Validate();
         Directory.CreateDirectory(options.DataDirectory);
-        var path = Path.Combine(options.DataDirectory, options.SmokeMode ? "smoke.db" : "trading.db");
+        var databaseOptions = new DatabaseOptions
+        {
+            DatabasePath = Path.Combine(options.DataDirectory, options.SmokeMode ? "smoke.db" : "trading.db"),
+        };
+        var path = databaseOptions.ValidateAndGetFullPath(AppContext.BaseDirectory);
+        var databaseIdentity = new HostDatabaseIdentity(
+            path,
+            TradingDbContextFactory.CreateConnectionString(databaseOptions, AppContext.BaseDirectory));
         if (options.SmokeMode)
         {
             foreach (var suffix in new[] { string.Empty, "-wal", "-shm" }) File.Delete(path + suffix);
         }
         builder.Services.AddSingleton(options);
         builder.Services.AddSingleton(research);
+        builder.Services.AddSingleton(databaseOptions);
+        builder.Services.AddSingleton(databaseIdentity);
         builder.Services.AddSingleton<RuntimeReadiness>();
         builder.Services.AddSingleton<HostClock>(_ => new(options.SmokeMode ? new DateTimeOffset(2026, 8, 20, 23, 0, 0, TimeSpan.Zero) : null));
         builder.Services.AddSingleton<IUtcClock>(x => x.GetRequiredService<HostClock>());
         builder.Services.AddSingleton<IResearchClock>(x => x.GetRequiredService<HostClock>());
         builder.Services.AddSingleton<IRuntimeIdentifierGenerator, RuntimeIdentifiers>();
-        builder.Services.AddDbContext<TradingDbContext>(x => x.UseSqlite($"Data Source={path};Default Timeout=5"));
+        builder.Services.AddDbContext<TradingDbContext>(x => x.UseSqlite(databaseIdentity.ConnectionString));
         builder.Services.AddScoped<DatabaseInitializer>();
         builder.Services.AddScoped<ITradingBotRepository, TradingBotRepository>();
         builder.Services.AddScoped<IBrokerConnectionRepository, BrokerConnectionRepository>();

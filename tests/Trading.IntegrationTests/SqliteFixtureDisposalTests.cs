@@ -50,13 +50,21 @@ public sealed class SqliteFixtureDisposalTests
             ["Research:GlobalConcurrency"] = "2",
         }));
 
+        var database = host.Services.GetRequiredService<HostDatabaseIdentity>();
+        Assert.Multiple(() =>
+        {
+            Assert.That(database.DatabasePath, Is.EqualTo(Path.GetFullPath(path)));
+            Assert.That(database.ConnectionString, Is.EqualTo(connectionString));
+            Assert.That(database.Owners, Has.Count.EqualTo(3));
+        });
+
         await host.StartAsync().ConfigureAwait(false);
         using (var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
             await host.WaitForShutdownAsync(timeout.Token).ConfigureAwait(false);
         if (host is IAsyncDisposable asyncHost) await asyncHost.DisposeAsync().ConfigureAwait(false);
         else host.Dispose();
 
-        SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, connectionString);
+        SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, database.ConnectionString, database.DiagnosticIdentity);
         Assert.That(Directory.Exists(directory), Is.False);
     }
 }

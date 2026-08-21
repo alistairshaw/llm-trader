@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using Trading.Data;
 using Trading.Engine.Runtime;
 using Trading.Host;
 using Trading.TestInfrastructure;
@@ -15,6 +16,13 @@ namespace Trading.IntegrationTests;
 [Category("ResearchHost")]
 public sealed class HeadlessHostTests
 {
+    private static readonly string[] ExpectedDatabaseOwners =
+    [
+        "TradingDbContext registration and scoped repositories",
+        "TradingRuntimeHostedService smoke scope",
+        "external smoke inspection",
+    ];
+
     [Test]
     public void InvalidConfigurationFailsBeforeHostIsBuilt()
     {
@@ -41,17 +49,26 @@ public sealed class HeadlessHostTests
     public async Task SmokeModeMigratesSeedsRunsAndStopsCleanly()
     {
         var directory = Path.Combine(Path.GetTempPath(), "headless-host", Guid.NewGuid().ToString("N"));
+        string? ownershipDiagnostic = null;
         try
         {
             var host = HostBootstrap.Build([], builder => builder.Configuration.AddInMemoryCollection(Configuration(directory, smoke: true)));
             try
             {
                 var readiness = host.Services.GetRequiredService<RuntimeReadiness>();
+                var database = host.Services.GetRequiredService<HostDatabaseIdentity>();
+                ownershipDiagnostic = database.DiagnosticIdentity;
+                Assert.Multiple(() =>
+                {
+                    Assert.That(database.DatabasePath, Is.EqualTo(Path.GetFullPath(Path.Combine(directory, "smoke.db"))));
+                    Assert.That(database.Owners.Select(x => x.Name), Is.EquivalentTo(ExpectedDatabaseOwners));
+                    Assert.That(database.Owners, Has.All.Property(nameof(HostDatabaseOwner.DisposalBoundary)).Not.Empty);
+                });
                 using (var scope = host.Services.CreateScope())
                     Assert.That(scope.ServiceProvider.GetRequiredService<IToolDispatcher>().Definitions.Select(x => x.Name),
                         Does.Contain(StageFourTradingTools.GetReport).And.Contain(StageFiveTradingTools.ProposeTrade));
                 await host.RunAsync();
-                await using (var connection = new SqliteConnection($"Data Source={Path.Combine(directory, "smoke.db")}"))
+                await using (var connection = new SqliteConnection(database.ConnectionString))
                 {
                     await connection.OpenAsync();
                     var status = await ScalarAsync(connection, "SELECT status FROM bot_runs");
@@ -97,7 +114,9 @@ public sealed class HeadlessHostTests
         finally
         {
             SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory,
-                SqliteTestDatabaseCleanup.HostConnectionString(Path.Combine(directory, "smoke.db")));
+                TradingDbContextFactory.CreateConnectionString(
+                    new DatabaseOptions { DatabasePath = Path.Combine(directory, "smoke.db") }, AppContext.BaseDirectory),
+                ownershipDiagnostic);
         }
     }
 
