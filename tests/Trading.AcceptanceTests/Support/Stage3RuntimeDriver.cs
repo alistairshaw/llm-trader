@@ -6,6 +6,7 @@ using Trading.Core.Policies;
 using Trading.Data;
 using Trading.Engine.Runtime;
 using Trading.Host;
+using Trading.TestInfrastructure;
 
 namespace Trading.AcceptanceTests.Support;
 
@@ -144,8 +145,11 @@ public sealed class Stage3RuntimeDriver : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (database is not null) await database.DisposeAsync();
-        if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        var connectionString = database?.Database.GetConnectionString();
+        if (database is not null) await database.DisposeAsync().ConfigureAwait(false);
+        database = null;
+        SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, connectionString ??
+            SqliteTestDatabaseCleanup.ConnectionString(Path.Combine(directory, "runtime.db")));
     }
 
     private sealed class FixedClock(DateTimeOffset now) : IUtcClock { public DateTimeOffset UtcNow { get; } = now; }

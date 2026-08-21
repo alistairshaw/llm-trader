@@ -6,6 +6,7 @@ using Trading.Core.Persistence;
 using Trading.Core.Policies;
 using Trading.Core.Research;
 using Trading.Data;
+using Trading.TestInfrastructure;
 
 namespace Trading.IntegrationTests;
 
@@ -20,9 +21,10 @@ public sealed class ResearchNotificationIntegrationTests
     public async Task RestartedMultiSubscriberDeliveryCreatesOneIndependentTriggerPerBot()
     {
         var directory = Path.Combine(Path.GetTempPath(), "research-notifications", Guid.NewGuid().ToString("N")); Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "notifications.db");
         try
         {
-            var path = Path.Combine(directory, "notifications.db"); var options = TradingDbContextFactory.CreateOptions(new DatabaseOptions { DatabasePath = path }, AppContext.BaseDirectory);
+            var options = TradingDbContextFactory.CreateOptions(new DatabaseOptions { DatabasePath = path }, AppContext.BaseDirectory);
             ResearchRequestId requestId; ResearchSubscriptionId firstSubscription; ResearchSubscriptionId secondSubscription; TradingBotId first; TradingBotId second;
             await using (var seed = new TradingDbContext(options))
             {
@@ -41,7 +43,7 @@ public sealed class ResearchNotificationIntegrationTests
                 Assert.That(await new BotRunTriggerRepository(restarted).GetPendingAsync(first, default), Has.Count.EqualTo(1)); Assert.That(await new BotRunTriggerRepository(restarted).GetPendingAsync(second, default), Has.Count.EqualTo(1));
             }
         }
-        finally { Directory.Delete(directory, true); }
+        finally { SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, SqliteTestDatabaseCleanup.ConnectionString(path)); }
     }
 
     private static async Task<TradingBotId> AddBot(TradingDbContext context, string name)

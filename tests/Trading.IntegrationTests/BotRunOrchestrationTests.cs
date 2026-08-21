@@ -7,6 +7,7 @@ using Trading.Core.Policies;
 using Trading.Core.Portfolios;
 using Trading.Data;
 using Trading.Engine.Runtime;
+using Trading.TestInfrastructure;
 
 namespace Trading.IntegrationTests;
 
@@ -262,6 +263,10 @@ public sealed class BotRunOrchestrationTests
             value.BotId = bot.Id; value.ConfigurationId = configuration.Id; value.SnapshotId = snapshot.Id; return value;
         }
         public TradingDbContext Open() => new(TradingDbContextFactory.CreateOptions(new DatabaseOptions { DatabasePath = Path }, AppContext.BaseDirectory));
-        public ValueTask DisposeAsync() { if (Directory.Exists(directory)) Directory.Delete(directory, true); return ValueTask.CompletedTask; }
+        public ValueTask DisposeAsync()
+        {
+            SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, SqliteTestDatabaseCleanup.ConnectionString(Path));
+            return ValueTask.CompletedTask;
+        }
     }
 }

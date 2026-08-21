@@ -134,6 +134,15 @@ public sealed class MultiBotSupervisorTests
         });
     }
 
+    [Test]
+    public async Task RepeatedAsyncDisposalIsSafe()
+    {
+        var supervisor = Create(new RecordingExecutor(), 1, 1);
+
+        await supervisor.DisposeAsync();
+        Assert.DoesNotThrowAsync(async () => await supervisor.DisposeAsync());
+    }
+
     private static MultiBotSupervisor Create(IBotRunExecutor executor, int concurrency, int capacity) =>
         new(new() { GlobalRunConcurrency = concurrency, QueueCapacity = capacity }, executor);
     private static BotRunSupervisorWork Work(TradingBotId bot, string session) =>

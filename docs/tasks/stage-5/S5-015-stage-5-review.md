@@ -3,12 +3,11 @@ schema_version: 1
 id: S5-015
 title: Complete Stage 5 acceptance and review
 stage: 5
-status: blocked
+status: ready
 priority: 1000
 type: test
-depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014]
+depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014, S5-016]
 labels: [review, ci, security, stage-gate]
-blocked_reason: Hosted Windows job 96622973230 failed because SQLite files remained open during recursive fixture cleanup; S5-016 must complete before exact-revision validation can resume.
 created: 2026-08-20
 updated: 2026-08-20
 ---

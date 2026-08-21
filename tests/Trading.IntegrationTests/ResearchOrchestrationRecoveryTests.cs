@@ -6,6 +6,7 @@ using Trading.Core.Persistence;
 using Trading.Core.Policies;
 using Trading.Core.Research;
 using Trading.Data;
+using Trading.TestInfrastructure;
 
 namespace Trading.IntegrationTests;
 
@@ -19,9 +20,10 @@ public sealed class ResearchOrchestrationRecoveryTests
     public async Task RestartRetainsAbandonedAuditAndClaimsExactlyOneFreshAttempt()
     {
         var directory = Path.Combine(Path.GetTempPath(), "research-recovery", Guid.NewGuid().ToString("N")); Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "recovery.db");
         try
         {
-            var options = TradingDbContextFactory.CreateOptions(new DatabaseOptions { DatabasePath = Path.Combine(directory, "recovery.db") }, AppContext.BaseDirectory);
+            var options = TradingDbContextFactory.CreateOptions(new DatabaseOptions { DatabasePath = path }, AppContext.BaseDirectory);
             ResearchRequestId requestId; ResearchRunAttemptId abandoned;
             await using (var firstHost = new TradingDbContext(options))
             {
@@ -43,7 +45,7 @@ public sealed class ResearchOrchestrationRecoveryTests
                 Assert.Multiple(() => { Assert.That(next!.AttemptNumber, Is.EqualTo(2)); Assert.That(next.Attempt.Id, Is.Not.EqualTo(abandoned)); Assert.That(restarted.Set<ResearchToolInvocationEntity>().Count(), Is.EqualTo(1)); Assert.That(restarted.Set<ResearchRunEntity>().Count(), Is.EqualTo(2)); });
             }
         }
-        finally { Directory.Delete(directory, true); }
+        finally { SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, SqliteTestDatabaseCleanup.ConnectionString(path)); }
     }
 
     private static ResearchRunAttempt Attempt(ResearchRequestId requestId, DateTimeOffset at) => new(ResearchRunAttemptId.New(), requestId,

@@ -3,13 +3,14 @@ schema_version: 1
 id: S5-016
 title: Make SQLite fixture and host disposal Windows-safe
 stage: 5
-status: ready
+status: done
 priority: 1100
 type: defect
 depends_on: [S5-014]
 labels: [windows, sqlite, testing, resource-lifetime, ci]
 created: 2026-08-20
 updated: 2026-08-20
+owner: s5_016
 ---
 
 # S5-016: Make SQLite Fixture and Host Disposal Windows-Safe
@@ -62,4 +63,12 @@ docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null &
 
 ## Completion Notes
 
-Pending implementation.
+Completed 2026-08-20.
+
+- Inventoried every file-backed SQLite deletion in Data, Integration, Acceptance, and Host tests. Added one linked test-infrastructure cleanup boundary that clears only the pool matching the exact owned connection string after contexts, scopes, providers, and hosts are closed, then performs one immediate recursive deletion.
+- Converted Stage 2–5 acceptance drivers to asynchronous resource disposal in ownership order. Host-backed drivers no longer issue a second stop after `WaitForShutdownAsync` has completed host shutdown.
+- Made `MultiBotSupervisor.DisposeAsync` and the hosted service's supervisor handoff idempotent after the new lifecycle regression exposed repeated-stop disposal of an already disposed cancellation source.
+- Added deterministic scoped-provider and complete smoke-host regressions that migrate/use SQLite, dispose every owner, and prove the directory is absent after the first deletion attempt. Added direct repeated-supervisor-disposal coverage.
+- Updated README, local-development guidance, and the existing repository-wide test guidance to preserve the Windows-safe ownership rule. No ADR was required.
+- Validation passed: locked restore; Release build with zero warnings/errors; `FixtureDisposal` 2/2; `MultiBotSupervisor` 8/8; Data 149/149; Integration 27/27; Acceptance 165/165; Stage 5 acceptance 32/32; full suite 1000/1000 with zero skipped; formatting verification; headless Stage 5 smoke; and EF pending-model drift verification. The wrapper's `format` and `run` launches were unavailable to this worker because the sandbox could not read the Docker client config, so the exact Docker Compose commands from `dev.ps1` were run and passed instead.
+- Hosted Windows/Linux and security reruns remain assigned to `S5-015` after this local repair commit is pushed. No follow-up task was created.

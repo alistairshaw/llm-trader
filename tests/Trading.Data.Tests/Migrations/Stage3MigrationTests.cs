@@ -2,6 +2,7 @@ using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using Trading.TestInfrastructure;
 
 namespace Trading.Data.Tests.Migrations;
 
@@ -83,7 +84,8 @@ internal sealed class Stage3MigrationTests
         }
         finally
         {
-            Directory.Delete(directory, recursive: true);
+            SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory,
+                SqliteTestDatabaseCleanup.ConnectionString(path));
         }
     }
 

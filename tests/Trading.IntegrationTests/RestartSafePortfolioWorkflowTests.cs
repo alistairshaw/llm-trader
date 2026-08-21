@@ -8,6 +8,7 @@ using Trading.Core.Persistence;
 using Trading.Core.Policies;
 using Trading.Core.Portfolios;
 using Trading.Data;
+using Trading.TestInfrastructure;
 
 namespace Trading.IntegrationTests;
 
@@ -97,7 +98,7 @@ public sealed class RestartSafePortfolioWorkflowTests
         }
         finally
         {
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, SqliteTestDatabaseCleanup.ConnectionString(path));
         }
     }
 

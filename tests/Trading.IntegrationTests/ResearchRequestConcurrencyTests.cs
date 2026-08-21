@@ -4,6 +4,7 @@ using Trading.Core.Persistence;
 using Trading.Core.Policies;
 using Trading.Core.Research;
 using Trading.Data;
+using Trading.TestInfrastructure;
 
 namespace Trading.IntegrationTests;
 
@@ -36,7 +37,7 @@ public sealed class ResearchRequestConcurrencyTests
                 Assert.That((await new ResearchRequestRepository(restarted).GetAsync(queuedId, default))!.Subscriptions, Has.Count.EqualTo(2));
             }
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally { SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, SqliteTestDatabaseCleanup.ConnectionString(path)); }
     }
 
     private static TradingDbContext Open(string path) => new(TradingDbContextFactory.CreateOptions(

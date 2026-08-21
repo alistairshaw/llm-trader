@@ -36,6 +36,7 @@ public sealed record BotRunQueueResult(BotRunQueueOutcome Outcome, Task<BotRunEx
 /// the one-run service, so rejected queue admission cannot consume or lose a durable trigger.</summary>
 public sealed class MultiBotSupervisor : IAsyncDisposable
 {
+    private int disposed;
     private readonly Channel<QueuedWork> work;
     private readonly IBotRunExecutor executor;
     private readonly Channel<TradingBotId> completions = Channel.CreateUnbounded<TradingBotId>();
@@ -133,6 +134,7 @@ public sealed class MultiBotSupervisor : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref disposed, 1) != 0) return;
         if (Interlocked.Exchange(ref stopping, 1) == 0)
             work.Writer.TryComplete();
         lifetime.Cancel();

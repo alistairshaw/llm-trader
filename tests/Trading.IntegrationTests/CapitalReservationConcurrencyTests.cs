@@ -4,6 +4,7 @@ using Trading.Core.Identifiers;
 using Trading.Core.Persistence;
 using Trading.Core.Proposals;
 using Trading.Data;
+using Trading.TestInfrastructure;
 
 namespace Trading.IntegrationTests;
 
@@ -54,7 +55,7 @@ public sealed class CapitalReservationConcurrencyTests
                 Assert.That(active.Single().PortfolioId, Is.EqualTo(PortfolioId.Parse(Portfolio)));
             });
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally { SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, SqliteTestDatabaseCleanup.ConnectionString(path)); }
     }
 
     private static AtomicCapitalReservationRequest Request(TradeProposal proposal) => new(

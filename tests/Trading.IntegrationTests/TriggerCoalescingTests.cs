@@ -7,6 +7,7 @@ using Trading.Core.Policies;
 using Trading.Core.Portfolios;
 using Trading.Data;
 using Trading.Engine.Runtime;
+using Trading.TestInfrastructure;
 
 namespace Trading.IntegrationTests;
 
@@ -164,7 +165,11 @@ public sealed class TriggerCoalescingTests
             Assert.That(await new PortfolioDecisionSnapshotRepository(context).PublishAsync(snapshot, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
             return new(bot.Id, configuration.Id, snapshot.Id);
         }
-        public ValueTask DisposeAsync() { if (Directory.Exists(_directory)) Directory.Delete(_directory, true); return ValueTask.CompletedTask; }
+        public ValueTask DisposeAsync()
+        {
+            SqliteTestDatabaseCleanup.DeleteOwnedDirectory(_directory, SqliteTestDatabaseCleanup.ConnectionString(Path));
+            return ValueTask.CompletedTask;
+        }
     }
     private sealed record BotFacts(TradingBotId Bot, TradingBotConfigurationVersionId Configuration, PortfolioDecisionSnapshotId Snapshot);
 }

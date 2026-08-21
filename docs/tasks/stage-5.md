@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S5-016` is ready: repair Windows-safe SQLite fixture and host disposal before resuming `S5-015`.
+`S5-015` is ready: repeat the complete review and hosted validation on the Windows-safe SQLite lifecycle repair.
 
 ## Ordered Backlog
 
@@ -26,8 +26,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S5-012`](stage-5/S5-012-proposal-projections.md) | Build proposal queue and risk projections | Done | 740 | `S5-004`, `S5-011` |
 | [`S5-013`](stage-5/S5-013-headless-stage-5-demo.md) | Demonstrate proposal governance in the headless host | Done | 720 | `S5-011`, `S5-012` |
 | [`S5-014`](stage-5/S5-014-stage-5-acceptance.md) | Complete Stage 5 acceptance bindings | Done | 700 | `S5-013` |
-| [`S5-016`](stage-5/S5-016-windows-sqlite-fixture-disposal.md) | Make SQLite fixture and host disposal Windows-safe | Ready | 1100 | `S5-014` |
-| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Blocked | 1000 | `S5-001`–`S5-014`; blocked by `S5-016` |
+| [`S5-016`](stage-5/S5-016-windows-sqlite-fixture-disposal.md) | Make SQLite fixture and host disposal Windows-safe | Done | 1100 | `S5-014` |
+| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Ready | 1000 | `S5-001`–`S5-014`, `S5-016` |
 
 ## Stage Exit Gate
 
@@ -43,6 +43,6 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Current status superseding the historical narrative below: `S5-014` activated all 32 Stage 5 cases through thin steps and a production-backed deterministic migrated-SQLite driver with zero pending or skipped cases. `S5-015` passed locally, but exact-revision Windows job `96622973230` exposed locked SQLite files during fixture teardown. `S5-016` is ready to repair resource disposal before review resumes.
+Current status superseding the historical narrative below: `S5-014` activated all 32 Stage 5 cases through thin steps and a production-backed deterministic migrated-SQLite driver with zero pending or skipped cases. `S5-016` repaired explicit asynchronous fixture ownership, exact owned-pool release, immediate first-attempt deletion, and idempotent host shutdown; its complete local suite passed 1000 tests with zero skipped. `S5-015` is ready to repeat exact-revision hosted validation.
 
-Stage 5 is blocked on Windows-safe SQLite fixture disposal. The delivered proposal-governance behavior and local review evidence remain valid; `S5-016` must repair the cross-platform test resource lifecycle, then `S5-015` must repeat and record the exact-revision stage gate.
+Stage 5 awaits the resumed `S5-015` review and exact-revision Windows, Linux, and security gates. The SQLite lifecycle repair has passed its complete local validation.

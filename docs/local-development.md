@@ -73,6 +73,8 @@ The cross-platform container suite includes:
 
 Tests must be deterministic. They use an injected clock, deterministic identifiers where required, scripted LLM responses, simulated brokers, captured message dispatchers, and local fixtures. Network-dependent and credential-dependent tests are opt-in and never part of the default local or commit-gating suite.
 
+File-backed SQLite fixtures have one asynchronous ownership boundary. Teardown first awaits hosted-service shutdown, then disposes scenario scopes, contexts, explicit connections, the service provider, and the host. Once those owners are closed, test infrastructure clears only the connection pool identified by that owned database's exact connection string and deletes the temporary directory once. An immediate deletion failure is a lifecycle defect; do not conceal it with sleeps, retries, garbage collection, ignored exceptions, or process-wide pool clearing.
+
 Stage 1 Reqnroll scenarios can be selected by tag through NUnit categories:
 
 ```powershell

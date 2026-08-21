@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 using Trading.Engine.Runtime;
 using Trading.Host;
+using Trading.TestInfrastructure;
 
 namespace Trading.IntegrationTests;
 
@@ -83,7 +84,11 @@ public sealed class HeadlessHostTests
                 Assert.That(initialHash, Is.Not.EqualTo(freshHash));
             });
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory,
+                SqliteTestDatabaseCleanup.HostConnectionString(Path.Combine(directory, "smoke.db")));
+        }
     }
 
 

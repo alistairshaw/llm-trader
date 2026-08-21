@@ -242,11 +242,12 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         readiness.IsReady = false;
-        if (supervisor is not null)
+        var activeSupervisor = Interlocked.Exchange(ref supervisor, null);
+        if (activeSupervisor is not null)
         {
-            var result = await supervisor.ShutdownAsync(TimeSpan.FromSeconds(options.ShutdownSeconds), cancellationToken);
+            var result = await activeSupervisor.ShutdownAsync(TimeSpan.FromSeconds(options.ShutdownSeconds), cancellationToken);
             RuntimeLogs.Stopped(logger, result.CancelledRuns, result.CompletedWithinDeadline);
-            await supervisor.DisposeAsync();
+            await activeSupervisor.DisposeAsync();
         }
         await base.StopAsync(cancellationToken);
     }

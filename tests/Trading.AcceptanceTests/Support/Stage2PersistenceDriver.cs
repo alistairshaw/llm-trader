@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Trading.Core.Persistence;
 using Trading.Data;
+using Trading.TestInfrastructure;
 
 namespace Trading.AcceptanceTests.Support;
 
@@ -34,8 +35,11 @@ public sealed class Stage2PersistenceDriver : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (context is not null) await context.DisposeAsync();
-        if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        var connectionString = context?.Database.GetConnectionString();
+        if (context is not null) await context.DisposeAsync().ConfigureAwait(false);
+        context = null;
+        SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory, connectionString ??
+            SqliteTestDatabaseCleanup.ConnectionString(Path.Combine(directory, "scenario.db")));
     }
 
     private static readonly HashSet<string> Stage2Steps = new(StringComparer.Ordinal)

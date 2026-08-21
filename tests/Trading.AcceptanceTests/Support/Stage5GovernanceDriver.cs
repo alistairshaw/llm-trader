@@ -11,6 +11,7 @@ using Trading.Core.Proposals;
 using Trading.Data;
 using Trading.Engine.Runtime;
 using Trading.Host;
+using Trading.TestInfrastructure;
 
 namespace Trading.AcceptanceTests.Support;
 
@@ -231,9 +232,18 @@ public sealed class Stage5GovernanceDriver : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        scope?.Dispose();
-        if (host is not null) { await host.StopAsync().ConfigureAwait(false); host.Dispose(); }
-        if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        database = null;
+        if (scope is IAsyncDisposable asyncScope) await asyncScope.DisposeAsync().ConfigureAwait(false);
+        else scope?.Dispose();
+        scope = null;
+        if (host is not null)
+        {
+            if (host is IAsyncDisposable asyncHost) await asyncHost.DisposeAsync().ConfigureAwait(false);
+            else host.Dispose();
+            host = null;
+        }
+        SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory,
+            SqliteTestDatabaseCleanup.HostConnectionString(Path.Combine(directory, "smoke.db")));
     }
 
     private sealed record Observation(bool Passed, long ProposalCount, long EvaluationCount, string BusinessHash, string Diagnostic);

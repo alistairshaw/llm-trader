@@ -16,6 +16,7 @@ using Trading.Host;
 using Trading.Research;
 using Trading.Research.Contracts;
 using Trading.Research.Sources;
+using Trading.TestInfrastructure;
 
 namespace Trading.AcceptanceTests.Support;
 
@@ -492,11 +493,20 @@ public sealed class Stage4ResearchDriver(ScenarioContext scenario) : IAsyncDispo
     private static ResearchPrincipal Principal(TradingBotId id) => new(id.ToString(), ResearchPrincipalKind.TradingBot);
     private string Diagnostic(Stage4Case useCase) => $"Stage4 scenario={scenario.ScenarioInfo.Title}; case={useCase}; database={Path.Combine(directory, "smoke.db")}; parameter={parameter}";
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        database?.Dispose(); scope?.Dispose(); host?.Dispose();
-        if (Directory.Exists(directory)) Directory.Delete(directory, true);
-        return ValueTask.CompletedTask;
+        database = null;
+        if (scope is IAsyncDisposable asyncScope) await asyncScope.DisposeAsync().ConfigureAwait(false);
+        else scope?.Dispose();
+        scope = null;
+        if (host is not null)
+        {
+            if (host is IAsyncDisposable asyncHost) await asyncHost.DisposeAsync().ConfigureAwait(false);
+            else host.Dispose();
+            host = null;
+        }
+        SqliteTestDatabaseCleanup.DeleteOwnedDirectory(directory,
+            SqliteTestDatabaseCleanup.HostConnectionString(Path.Combine(directory, "smoke.db")));
     }
 
     private sealed record CaseObservation(bool Passed, string[] RequestIds, string[] AttemptIds, string[] ReportIds,

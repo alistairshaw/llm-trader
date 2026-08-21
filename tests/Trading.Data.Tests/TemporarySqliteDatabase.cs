@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using Trading.TestInfrastructure;
 
 namespace Trading.Data.Tests;
 
@@ -28,11 +29,10 @@ internal sealed class TemporarySqliteDatabase : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        var connectionString = Context.Database.GetConnectionString()
+            ?? throw new InvalidOperationException("The temporary SQLite database has no connection string.");
         await Context.Database.CloseConnectionAsync().ConfigureAwait(false);
         await Context.DisposeAsync().ConfigureAwait(false);
-        if (Directory.Exists(DirectoryPath))
-        {
-            Directory.Delete(DirectoryPath, recursive: true);
-        }
+        SqliteTestDatabaseCleanup.DeleteOwnedDirectory(DirectoryPath, connectionString);
     }
 }

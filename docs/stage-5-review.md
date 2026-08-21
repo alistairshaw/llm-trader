@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 5 satisfied its Linux-container local acceptance gate, but exact-revision hosted Windows validation exposed a cross-platform SQLite resource-lifetime defect. Stage 5 is blocked on `S5-016`, and Stage 6 commencement remains withheld.
+Stage 5 satisfied its Linux-container local acceptance gate, but exact-revision hosted Windows validation exposed a cross-platform SQLite resource-lifetime defect. `S5-016` has repaired and locally validated the resource lifecycle; the resumed `S5-015` exact-revision hosted gate is pending, and Stage 6 commencement remains withheld.
 
 ## Reviewed Scope
 
@@ -66,4 +66,4 @@ Revision `88681e512dcbde8f04a3e2865722f5646f0b073f` produced:
 
 Downloaded artifact `9429220872` shows recursive temporary-directory cleanup raising `IOException` because `test.db`, `runtime.db`, `smoke.db`, `workflow.db`, `capital.db`, `research.db`, and `recovery.db` remained open in another process. The breadth and consistent teardown signature establish a fixture/host resource-ownership defect rather than a Stage 5 business assertion failure.
 
-`S5-016` must make SQLite and host disposal Windows-safe without sleeps, skipped checks, cleanup retries, or swallowed failures. A new exact revision must then pass the complete local, hosted Windows/Linux, and security gates before this review can approve Stage 6.
+`S5-016` made SQLite and host disposal Windows-safe without sleeps, skipped checks, cleanup retries, or swallowed failures. A new exact revision must now pass the hosted Windows/Linux and security gates before this review can approve Stage 6.

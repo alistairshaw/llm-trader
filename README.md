@@ -36,6 +36,8 @@ This lets normal development proceed with Docker Desktop, Git, and an editor. A 
 
 The container definitions and repository-root `dev.ps1` wrapper provide `restore`, `build`, `format`, `test`, `run`, `solution-list`, and `reference-list`. `dev.ps1 run` builds a fixture-backed headless image, migrates a fresh database, and prints deterministic smoke outcomes for Trading runs, Research sharing and isolation, immutable refresh versioning, proposal evaluation, approval, capital contention, ResearchOnly non-executability, and graceful shutdown. Run these commands from PowerShell; they execute .NET tooling inside Linux Docker. See [Local Development](docs/local-development.md) for the complete environment decisions.
 
+Temporary SQLite tests use explicit asynchronous ownership for hosts, providers, scopes, contexts, and connections. Teardown releases only the owned database's connection pool and requires its directory to delete successfully on the first attempt on Windows and Linux.
+
 ## Documentation Map
 
 ### Product and architecture
