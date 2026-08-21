@@ -75,6 +75,8 @@ Tests must be deterministic. They use an injected clock, deterministic identifie
 
 File-backed SQLite fixtures have one asynchronous ownership boundary. Teardown first awaits hosted-service shutdown, then disposes scenario scopes, contexts, explicit connections, the service provider, and the host. Once those owners are closed, test infrastructure clears only the connection pool identified by that owned database's exact connection string and deletes the temporary directory once. An immediate deletion failure is a lifecycle defect; do not conceal it with sleeps, retries, garbage collection, ignored exceptions, or process-wide pool clearing.
 
+The executable entry point owns the Generic Host returned by `HostBootstrap.Build` and asynchronously disposes it after `RunAsync` completes or fails. Tests that build the host directly use the same order: await shutdown, close inspection connections, asynchronously dispose the host/root provider, clear only the closed `smoke.db` pool, then delete the directory on the first attempt.
+
 Stage 1 Reqnroll scenarios can be selected by tag through NUnit categories:
 
 ```powershell

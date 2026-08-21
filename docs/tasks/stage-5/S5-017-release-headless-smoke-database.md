@@ -3,13 +3,14 @@ schema_version: 1
 id: S5-017
 title: Release the headless smoke database on host disposal
 stage: 5
-status: ready
+status: done
 priority: 1100
 type: defect
 depends_on: [S5-016]
 labels: [windows, sqlite, host, resource-lifetime, ci]
 created: 2026-08-20
 updated: 2026-08-20
+owner: s5_017
 ---
 
 # S5-017: Release the Headless Smoke Database on Host Disposal
@@ -59,4 +60,11 @@ docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null &
 
 ## Completion Notes
 
-Pending implementation.
+Completed 2026-08-20.
+
+- Traced the remaining hosted Windows lock to C# scope ordering in `HeadlessHostTests`: its `finally` deletion ran before method-scoped host and inspection-connection disposals. The production host, hosted service, supervisor, scoped EF services, and explicit SQLite reader are now released before exact-pool cleanup and first-attempt directory deletion.
+- Made the executable `HostBootstrap.RunAsync` own and asynchronously dispose the built Generic Host/root provider on successful, cancelled, and failed runs. Direct-host tests close inspection connections and asynchronously dispose the host before clearing only the owned `smoke.db` connection pool.
+- Retained the production-composed HostBootstrap regression in `SqliteFixtureDisposalTests`; it starts the real background service, awaits smoke shutdown, disposes the complete host, clears the exact closed pool, and proves immediate directory removal without sleeps, retries, skipped assertions, swallowed failures, GC forcing, or process-wide pool clearing.
+- Updated local-development lifecycle guidance. No README, AGENTS, architecture, test-plan, ADR, migration, or dependency change was required.
+- Validation passed: locked restore; Release build with zero warnings/errors; HeadlessHost/FixtureDisposal focused integration 5/5; MultiBotSupervisor 8/8; Data 149/149; Integration 27/27; Stage 5 acceptance 32/32; Acceptance 165/165; full suite 1000/1000 with zero skipped; formatting verification; EF pending-model drift verification; and the deterministic proposal-governance headless smoke.
+- Hosted Windows/Linux and security validation of the exact pushed revision remains the resumed `S5-015` stage-review responsibility. No follow-up task was created.

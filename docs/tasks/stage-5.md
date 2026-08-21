@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S5-017` is ready: release the remaining HostBootstrap smoke database owner before resuming `S5-015`.
+`S5-015` is ready: repeat the exact-revision Stage 5 review and hosted validation after the HostBootstrap smoke-database repair.
 
 ## Ordered Backlog
 
@@ -27,8 +27,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S5-013`](stage-5/S5-013-headless-stage-5-demo.md) | Demonstrate proposal governance in the headless host | Done | 720 | `S5-011`, `S5-012` |
 | [`S5-014`](stage-5/S5-014-stage-5-acceptance.md) | Complete Stage 5 acceptance bindings | Done | 700 | `S5-013` |
 | [`S5-016`](stage-5/S5-016-windows-sqlite-fixture-disposal.md) | Make SQLite fixture and host disposal Windows-safe | Done | 1100 | `S5-014` |
-| [`S5-017`](stage-5/S5-017-release-headless-smoke-database.md) | Release the headless smoke database on host disposal | Ready | 1100 | `S5-016` |
-| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Blocked | 1000 | `S5-001`–`S5-014`, `S5-016`; blocked by `S5-017` |
+| [`S5-017`](stage-5/S5-017-release-headless-smoke-database.md) | Release the headless smoke database on host disposal | Done | 1100 | `S5-016` |
+| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Ready | 1000 | `S5-001`–`S5-014`, `S5-016`, `S5-017` |
 
 ## Stage Exit Gate
 
@@ -44,6 +44,6 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Current status superseding the historical narrative below: `S5-016` repaired the broad SQLite fixture lifecycle and reduced hosted Windows validation to one failing headless-host teardown. Revision `9ff1e6b` passed Linux and security; Windows job `96633639864` retained only `smoke.db` in `HeadlessHostTests`. `S5-017` is ready to close that isolated HostBootstrap lifecycle defect.
+Current status superseding the historical narrative below: `S5-017` repaired the isolated HostBootstrap ownership-order defect after `S5-016` repaired the broad SQLite fixture lifecycle. Local validation is green, and `S5-015` is ready to repeat the exact-revision hosted Windows, Linux, and security gates.
 
-Stage 5 is blocked on the remaining headless smoke database owner. Proposal-governance behavior and all other disposal coverage remain passing; `S5-017` must complete before `S5-015` repeats the exact-revision gate.
+Stage 5 awaits the resumed `S5-015` exact-revision review and hosted validation. Proposal-governance behavior and all SQLite disposal coverage pass locally.

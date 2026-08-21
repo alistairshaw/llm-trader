@@ -177,7 +177,21 @@ public static class HostBootstrap
         services.AddScoped<ResearchRestartRecovery>();
     }
 
-    public static Task RunAsync(string[] args) => Build(args).RunAsync();
+    public static async Task RunAsync(string[] args)
+    {
+        var host = Build(args);
+        try
+        {
+            await host.RunAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            if (host is IAsyncDisposable asyncHost)
+                await asyncHost.DisposeAsync().ConfigureAwait(false);
+            else
+                host.Dispose();
+        }
+    }
 }
 
 internal sealed class HostClock(DateTimeOffset? fixedAt) : IUtcClock, IResearchClock { public DateTimeOffset UtcNow => fixedAt ?? DateTimeOffset.UtcNow; }
