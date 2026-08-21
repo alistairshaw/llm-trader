@@ -3,11 +3,12 @@ schema_version: 1
 id: S5-015
 title: Complete Stage 5 acceptance and review
 stage: 5
-status: review
+status: blocked
 priority: 1000
 type: test
 depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014, S5-016, S5-017]
 labels: [review, ci, security, stage-gate]
+blocked_reason: Hosted Windows job 96637323821 still retained smoke.db after exact-pool cleanup; S5-018 must enumerate and close every HostBootstrap SQLite pool, factory, context, connection, and background owner.
 created: 2026-08-20
 updated: 2026-08-20
 ---
@@ -81,3 +82,7 @@ S5-015 was blocked on `S5-017` after the second hosted attempt. That failure rem
 The complete local gate passed: locked restore; Release build with zero warnings/errors; format; HeadlessHost/FixtureDisposal 5/5; MultiBotSupervisor 8/8; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 93/93; Integration 27/27; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 1000/1000 with zero failed or skipped; Stage 5 fresh/Stage-4-upgrade migrations 5/5; clean EF drift; and deterministic headless smoke with stable governance evidence and zero broker submissions.
 
 Both prior failed hosted revisions are superseded. S5-015 is in `review`; the new exact review revision's hosted Windows, Linux, and security results are the sole remaining gate. Stage 6 commencement is not approved.
+
+Hosted candidate `737103afcdb71b8e04b5c90394b7adc2b782f7b6` passed Linux job `96637323989` and Security run `32436034970` / secret-scan job `96637323597`. Windows job `96637323821` again failed only `HeadlessHostTests.SmokeModeMigratesSeedsRunsAndStopsCleanly`. Artifact `9430857531` reports `smoke.db` locked at `SqliteTestDatabaseCleanup.DeleteOwnedDirectory` line 16. The explicit inspection-connection and host/root-provider disposal order therefore remains necessary but is insufficient; an additional connection-string/pool identity, DbContext factory/context, connection, or background-service owner remains.
+
+S5-015 is blocked on `S5-018`. A new repair and exact-revision hosted Windows, Linux, and security pass are required before Stage 5 can close. Stage 6 commencement is not approved.
