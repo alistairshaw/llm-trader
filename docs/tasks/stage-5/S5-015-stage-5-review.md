@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-015
 title: Complete Stage 5 acceptance and review
 stage: 5
-status: ready
+status: review
 priority: 1000
 type: test
 depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014, S5-016, S5-017, S5-018]
@@ -84,4 +84,10 @@ Both prior failed hosted revisions are superseded. S5-015 is in `review`; the ne
 
 Hosted candidate `737103afcdb71b8e04b5c90394b7adc2b782f7b6` passed Linux job `96637323989` and Security run `32436034970` / secret-scan job `96637323597`. Windows job `96637323821` again failed only `HeadlessHostTests.SmokeModeMigratesSeedsRunsAndStopsCleanly`. Artifact `9430857531` reports `smoke.db` locked at `SqliteTestDatabaseCleanup.DeleteOwnedDirectory` line 16. The explicit inspection-connection and host/root-provider disposal order therefore remains necessary but is insufficient; an additional connection-string/pool identity, DbContext factory/context, connection, or background-service owner remains.
 
-S5-015 is blocked on `S5-018`. A new repair and exact-revision hosted Windows, Linux, and security pass are required before Stage 5 can close. Stage 6 commencement is not approved.
+S5-015 was blocked on `S5-018` after the third hosted attempt. That failure remains historical evidence; the canonical identity repair and repeated local gate below supersede the blocking condition.
+
+`S5-018` repaired the distinct inspection-pool identity in commit `575e7be61b46f071061776d3a1e3c0ef3211f7ea`. The resumed review verified one canonical absolute connection identity across EF registration, repositories, hosted smoke scope, inspection, bounded diagnostics, and exact pool cleanup; all owners dispose before first-attempt deletion, and no prohibited masking was introduced.
+
+The complete local gate passed: locked restore; Release build with zero warnings/errors; format; HeadlessHost/FixtureDisposal 5/5; MultiBotSupervisor 8/8; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 93/93; Integration 27/27; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 1000/1000 with zero failed or skipped; Stage 5 fresh/Stage-4-upgrade migrations 5/5; clean EF drift; and deterministic headless smoke with stable evidence and zero broker submissions.
+
+The prior three failed Windows revisions are superseded. S5-015 is in `review`; the new exact review revision's hosted Windows, Linux, and security results are the sole remaining gate. Stage 6 commencement is not approved.

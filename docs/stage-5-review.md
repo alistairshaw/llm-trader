@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 5 is blocked after a third hosted Windows attempt showed the HostBootstrap ordering repair did not release every `smoke.db` pool or owner. `S5-018` must enumerate and close the remaining identity or resource path, and Stage 6 commencement remains withheld.
+Stage 5 satisfies its complete local acceptance gate after `S5-018` unified every HostBootstrap `smoke.db` consumer on one canonical absolute connection identity. Exact-revision hosted Windows, Linux, and security validation remains, and Stage 6 commencement is withheld until it passes.
 
 ## Reviewed Scope
 
@@ -80,4 +80,8 @@ The complete local gate was repeated from repair commit `85669cd43c322a83d8a6958
 
 The failed `88681e5` and `9ff1e6b` hosted revisions remain superseded by their later repairs. Candidate `737103afcdb71b8e04b5c90394b7adc2b782f7b6` passed Linux job `96637323989` and Security run `32436034970` / secret-scan job `96637323597`, but Windows job `96637323821` again failed only `HeadlessHostTests.SmokeModeMigratesSeedsRunsAndStopsCleanly`. Artifact `9430857531` reports `smoke.db` locked at `SqliteTestDatabaseCleanup.DeleteOwnedDirectory` line 16.
 
-Because the explicit inspection connection and host/root-provider are already disposed before cleanup, S5-018 must enumerate connection-string normalization, exact pool identities, DbContext factories/contexts, explicit connections, and hosted/background owners and prove all are closed. Broad `ClearAllPools`, sleeps, retries, skips, garbage-collection forcing, and swallowed failures remain prohibited. A new exact revision must pass complete local, hosted Windows/Linux, and security validation before this review can approve Stage 6.
+S5-018 identified the remaining owner as the inspection connection's distinct pool: production used `Default Timeout=5` in its connection string while inspection did not. HostBootstrap now constructs one normalized absolute `ReadWriteCreate`, shared-cache, pooled identity through `TradingDbContextFactory`; EF, repositories, hosted smoke work, inspection, diagnostics, and exact pool cleanup all consume it, while busy timeout behavior is applied by the connection interceptor. Bounded owner diagnostics name the EF/repository scope, hosted-service scope, and external inspection boundary without secrets.
+
+The complete local gate was repeated from repair commit `575e7be61b46f071061776d3a1e3c0ef3211f7ea`: locked restore; Release build with zero warnings/errors; format; HeadlessHost/FixtureDisposal 5/5; MultiBotSupervisor 8/8; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 93/93; Integration 27/27; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 1000/1000 with zero failed or skipped; fresh/Stage-4-upgrade migrations 5/5; clean EF drift; and deterministic headless smoke with stable governance identities/hashes, `700 USD` reserved, zero broker submissions, and recoverable shutdown.
+
+No `ClearAllPools`, pooling disablement, sleeps, retries, skips, garbage-collection forcing, or swallowed cleanup errors were introduced. The prior three failed Windows candidates are superseded. The next docs-only review commit is the exact candidate that must pass hosted Windows, Linux, and security before this review can approve Stage 6.
