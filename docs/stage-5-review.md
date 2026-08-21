@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 5 satisfies its complete local acceptance gate after `S5-016` repaired the Windows SQLite resource lifecycle. The resumed `S5-015` exact-revision hosted Windows, Linux, and security gate is pending, and Stage 6 commencement remains withheld.
+Stage 5 remains blocked after hosted Windows validation isolated one remaining `smoke.db` handle in the complete HostBootstrap lifecycle. `S5-017` must repair that ownership boundary before exact-revision review resumes, and Stage 6 commencement remains withheld.
 
 ## Reviewed Scope
 
@@ -70,4 +70,8 @@ Downloaded artifact `9429220872` shows recursive temporary-directory cleanup rai
 
 `S5-016` made SQLite and host disposal Windows-safe without sleeps, skipped checks, cleanup retries, garbage-collection forcing, process-wide pool clearing, or swallowed failures. The repair gives each test lifecycle explicit asynchronous ownership, clears only the exact closed SQLite connection pool after all owners are disposed, deletes once immediately, and includes regressions for both scoped-provider and complete-host paths. Local review found no remaining resource-lifetime or documentation discrepancy.
 
-The failed revision `88681e512dcbde8f04a3e2865722f5646f0b073f` and its Windows job are superseded as stage-gate evidence. The new review revision must pass the complete hosted Windows/Linux and security gates before this review can approve Stage 6.
+The failed revision `88681e512dcbde8f04a3e2865722f5646f0b073f` and its broad Windows teardown failures are superseded by the substantially successful S5-016 repair.
+
+Revision `9ff1e6b58b5810266365c1eb5a6b19914e40ea0b` passed Linux job `96633639723` and Security run `32434776246` / secret-scan job `96633639400`. Windows job `96633639864` reported exactly one failure: `HeadlessHostTests.SmokeModeMigratesSeedsRunsAndStopsCleanly`. Artifact `9430431487` shows its first teardown deletion failed because `smoke.db` remained in use. All Data, Acceptance, other Integration, and fixture-disposal regressions passed, isolating the remaining owner to HostBootstrap, its root provider/background services, scoped DbContext/connection, or exact pool lifecycle.
+
+`S5-017` must close that lifecycle deterministically and preserve immediate first-attempt deletion without sleeps, retries, skips, swallowed errors, garbage-collection forcing, or process-wide pool clearing. A subsequent exact revision must pass the complete local, hosted Windows/Linux, and security gates before this review can approve Stage 6.

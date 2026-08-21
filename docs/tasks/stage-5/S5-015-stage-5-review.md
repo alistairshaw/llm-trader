@@ -3,11 +3,12 @@ schema_version: 1
 id: S5-015
 title: Complete Stage 5 acceptance and review
 stage: 5
-status: review
+status: blocked
 priority: 1000
 type: test
 depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014, S5-016]
 labels: [review, ci, security, stage-gate]
+blocked_reason: Hosted Windows job 96633639864 retained smoke.db after HeadlessHostTests teardown; S5-017 must close the remaining HostBootstrap resource owner before review resumes.
 created: 2026-08-20
 updated: 2026-08-20
 ---
@@ -71,3 +72,7 @@ Hosted validation of revision `88681e512dcbde8f04a3e2865722f5646f0b073f` passed 
 `S5-016` repaired the fixture lifecycle in commit `f00f99434106624503886dd4cf0bb5678b762cc6`. The resumed local review passed locked restore; Release build with zero warnings/errors; format; `FixtureDisposal` 2/2; `MultiBotSupervisor` 8/8; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 93/93; Integration 27/27; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 1000/1000 with zero failed or skipped; Stage 5 fresh/Stage-4-upgrade migration coverage 5/5; clean EF drift; and deterministic headless smoke with the previously recorded stable identities, hashes, `700 USD` reservation, zero broker submissions, and recoverable shutdown.
 
 The previous failed revision and jobs are superseded. S5-015 is in `review`, and the new exact review revision's hosted Windows, Linux, and security results are the sole remaining gate. Stage 6 commencement is not approved.
+
+Hosted validation of revision `9ff1e6b58b5810266365c1eb5a6b19914e40ea0b` passed Linux job `96633639723` and Security run `32434776246` / secret-scan job `96633639400`. Windows job `96633639864` failed exactly one test: `HeadlessHostTests.SmokeModeMigratesSeedsRunsAndStopsCleanly`. Artifact `9430431487` records a teardown `IOException` because `smoke.db` remained in use. All other cleanup coverage passed, narrowing the remaining defect to the HostBootstrap smoke host, its service provider/background services, DbContext, connection, or exact SQLite pool lifetime.
+
+S5-015 is blocked on `S5-017`. The new repair revision must repeat the complete local gate and pass exact-revision hosted Windows, Linux, and security validation before Stage 5 can close. Stage 6 commencement is not approved.
