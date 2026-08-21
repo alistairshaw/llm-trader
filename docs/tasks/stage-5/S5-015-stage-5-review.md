@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-015
 title: Complete Stage 5 acceptance and review
 stage: 5
-status: ready
+status: review
 priority: 1000
 type: test
 depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014, S5-016]
@@ -68,4 +68,6 @@ The audit corrected the hosted CI gate so Windows and Linux execute the complete
 
 Hosted validation of revision `88681e512dcbde8f04a3e2865722f5646f0b073f` passed Linux job `96622973099` and Security run `32431213636` / secret-scan job `96622973233`, but Windows job `96622973230` failed. Artifact `9429220872` shows widespread teardown `IOException` failures while recursively deleting `test.db`, `runtime.db`, `smoke.db`, `workflow.db`, `capital.db`, `research.db`, and `recovery.db` because another process still held each file. The failure is not an assertion retry or environmental flake: it identifies incomplete SQLite connection/host resource ownership and disposal in cross-platform fixtures.
 
-S5-015 is blocked on `S5-016`. After that repair is done, the complete local gate and exact-revision hosted Windows, Linux, and security validation must pass before this task returns to review or done. Stage 6 commencement is not approved.
+`S5-016` repaired the fixture lifecycle in commit `f00f99434106624503886dd4cf0bb5678b762cc6`. The resumed local review passed locked restore; Release build with zero warnings/errors; format; `FixtureDisposal` 2/2; `MultiBotSupervisor` 8/8; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 93/93; Integration 27/27; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 1000/1000 with zero failed or skipped; Stage 5 fresh/Stage-4-upgrade migration coverage 5/5; clean EF drift; and deterministic headless smoke with the previously recorded stable identities, hashes, `700 USD` reservation, zero broker submissions, and recoverable shutdown.
+
+The previous failed revision and jobs are superseded. S5-015 is in `review`, and the new exact review revision's hosted Windows, Linux, and security results are the sole remaining gate. Stage 6 commencement is not approved.

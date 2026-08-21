@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 5 satisfied its Linux-container local acceptance gate, but exact-revision hosted Windows validation exposed a cross-platform SQLite resource-lifetime defect. `S5-016` has repaired and locally validated the resource lifecycle; the resumed `S5-015` exact-revision hosted gate is pending, and Stage 6 commencement remains withheld.
+Stage 5 satisfies its complete local acceptance gate after `S5-016` repaired the Windows SQLite resource lifecycle. The resumed `S5-015` exact-revision hosted Windows, Linux, and security gate is pending, and Stage 6 commencement remains withheld.
 
 ## Reviewed Scope
 
@@ -12,7 +12,7 @@ The Stage 5 acceptance steps remain thin and delegate to the scenario-scoped `St
 
 ## Local Revision and Validation
 
-Local implementation validation was performed from `c56bee7b48f07edc798a233095187719249bc446`. The review commit adds only documentation and the hosted CI gate correction described below; its exact revision is recorded after commit and is the revision that must pass hosted validation.
+The original local implementation validation was performed from `c56bee7b48f07edc798a233095187719249bc446`. The complete gate was repeated from SQLite lifecycle repair `f00f99434106624503886dd4cf0bb5678b762cc6`; the subsequent review commit changes documentation only and is the exact revision that must pass hosted validation.
 
 All commands ran through the repository's Linux Docker workflow on 2026-08-20:
 
@@ -32,6 +32,8 @@ All commands ran through the repository's Linux Docker workflow on 2026-08-20:
 | `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage5Migrations\|Category=ProposalPersistence"` | 5 passed, covering fresh migration, completed-Stage-4 upgrade, retained history, schema equivalence, constraints, immutability, exact values, concurrency, and drift. |
 | `docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null && dotnet ef migrations has-pending-model-changes --project src/Trading.Data"` | Passed; no pending model changes. |
 | `.\dev.ps1 run` | Passed twice from a rebuilt smoke database with reproducible Stage 5 business identities, hashes, decisions, and shutdown results. |
+
+After the Windows teardown repair, the entire matrix above was repeated successfully. Updated focused counts were Architecture 19, Core 491, Data 149, Research 56, Engine 93, Integration 27, and Acceptance 165. `FixtureDisposal` passed 2/2, covering immediate first-attempt deletion after scoped-provider and full-host lifecycles, and the `MultiBotSupervisor` lifecycle selection passed 8/8, including repeated asynchronous disposal. Stage 5 acceptance passed twice at 32/32 with zero skipped, and the full suite passed 1000/1000 with zero skipped. Fresh/Stage-4-upgrade migrations passed 5/5, EF drift remained clean, formatting passed, and the headless smoke reproduced the identities and hashes below.
 
 The Stage 5 migration chain is `20260820211945_AddStage5ProposalGovernance`, `20260820221702_AddImmutableGuardrailEvaluationArtifacts`, and `20260820222346_RestoreGuardrailEvaluationImmutabilityTriggers`, upgrading from Stage 4 migration `20260820164929_AddStage4ResearchPersistence`.
 
@@ -66,4 +68,6 @@ Revision `88681e512dcbde8f04a3e2865722f5646f0b073f` produced:
 
 Downloaded artifact `9429220872` shows recursive temporary-directory cleanup raising `IOException` because `test.db`, `runtime.db`, `smoke.db`, `workflow.db`, `capital.db`, `research.db`, and `recovery.db` remained open in another process. The breadth and consistent teardown signature establish a fixture/host resource-ownership defect rather than a Stage 5 business assertion failure.
 
-`S5-016` made SQLite and host disposal Windows-safe without sleeps, skipped checks, cleanup retries, or swallowed failures. A new exact revision must now pass the hosted Windows/Linux and security gates before this review can approve Stage 6.
+`S5-016` made SQLite and host disposal Windows-safe without sleeps, skipped checks, cleanup retries, garbage-collection forcing, process-wide pool clearing, or swallowed failures. The repair gives each test lifecycle explicit asynchronous ownership, clears only the exact closed SQLite connection pool after all owners are disposed, deletes once immediately, and includes regressions for both scoped-provider and complete-host paths. Local review found no remaining resource-lifetime or documentation discrepancy.
+
+The failed revision `88681e512dcbde8f04a3e2865722f5646f0b073f` and its Windows job are superseded as stage-gate evidence. The new review revision must pass the complete hosted Windows/Linux and security gates before this review can approve Stage 6.
