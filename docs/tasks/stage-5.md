@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-`S5-015` is in review: the canonical smoke database identity repair passed the complete local gate and exact-revision hosted results remain.
+No Stage 5 task remains. Stage 5 is complete, and Stage 6 planning may begin.
 
 ## Ordered Backlog
 
@@ -29,7 +29,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S5-016`](stage-5/S5-016-windows-sqlite-fixture-disposal.md) | Make SQLite fixture and host disposal Windows-safe | Done | 1100 | `S5-014` |
 | [`S5-017`](stage-5/S5-017-release-headless-smoke-database.md) | Release the headless smoke database on host disposal | Done | 1100 | `S5-016` |
 | [`S5-018`](stage-5/S5-018-own-all-headless-sqlite-pools.md) | Own every headless smoke SQLite pool and context | Done | 1100 | `S5-017` |
-| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Review | 1000 | `S5-001`–`S5-014`, `S5-016`–`S5-018` |
+| [`S5-015`](stage-5/S5-015-stage-5-review.md) | Complete Stage 5 acceptance and review | Done | 1000 | `S5-001`–`S5-014`, `S5-016`–`S5-018` |
 
 ## Stage Exit Gate
 
@@ -45,6 +45,6 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Current status superseding the historical narrative below: `S5-018` identified the remaining lock as a distinct inspection connection-string pool and established one canonical absolute `smoke.db` identity for production composition, inspection, diagnostics, and exact cleanup. `S5-015` repeated the complete local gate with 1000 passing tests and zero skipped and awaits exact-revision hosted validation.
+All 18 Stage 5 tasks are done. `S5-018` identified the final Windows lock as a distinct inspection connection-string pool and established one canonical absolute `smoke.db` identity for production composition, inspection, diagnostics, and exact cleanup. `S5-015` repeated the complete local gate with 1000 passing tests and zero skipped. Exact revision `61296ca1536a702e48324ef5caeb475603a893e7` then passed hosted Windows, Linux, and security validation.
 
-Stage 5 is in review and awaits only the new exact-revision Windows, Linux, and security gates. Proposal-governance behavior and all SQLite identity, disposal, and first-delete coverage pass locally; the prior three failed Windows candidates are superseded.
+Stage 5 delivers structured immutable proposals, exact evidence binding, monotonic hierarchical policies, immutable revalidation, authorized decisions, atomic capital reservations, ResearchOnly non-executability, bounded projections, production-backed acceptance, deterministic smoke demonstration, and Windows-safe SQLite ownership. All earlier failed hosted candidates are superseded. No unresolved critical or high-severity defect, exception, ADR, or deferred Stage 5 follow-up remains. Stage 6 commencement is approved.

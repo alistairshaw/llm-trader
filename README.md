@@ -1,6 +1,6 @@
 # Trading Platform
 
-Stage 4 adds shared, asynchronous Research consumption to the bounded Trading Bot runtime. A pinned Bot Run may use only the versioned `RequestResearch`, `ListReports`, and `GetReport` contracts granted by its tool policy; catalog reads enforce report visibility and exact immutable versions, while durable terminal notifications enter the existing Bot trigger workflow.
+Stage 5 adds structured Trade Proposals, deterministic hierarchical guardrails, immutable evaluations, authorized human decisions, and atomic capital reservations to the bounded Trading Bot runtime without exposing order or broker-submission authority.
 
 A safety-first automated trading platform built with C# and .NET 10. It supports multiple isolated Trading Bots, a shared Research Bot, deterministic risk controls, paper and eventual live broker integrations, a cross-platform headless host, and a Windows WPF operator application.
 
@@ -8,7 +8,7 @@ The platform is designed around a strict authority boundary: language models may
 
 ## Current Status
 
-Stages 1–4 are complete: the repository has its domain and persistence foundation, a bounded recoverable multi-Bot runtime, a cross-platform headless host, and the shared Research service. Research runs with validated fixture-only configuration, bounded global concurrency, startup recovery, durable notifications, immutable refresh versions, and Trading Bot Research access. Its version-1 Research registry exposes only `SearchWeb`, `FetchWebDocument`, `ListReports`, `GetReport`, `PublishReportDraft`, and `FinishResearch`; every call is schema-checked, budgeted, identity-bound, provenance-aware, and durably audited. The scripted Research loop pins model, prompt, tool-set, and report-schema versions, requires both a validated draft and `FinishResearch`, and terminates safely at every resource or failure boundary. Approved-source development uses embedded, versioned fixtures whose byte counts and SHA-256 hashes are verified against a manifest; retrieved text is always wrapped as untrusted evidence. Terminal Research outcomes are delivered per subscription by atomically recording delivery and a source-keyed Trading Bot trigger, so restart and retry cannot duplicate a notification or follow-up run.
+Stages 1–5 are complete: the repository has its domain and persistence foundation, a bounded recoverable multi-Bot runtime, a cross-platform headless host, the shared Research service, and deterministic proposal governance through capital reservation. Research runs with validated fixture-only configuration, bounded global concurrency, startup recovery, durable notifications, immutable refresh versions, and Trading Bot Research access. Its version-1 Research registry exposes only `SearchWeb`, `FetchWebDocument`, `ListReports`, `GetReport`, `PublishReportDraft`, and `FinishResearch`; every call is schema-checked, budgeted, identity-bound, provenance-aware, and durably audited. The scripted Research loop pins model, prompt, tool-set, and report-schema versions, requires both a validated draft and `FinishResearch`, and terminates safely at every resource or failure boundary. Approved-source development uses embedded, versioned fixtures whose byte counts and SHA-256 hashes are verified against a manifest; retrieved text is always wrapped as untrusted evidence. Terminal Research outcomes are delivered per subscription by atomically recording delivery and a source-keyed Trading Bot trigger, so restart and retry cannot duplicate a notification or follow-up run.
 
 Schema-1 reports are deterministically validated, citation-bound to sources retrieved by their run, canonically hashed, and atomically published as immutable series versions. Queued Research work is claimed atomically with increasing attempt numbers, runs outside database transactions under global concurrency limits, and recovers abandoned attempts by retaining them as failed audit history before requeueing the request.
 
@@ -18,7 +18,9 @@ The deterministic headless smoke now composes those Stage 5 services with paper-
 
 All 39 Stage 4 Research specifications are active and deterministic against a fresh migrated SQLite file. Thin Stage-specific bindings select explicit business use cases; the scenario-scoped driver composes production request, catalog, publication, tool-loop, notification, recovery, and host services and asserts returned results or durable facts. It never derives expected outcomes from feature wording or scenario titles.
 
-The current backlog and next eligible task are recorded in [Stage 5 Backlog](docs/tasks/stage-5.md).
+All 32 Stage 5 proposal-governance specifications are active and pass on Windows and Linux. The complete local suite contains 1000 passing tests with zero skipped tests.
+
+The completed Stage 5 backlog and review evidence are recorded in [Stage 5 Backlog](docs/tasks/stage-5.md) and the [Stage 5 Review Record](docs/stage-5-review.md). Stage 6 planning may begin.
 
 ## Development Environment
 

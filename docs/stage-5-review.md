@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 5 satisfies its complete local acceptance gate after `S5-018` unified every HostBootstrap `smoke.db` consumer on one canonical absolute connection identity. Exact-revision hosted Windows, Linux, and security validation remains, and Stage 6 commencement is withheld until it passes.
+Stage 5 is complete. Exact reviewed revision `61296ca1536a702e48324ef5caeb475603a893e7` passed the complete local gate and hosted Windows, Linux, and security validation. Stage 6 commencement is approved.
 
 ## Reviewed Scope
 
@@ -84,4 +84,17 @@ S5-018 identified the remaining owner as the inspection connection's distinct po
 
 The complete local gate was repeated from repair commit `575e7be61b46f071061776d3a1e3c0ef3211f7ea`: locked restore; Release build with zero warnings/errors; format; HeadlessHost/FixtureDisposal 5/5; MultiBotSupervisor 8/8; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 93/93; Integration 27/27; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 1000/1000 with zero failed or skipped; fresh/Stage-4-upgrade migrations 5/5; clean EF drift; and deterministic headless smoke with stable governance identities/hashes, `700 USD` reserved, zero broker submissions, and recoverable shutdown.
 
-No `ClearAllPools`, pooling disablement, sleeps, retries, skips, garbage-collection forcing, or swallowed cleanup errors were introduced. The prior three failed Windows candidates are superseded. The next docs-only review commit is the exact candidate that must pass hosted Windows, Linux, and security before this review can approve Stage 6.
+No `ClearAllPools`, pooling disablement, sleeps, retries, skips, garbage-collection forcing, or swallowed cleanup errors were introduced. The prior three failed Windows candidates are superseded.
+
+## Final Hosted Validation
+
+Exact reviewed revision `61296ca1536a702e48324ef5caeb475603a893e7` passed:
+
+- [CI run 32437494740](https://github.com/alistairshaw/llm-trader/actions/runs/32437494740): successful.
+- Linux job `96641552925`: successful; artifact `test-results-Linux` ID `9431295692`, 264663 bytes, not expired.
+- Windows job `96641553045`: successful; artifact `test-results-Windows` ID `9431318909`, 267544 bytes, not expired.
+- [Security run 32437494908](https://github.com/alistairshaw/llm-trader/actions/runs/32437494908): successful.
+- Secret scan job `96641553230`: successful; gitleaks artifact ID `9431260424`, 6772 bytes, not expired.
+- Dependency review job `96641554082`: skipped as expected for a direct push because it applies only to pull requests.
+
+All Stage 5 exit criteria are satisfied with zero unresolved critical or high-severity defects. All earlier failed hosted candidates and their artifacts remain historical diagnostic evidence and are superseded by the exact passing revision. No exception, ADR, or deferred Stage 5 follow-up remains. Stage 6 commencement is approved.

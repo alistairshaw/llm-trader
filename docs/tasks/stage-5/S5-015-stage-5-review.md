@@ -3,7 +3,7 @@ schema_version: 1
 id: S5-015
 title: Complete Stage 5 acceptance and review
 stage: 5
-status: review
+status: done
 priority: 1000
 type: test
 depends_on: [S5-001, S5-002, S5-003, S5-004, S5-005, S5-006, S5-007, S5-008, S5-009, S5-010, S5-011, S5-012, S5-013, S5-014, S5-016, S5-017, S5-018]
@@ -90,4 +90,8 @@ S5-015 was blocked on `S5-018` after the third hosted attempt. That failure rema
 
 The complete local gate passed: locked restore; Release build with zero warnings/errors; format; HeadlessHost/FixtureDisposal 5/5; MultiBotSupervisor 8/8; Architecture 19/19; Core 491/491; Data 149/149; Research 56/56; Engine 93/93; Integration 27/27; Stage 5 acceptance twice at 32/32 with zero failed, pending, or skipped; full suite 1000/1000 with zero failed or skipped; Stage 5 fresh/Stage-4-upgrade migrations 5/5; clean EF drift; and deterministic headless smoke with stable evidence and zero broker submissions.
 
-The prior three failed Windows revisions are superseded. S5-015 is in `review`; the new exact review revision's hosted Windows, Linux, and security results are the sole remaining gate. Stage 6 commencement is not approved.
+The prior three failed Windows revisions were superseded, and exact revision `61296ca1536a702e48324ef5caeb475603a893e7` became the final hosted candidate.
+
+Exact reviewed revision `61296ca1536a702e48324ef5caeb475603a893e7` passed hosted [CI run 32437494740](https://github.com/alistairshaw/llm-trader/actions/runs/32437494740): Linux job `96641552925` and Windows job `96641553045` both succeeded. Their unexpired test-result artifacts are `9431295692` (264663 bytes) and `9431318909` (267544 bytes), respectively. Hosted [Security run 32437494908](https://github.com/alistairshaw/llm-trader/actions/runs/32437494908) passed secret-scan job `96641553230`; unexpired gitleaks artifact `9431260424` is 6772 bytes. Dependency-review job `96641554082` skipped as expected for a direct push.
+
+All prior failed revisions are superseded, every acceptance criterion passes, and no critical or high-severity Stage 5 defect remains. S5-015 is done and Stage 6 commencement is approved. No deviation, ADR, exception, or follow-up remains.
