@@ -6,7 +6,7 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-012`](stage-7/S7-012-kill-switch-ui.md) are ready and may run in parallel.
+[`S7-012`](stage-7/S7-012-kill-switch-ui.md) is ready.
 
 ## Ordered Backlog
 
