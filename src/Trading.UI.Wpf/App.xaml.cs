@@ -2,6 +2,9 @@ using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Trading.Core.Identifiers;
+using Trading.Core.Orders;
+using Trading.Core.Persistence;
 using Trading.Engine.Operators;
 using Trading.Host;
 using Trading.UI.Wpf.Navigation;
@@ -42,15 +45,26 @@ public partial class App : Application, IAsyncDisposable
             var researchService = lifecycle.Services.GetService<IResearchOperatorService>();
             var proposalService = lifecycle.Services.GetService<IProposalOperatorService>();
             var killSwitchService = lifecycle.Services.GetService<IKillSwitchOperatorService>();
+            var portfolioQueries = lifecycle.Services.GetService<IOperatorPortfolioBrokerQueries>();
+            var executionQueries = lifecycle.Services.GetService<IOrderExecutionQueries>();
             var principal = lifecycle.Services.GetService<OperatorPrincipal>();
             var updates = new PollingOperatorUpdateSource(TimeSpan.FromSeconds(2));
             var dispatcher = new WpfUiDispatcher(Dispatcher);
             startupPhase = "window-construction";
-            var window = queries is not null && botService is not null && runService is not null && researchService is not null && proposalService is not null && killSwitchService is not null && principal is not null
+            var window = queries is not null && botService is not null && runService is not null && researchService is not null && proposalService is not null && killSwitchService is not null && portfolioQueries is not null && executionQueries is not null && principal is not null
                 ? new MainWindow(new WpfNavigationPageFactory(
                     () => new BotManagementViewModel(queries, botService, principal),
                     () => new BotRunsViewModel(queries, runService, principal),
+                    () => new PortfolioBrokerViewModel(new AuthorizedPortfolioBrokerViewSource(portfolioQueries,
+                        TradingBotId.Parse("01J5QH8M000000000000000101"),
+                        BrokerAccountId.Parse("01J5QH8M000000000000000302")),
+                        TimeProvider.System),
                     () => new ResearchCatalogViewModel(queries, researchService, principal),
+                    () => new ExecutionRiskAuditViewModel(executionQueries,
+                        new ExecutionQueryPrincipal(principal.ActorId, false,
+                            [TradingBotId.Parse("01J5QH8M000000000000000101"), TradingBotId.Parse("01J5QH8M000000000000000201")],
+                            [PortfolioId.Parse("01J5QH8M000000000000000103"), PortfolioId.Parse("01J5QH8M000000000000000203")],
+                            [BrokerAccountId.Parse("01J5QH8M000000000000000302"), BrokerAccountId.Parse("01J5QH8M000000000000000303")])),
                     createProposals: () => new ProposalReviewViewModel(queries, proposalService, principal),
                     createKillSwitches: () => new KillSwitchViewModel(queries, killSwitchService, principal),
                     updates: updates,

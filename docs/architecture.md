@@ -225,6 +225,10 @@ or command port. Missing and unauthorized resources return the same stable unava
 resource existence. Every operator operation is asynchronous and cancellable; the boundary exposes no EF, WPF,
 `IQueryable`, or broker-SDK types.
 
+The shared Generic Host composes one `AuthorizedOperatorService` for every operator query and command interface.
+Its principal receives explicit permissions and a bounded resource scope; the deterministic WPF profile narrows that
+scope to its stable paper fixtures and cannot grant network, credential, live-broker, or live-order authority.
+
 Paper submission is an outbox-driven Engine application service. Its persistence port prepares an immutable broker
 command from durable authorization facts and atomically finalizes the Order and claimed work item after normalized
 broker I/O. The adapter call is bounded and occurs outside every database transaction. Accepted and duplicate-known

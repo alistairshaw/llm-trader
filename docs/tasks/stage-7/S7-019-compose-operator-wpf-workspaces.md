@@ -3,13 +3,14 @@ schema_version: 1
 id: S7-019
 title: Compose authorized operator workflows and every WPF workspace
 stage: 7
-status: ready
+status: done
 priority: 970
 type: defect
 depends_on: [S7-015, S7-016]
 labels: [wpf, composition, authorization, test-profile]
 created: 2026-08-22
 updated: 2026-08-22
+owner: s7_019
 ---
 # S7-019: Compose Authorized Operator Workflows and Every WPF Workspace
 
@@ -71,4 +72,24 @@ Portfolio and Execution view-model factories. Read [Architecture](../../architec
 - `./dev.ps1 format`
 
 ## Completion Notes
-Pending implementation.
+Implemented production `IOperatorAuthorization` and `IOperatorWorkflowPort` adapters, registered one
+`AuthorizedOperatorService` for every operator query and command contract, and bound the configured local operator to
+explicit permissions and deterministic fixture resources. Composed Bot, Portfolio, run, Research, Proposal,
+Execution/Risk, and kill-switch workspaces; Portfolio uses the production authorized projection and Execution uses an
+explicit scoped query principal. Extended the bounded profile manifest with its stable fixture-state controls. Added
+production-composition tests for the complete DI boundary, authorized operations, missing permissions, and
+non-disclosing out-of-scope denial. Updated architecture, test-plan, and local-development guidance.
+
+Validation:
+
+- `./dev.ps1 build` — passed, zero warnings and errors.
+- `./dev.ps1 test -Project tests/Trading.IntegrationTests/Trading.IntegrationTests.csproj -Filter FullyQualifiedName~OperatorProductionCompositionTests` — 2 passed.
+- `./dev.ps1 test -Project tests/Trading.UI.Wpf.Tests/Trading.UI.Wpf.Tests.csproj` — 40 passed.
+- `./dev.ps1 test -Project tests/Trading.AcceptanceTests/Trading.AcceptanceTests.csproj -Filter TestCategory=stage7` — 4 passed.
+- `./dev.ps1 publish-wpf` — passed; self-contained `win-x64` artifact produced.
+- `./dev.ps1 test` — 1,229 passed, zero failures and skips.
+- `./dev.ps1 format` — passed with no violations.
+
+The Windows UIA journey is intentionally delegated to S7-017, which owns FlaUI bindings and interactive Windows
+execution. No external network, credential, live broker, or live-order authority was introduced. No deviations,
+follow-up tasks, or ADRs.

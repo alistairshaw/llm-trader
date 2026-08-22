@@ -8,4 +8,5 @@
   "liveTradingAuthority": false,
   "researchProvider": "fixture",
   "brokerEnvironment": "paper"
+  ,"fixtureStates": ["bot-lifecycle", "portfolio-assignment", "terminal-run", "published-research", "awaiting-proposal", "rejected-proposal", "paper-order-fill", "execution-modes", "operational-warnings", "kill-switch-hierarchy", "recoverable-shutdown"]
 }

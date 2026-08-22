@@ -6,6 +6,7 @@ namespace Trading.UI.Wpf.Navigation;
 
 public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> createBots,
     Func<BotRunsViewModel> createRuns,
+    Func<PortfolioBrokerViewModel>? createPortfolios = null,
     Func<ResearchCatalogViewModel>? createResearch = null,
     Func<ExecutionRiskAuditViewModel>? createExecution = null,
     Func<ProposalReviewViewModel>? createProposals = null,
@@ -26,6 +27,12 @@ public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> create
             var runs = createRuns();
             return CreateLive(new BotRunsView { DataContext = runs }, runs.RefreshAsync, runs,
                 OperatorUpdateKind.Runs, OperatorUpdateKind.Warnings);
+        }
+        if (route.Key == "portfolios" && createPortfolios is not null)
+        {
+            var portfolios = createPortfolios();
+            return CreateLive(new PortfolioBrokerView { DataContext = portfolios }, portfolios.RefreshAsync, portfolios,
+                OperatorUpdateKind.Positions, OperatorUpdateKind.Reconciliation, OperatorUpdateKind.Warnings);
         }
         if (route.Key == "research" && createResearch is not null)
         {

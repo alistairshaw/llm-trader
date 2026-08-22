@@ -3,15 +3,13 @@ schema_version: 1
 id: S7-017
 title: Automate critical WPF operator journeys
 stage: 7
-status: blocked
+status: ready
 priority: 740
 type: test
 depends_on: [S7-015, S7-016, S7-019]
 labels: [wpf, flaui, acceptance]
 created: 2026-08-22
 updated: 2026-08-22
-owner: Codex/s7_017
-blocked_reason: Published WPF composition has no authorized operator workflow or authorization registrations and does not wire Portfolio or Execution workspaces.
 ---
 # S7-017: Automate Critical WPF Operator Journeys
 

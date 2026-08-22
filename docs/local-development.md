@@ -133,6 +133,10 @@ configuration surface for credentials or network providers. It atomically writes
 `shutdown.json` documents inside its isolated run directory. Startup failures expose only a bounded alphanumeric phase
 and exception code. These signals are automation seams, not an external control or authorization channel.
 
+The profile also composes every desktop workspace through the production authorized operator boundary. Its manifest
+enumerates the stable lifecycle, Portfolio, terminal run, published Research, Proposal, paper execution, warning,
+execution-mode, kill-switch, and recoverable-shutdown fixture states available to Windows automation.
+
 The host process runs outside Docker, so it must use host-accessible local configuration and storage. Its development database must still remain outside the OneDrive source tree. The launcher should assign a per-developer data directory under a non-synchronized local application-data location and set safe simulated or research-only defaults.
 
 A self-contained artifact is larger than a framework-dependent build, but it keeps the host free of a separately installed .NET runtime and makes the tested runtime version explicit. We can add a faster framework-dependent option later if developers choose to install the matching runtime.

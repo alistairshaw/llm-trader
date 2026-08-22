@@ -206,6 +206,10 @@ Production startup must not use `EnsureCreated`.
 
 `Trading.IntegrationTests` composes the Generic Host with production engine and data services while replacing external providers. `Category=Stage6Host` verifies the migrated fixture-backed workflow through proposal governance, atomic Order conversion, unknown-submission reconciliation, partial and final Fill accounting, projections, and shutdown. The graph contains only the deterministic paper broker and no live or network broker authority.
 
+Stage 7 production-composition tests resolve the real operator authorization and workflow adapters, verify that all
+query and command interfaces share `AuthorizedOperatorService`, and require missing permissions and out-of-scope
+resources to return the same non-disclosing unavailable result.
+
 Core workflows:
 
 - Manual and scheduled Bot Run creation.
