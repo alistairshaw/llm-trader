@@ -25,7 +25,7 @@ internal sealed class HarnessSmokeSteps(ScenarioContext scenarioContext)
     }
 
     [When("I navigate to the Bot Runs workspace")]
-    public Task WhenINavigateToBotRuns() => Driver.NavigateAsync("Shell.Nav.Runs", "Runs.Workspace");
+    public Task WhenINavigateToBotRuns() => Driver.NavigateAsync("Nav.Runs", "Runs.Workspace");
 
     [Then("the Bot Runs workspace is displayed")]
     public void ThenBotRunsIsDisplayed() => Assert.That(Driver.Shell.HasWorkspace("Runs.Workspace"), Is.True);

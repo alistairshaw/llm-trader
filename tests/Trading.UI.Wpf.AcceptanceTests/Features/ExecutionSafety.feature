@@ -1,4 +1,4 @@
-@stage7 @acceptance @ui @windows @wpf @ignore
+@stage7 @acceptance @ui @windows @wpf
 Feature: Observe execution and operational safety through WPF
   The interface makes execution mode, risk, broker health, and emergency controls unambiguous.
 

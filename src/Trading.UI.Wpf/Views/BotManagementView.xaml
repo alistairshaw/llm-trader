@@ -57,7 +57,7 @@
         <StackPanel Grid.Row="2" Grid.ColumnSpan="2" AutomationProperties.LiveSetting="Polite">
             <TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Bots.Busy" AutomationProperties.Name="Busy state" />
             <TextBlock Text="{Binding ErrorCode}" AutomationProperties.AutomationId="Bots.Error" AutomationProperties.Name="Bot management error" />
-            <TextBlock Text="ResearchOnly means proposals cannot execute. HumanApproval requires a decision. PaperTrading uses only the simulated broker."
+            <TextBlock Text="ResearchOnly means proposals cannot execute. HumanApproval requires a decision. PaperTrading uses only the simulated broker. LiveTrading is visible only on explicitly provisioned configurations and cannot be selected here."
                        AutomationProperties.AutomationId="Bots.ModeExplanation" AutomationProperties.Name="Execution mode explanation" />
         </StackPanel>
     </Grid>

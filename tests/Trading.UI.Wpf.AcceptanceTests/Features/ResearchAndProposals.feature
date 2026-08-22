@@ -1,4 +1,4 @@
-@stage7 @acceptance @ui @windows @wpf @ignore
+@stage7 @acceptance @ui @windows @wpf
 Feature: Review Research and Proposals through WPF
   Operators can inspect evidence and make authorized human decisions without granting model authority.
 

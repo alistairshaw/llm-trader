@@ -1,6 +1,8 @@
 # Stage 7 WPF Acceptance Traceability
 
-These Windows-only specifications are staged before the UI harness exists. `S7-015` creates `Trading.UI.Wpf.AcceptanceTests`, pins and locks Reqnroll/FlaUI dependencies, generates synchronized sources, and makes these features discoverable. `S7-017` removes `@ignore` and supplies Automation-ID/UIA3 bindings. Until then, repository validation checks their deterministic Gherkin structure and selector-independent language.
+These Windows-only specifications execute through the shared FlaUI UIA3 harness and Automation-ID page objects.
+`S7-017` activated every Stage 7 journey against the published deterministic WPF profile; generated Reqnroll sources
+remain synchronized by the repository build.
 
 | Stage 7 criterion | Scenario(s) | Implementing task(s) |
 | --- | --- | --- |

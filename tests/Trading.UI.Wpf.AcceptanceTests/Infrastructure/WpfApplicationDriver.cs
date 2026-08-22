@@ -23,11 +23,14 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
     private UIA3Automation? automation;
     private Window? window;
     private bool closed;
+    private bool started;
+    public bool WasCleanlyStopped { get; private set; }
 
     public ShellPage Shell => new(window ?? throw new InvalidOperationException("The WPF window is not ready."));
 
     public async Task StartAsync()
     {
+        if (started) return;
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("WPF acceptance requires Windows.");
         var executable = RequiredExecutable();
         Directory.CreateDirectory(runDirectory);
@@ -58,6 +61,7 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
                 window = application.GetMainWindow(automation, TimeSpan.FromSeconds(1));
                 return window?.AutomationId == ShellPage.WindowId;
             }, startupTimeout, $"the main window AutomationId '{ShellPage.WindowId}'");
+            started = true;
         }
         catch
         {
@@ -65,6 +69,9 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
             throw;
         }
     }
+
+    public async Task WaitUntilAsync(Func<ShellPage, bool> condition, string description) =>
+        await BoundedWait.UntilAsync(() => condition(Shell), interactionTimeout, description);
 
     public async Task NavigateAsync(string routeId, string workspaceId)
     {
@@ -75,6 +82,24 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
 
     public async Task CloseAndVerifyAsync()
     {
+        await CloseAsync(deleteRunDirectory: true);
+    }
+
+    public async Task ClosePreservingStateAsync() => await CloseAsync(deleteRunDirectory: false);
+
+    public async Task RestartAsync()
+    {
+        if (!closed || !Directory.Exists(runDirectory))
+            throw new InvalidOperationException("Only a cleanly stopped preserved fixture can be restarted.");
+        File.Delete(Path.Combine(runDirectory, "ready.json"));
+        File.Delete(Path.Combine(runDirectory, "shutdown.json"));
+        closed = false;
+        started = false;
+        await StartAsync();
+    }
+
+    private async Task CloseAsync(bool deleteRunDirectory)
+    {
         if (closed) return;
         window?.Close();
         await BoundedWait.UntilAsync(() => process?.HasExited == true, shutdownTimeout, "the WPF process to exit");
@@ -83,15 +108,18 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
             "The bounded shutdown signal must exist.");
         if (outputCapture is not null) await outputCapture;
         closed = true;
+        started = false;
         DisposeAutomation();
         application!.Dispose();
         application = null;
         process.Dispose();
         process = null;
-        Directory.Delete(runDirectory, true);
+        WasCleanlyStopped = true;
+        if (deleteRunDirectory) Directory.Delete(runDirectory, true);
         Assert.Multiple(() =>
         {
-            Assert.That(Directory.Exists(runDirectory), Is.False, "Fixture directory must be deleted on the first attempt.");
+            Assert.That(Directory.Exists(runDirectory), Is.EqualTo(!deleteRunDirectory),
+                deleteRunDirectory ? "Fixture directory must be deleted on the first attempt." : "Fixture state must remain for restart.");
             Assert.That(IsOwnedProcessAlive(), Is.False, "The owned WPF process must not remain orphaned.");
         });
     }
@@ -111,6 +139,12 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
             process?.Dispose();
             process = null;
             if (Directory.Exists(runDirectory)) Directory.Delete(runDirectory, true);
+        }
+        else if (Directory.Exists(runDirectory))
+        {
+            Directory.Delete(runDirectory, true);
+            Assert.That(Directory.Exists(runDirectory), Is.False,
+                "A preserved restart fixture must be deleted on the first teardown attempt.");
         }
     }
 

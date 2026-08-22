@@ -3,13 +3,14 @@ schema_version: 1
 id: S7-017
 title: Automate critical WPF operator journeys
 stage: 7
-status: ready
+status: review
 priority: 740
 type: test
 depends_on: [S7-015, S7-016, S7-019]
 labels: [wpf, flaui, acceptance]
 created: 2026-08-22
 updated: 2026-08-22
+owner: Codex/s7_017
 ---
 # S7-017: Automate Critical WPF Operator Journeys
 
@@ -37,13 +38,27 @@ None.
 Build; publish-wpf; Stage7 WPF acceptance twice; full tests; format.
 
 ## Completion Notes
-Implementation did not begin because inspection of the published application composition established that
-`HostBootstrap` does not register `IOperatorAuthorization`, `IOperatorWorkflowPort`, `AuthorizedOperatorService`,
-or `OperatorPrincipal`. `App.xaml.cs` therefore cannot resolve its required operator query and command services and
-falls back to placeholder navigation. The same composition also omits Portfolio and Execution workspace factories.
+Activated all 19 expanded Stage 7 WPF scenarios by removing the pending tags and synchronizing their generated
+Reqnroll sources. Added thin journey bindings over a shared FlaUI driver and Automation-ID page object operations for
+Bot configuration/lifecycle, Portfolio assignment, terminal runs, exact Research, Proposal evidence and decisions,
+paper Orders/Fills, execution modes, operational warnings, Portfolio kill switches, accessibility/keyboard state, and
+recoverable shutdown/restart. The driver uses bounded readiness, interaction, and shutdown waits; retains bounded
+redacted screenshots, UIA trees, logs, and scenario context on failure; and deletes owned processes and fixture data on
+the first teardown attempt. Extended the deterministic production workflow projection with exact run, Research,
+Proposal, decision, reservation, and Portfolio kill-switch details. Live mode remains read-only and explicitly cannot
+be selected from the local operator UI. CI now runs the complete Stage 7 WPF category twice on interactive Windows.
 
-`S7-019` records the required production composition and deterministic-profile repair. S7-017 remains blocked until
-that task is done; no WPF scenario was activated, skipped, or represented as passing.
+Validation:
 
-Validation performed: repository inspection with `rg` and `Get-Content`; no build or test command was applicable to
-this documentation-only blocker record. Deviations: journey bindings were not implemented. Follow-up: `S7-019`.
+- `./dev.ps1 build` — passed, zero warnings and errors; generated Reqnroll sources synchronized.
+- `./dev.ps1 test -Project tests/Trading.IntegrationTests/Trading.IntegrationTests.csproj -Filter
+  "FullyQualifiedName~OperatorProductionCompositionTests"` — 2 passed.
+- `./dev.ps1 test -Project tests/Trading.UI.Wpf.Tests/Trading.UI.Wpf.Tests.csproj` — 40 passed.
+- `./dev.ps1 test` — 1,229 passed, zero failures and skips.
+- `./dev.ps1 format` — passed with no violations.
+- `./dev.ps1 publish-wpf` — passed; final self-contained `win-x64` artifact produced.
+
+The Windows host has no declared .NET UI-test runner, so the interactive Stage 7 WPF category could not be executed
+locally. It remains delegated to the new exact Windows CI step, which runs it twice and retains TRX and bounded failure
+artifacts. The task remains in `review` until both hosted executions pass with zero skips. No scenarios were weakened,
+no network or live-order authority was added, and no follow-up task or ADR was created.

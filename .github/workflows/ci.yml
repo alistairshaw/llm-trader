@@ -91,6 +91,29 @@ jobs:
           --logger "trx;LogFileName=wpf-harness-smoke.trx"
           --results-directory artifacts/wpf-test-results
 
+      - name: Run Stage 7 WPF journeys twice
+        if: ${{ !cancelled() && matrix.os == 'windows-latest' && steps.build.outcome == 'success' }}
+        shell: pwsh
+        env:
+          LLM_TRADER_WPF_EXECUTABLE: ${{ github.workspace }}\artifacts\wpf\win-x64\Trading.UI.Wpf.exe
+          LLM_TRADER_WPF_ARTIFACT_DIRECTORY: ${{ github.workspace }}\artifacts\wpf-test-results
+        run: |
+          dotnet test tests/Trading.UI.Wpf.AcceptanceTests/Trading.UI.Wpf.AcceptanceTests.csproj `
+            --configuration Release `
+            --no-build `
+            -p:RunWpfAcceptance=true `
+            --filter "TestCategory=stage7&TestCategory=wpf" `
+            --logger "trx;LogFileName=stage7-wpf-first.trx" `
+            --results-directory artifacts/wpf-test-results
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet test tests/Trading.UI.Wpf.AcceptanceTests/Trading.UI.Wpf.AcceptanceTests.csproj `
+            --configuration Release `
+            --no-build `
+            -p:RunWpfAcceptance=true `
+            --filter "TestCategory=stage7&TestCategory=wpf" `
+            --logger "trx;LogFileName=stage7-wpf-second.trx" `
+            --results-directory artifacts/wpf-test-results
+
       - name: Publish test results and diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

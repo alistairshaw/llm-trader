@@ -20,7 +20,6 @@ namespace Trading.UI.Wpf.AcceptanceTests.Features
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Review Research and Proposals through WPF")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage7")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("ui")]
@@ -36,8 +35,7 @@ namespace Trading.UI.Wpf.AcceptanceTests.Features
                 "acceptance",
                 "ui",
                 "windows",
-                "wpf",
-                "ignore"};
+                "wpf"};
 
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features", "Review Research and Proposals through WPF", "  Operators can inspect evidence and make authorized human decisions without gran" +
                 "ting model authority.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

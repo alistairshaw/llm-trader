@@ -1,4 +1,4 @@
-@stage7 @acceptance @ui @windows @wpf @ignore
+@stage7 @acceptance @ui @windows @wpf
 Feature: Operate Trading Bots through WPF
   Authorized operators manage bots and observe their bounded work through accessible controls.
 
