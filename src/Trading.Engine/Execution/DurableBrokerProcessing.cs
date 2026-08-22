@@ -135,7 +135,8 @@ public sealed class BrokerInboxProcessor(IBrokerInboxRepository repository, IBro
             catch (DurableBrokerTransientException exception) { result = new(DurableBrokerDispatchDisposition.Retryable, exception.Code); }
             catch (Exception) { result = new(DurableBrokerDispatchDisposition.Terminal, DurableBrokerProcessingCodes.TerminalFailure); }
             var code = DurableBrokerPayload.Code(result.Code, DurableBrokerProcessingCodes.TerminalFailure);
-            if (result.Disposition == DurableBrokerDispatchDisposition.Completed)
+            if (result.Disposition == DurableBrokerDispatchDisposition.Finalized) completed++;
+            else if (result.Disposition == DurableBrokerDispatchDisposition.Completed)
             { if (await IsSuccess(repository.CompleteAsync(message.Id, owner, code, clock.UtcNow, cancellationToken)).ConfigureAwait(false)) completed++; else leaseLost++; }
             else if (result.Disposition == DurableBrokerDispatchDisposition.Retryable && message.Attempt < options.MaximumAttempts)
             { if (await RetryAsync(message, code, cancellationToken).ConfigureAwait(false)) retried++; else leaseLost++; }

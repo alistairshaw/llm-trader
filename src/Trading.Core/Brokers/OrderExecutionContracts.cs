@@ -134,7 +134,7 @@ public sealed record BrokerCancellationResult(BrokerCancellationOutcome Outcome,
     public DateTimeOffset CompletedAt { get; } = BrokerContractValidation.Utc(CompletedAt, nameof(CompletedAt));
 }
 
-public enum BrokerOrderEventKind { Acknowledged, Rejected, Cancelled, Expired, Execution }
+public enum BrokerOrderEventKind { Acknowledged, Rejected, CancelRequested, Cancelled, Expired, Execution }
 public sealed record BrokerExecution(
     string ExecutionId,
     Quantity Quantity,

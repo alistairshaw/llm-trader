@@ -4,10 +4,11 @@ using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
 using Trading.Core.Orders;
 using Trading.Core.Persistence;
+using Trading.Core.Proposals;
 
 namespace Trading.Data.Tests.Repositories;
 
-[Category("OrderRepositories"), Category("DurableBrokerWork")]
+[Category("OrderRepositories"), Category("DurableBrokerWork"), Category("BrokerInboxOutbox")]
 public sealed class OrderExecutionRepositoryTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 22, 12, 0, 0, TimeSpan.Zero);
@@ -67,6 +68,93 @@ public sealed class OrderExecutionRepositoryTests
         foreach (var minute in new[] { 2, 1 }) Assert.That(await reconciliations.AppendAsync(new(Guid.NewGuid().ToString("N"), fixture.Ids.Account, "Matched", Now.AddMinutes(minute), Now.AddMinutes(minute), "{}", "{}", "{}", new($"corr-{minute}"), new string((char)('a' + minute), 64)), default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
         Assert.That((await reconciliations.ListAsync(fixture.Ids.Account, default)).Select(x => x.StartedAt), Is.Ordered);
         Assert.That(await reconciliations.ListAsync(BrokerAccountId.New(), default), Is.Empty);
+    }
+
+    [Test, Category("BrokerOrderEvents")]
+    public async Task BrokerAcknowledgementAtomicallyTransitionsOrderAndCompletesClaimedInbox()
+    {
+        await using var fixture = await SeedAsync();
+        var orderRepository = new OrderRepository(fixture.Database.Context);
+        var order = NewOrder(fixture.Ids);
+        var envelope = new OrderPersistenceEnvelope(order, null, new("corr-order-event"));
+        Assert.That(await orderRepository.AddAsync(envelope, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        order.BeginSubmission(OrderTransitionId.New(), Now.AddSeconds(1));
+        Assert.That(await orderRepository.SaveAsync(envelope, 0, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        fixture.Database.Context.ChangeTracker.Clear();
+        order.MarkSubmitted(OrderTransitionId.New(), Now.AddSeconds(2));
+        Assert.That(await orderRepository.SaveAsync(envelope, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        fixture.Database.Context.ChangeTracker.Clear();
+
+        var inboxRepository = new BrokerInboxRepository(fixture.Database.Context);
+        var message = new BrokerInboxEnvelope(BrokerMessageId.New(), "ack:" + order.ClientOrderId,
+            "{\"event\":\"ack\"}", new("corr-order-event"), Now.AddSeconds(4));
+        Assert.That(await inboxRepository.ReceiveAsync(message, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        var claimed = await inboxRepository.ClaimAsync(1, Now.AddSeconds(4),
+            new("worker", Now.AddMinutes(1)), default);
+        Assert.That(claimed, Has.Count.EqualTo(1));
+
+        var result = await new BrokerOrderEventRepository(fixture.Database.Context).ApplyAsync(
+            new(claimed[0], "worker", fixture.Ids.Account, "Paper",
+                new ClientOrderIdentity(order.ClientOrderId), "broker-order-1",
+                BrokerOrderEventKind.Acknowledged, "broker.acknowledged", Now.AddSeconds(3),
+                Now.AddSeconds(4)), default);
+
+        fixture.Database.Context.ChangeTracker.Clear();
+        var loaded = await orderRepository.FindByClientOrderIdAsync(
+            new ClientOrderIdentity(order.ClientOrderId), fixture.Ids.Account, default);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Disposition, Is.EqualTo(BrokerOrderEventWriteDisposition.Applied));
+            Assert.That(loaded!.Status, Is.EqualTo(OrderStatus.Acknowledged));
+            Assert.That(loaded.BrokerOrderId, Is.EqualTo("broker-order-1"));
+            Assert.That(loaded.Transitions[^1].Reason, Is.EqualTo("broker.acknowledged"));
+        });
+        Assert.That(await inboxRepository.ClaimAsync(1, Now.AddMinutes(2),
+            new("other", Now.AddMinutes(3)), default), Is.Empty);
+    }
+
+    [Test, Category("BrokerOrderEvents")]
+    public async Task BrokerRejectionReleasesTheActiveReservationExactlyOnce()
+    {
+        await using var fixture = await SeedAsync();
+        var reservationId = CapitalReservationId.New();
+        await fixture.Database.Context.Database.ExecuteSqlRawAsync(
+            "INSERT INTO capital_reservations (id,portfolio_id,trade_proposal_id,order_id,amount,currency,status,created_at,expires_at,consumed_at,released_at,version) VALUES ({0},{1},{2},NULL,'100','USD','Active',{3},{4},NULL,NULL,1)",
+            reservationId.ToString(), fixture.Ids.Portfolio.ToString(), fixture.Ids.Proposal.ToString(),
+            Now.ToUnixTimeMilliseconds(), Now.AddHours(1).ToUnixTimeMilliseconds());
+        var order = NewOrder(fixture.Ids);
+        var orderRepository = new OrderRepository(fixture.Database.Context);
+        var envelope = new OrderPersistenceEnvelope(order, reservationId, new("corr-rejection"));
+        Assert.That(await orderRepository.AddAsync(envelope, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        order.BeginSubmission(OrderTransitionId.New(), Now.AddSeconds(1));
+        Assert.That(await orderRepository.SaveAsync(envelope, 0, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        fixture.Database.Context.ChangeTracker.Clear();
+        order.MarkSubmitted(OrderTransitionId.New(), Now.AddSeconds(2));
+        Assert.That(await orderRepository.SaveAsync(envelope, 1, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        fixture.Database.Context.ChangeTracker.Clear();
+
+        var inbox = new BrokerInboxRepository(fixture.Database.Context);
+        var message = new BrokerInboxEnvelope(BrokerMessageId.New(), "reject:" + order.ClientOrderId,
+            "{\"event\":\"reject\"}", new("corr-rejection"), Now.AddSeconds(4));
+        Assert.That(await inbox.ReceiveAsync(message, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        var claimed = await inbox.ClaimAsync(1, Now.AddSeconds(4), new("worker", Now.AddMinutes(1)), default);
+        var repository = new BrokerOrderEventRepository(fixture.Database.Context);
+        Assert.That((await repository.ApplyAsync(new(claimed[0], "worker", fixture.Ids.Account, "Paper",
+            new ClientOrderIdentity(order.ClientOrderId), null, BrokerOrderEventKind.Rejected,
+            "broker.rejected", Now.AddSeconds(3), Now.AddSeconds(4)), default)).Disposition,
+            Is.EqualTo(BrokerOrderEventWriteDisposition.Applied));
+
+        fixture.Database.Context.ChangeTracker.Clear();
+        var reservation = await new CapitalReservationRepository(fixture.Database.Context)
+            .GetAsync(reservationId, default);
+        var loaded = await orderRepository.FindByClientOrderIdAsync(
+            new ClientOrderIdentity(order.ClientOrderId), fixture.Ids.Account, default);
+        Assert.Multiple(() =>
+        {
+            Assert.That(loaded!.Status, Is.EqualTo(OrderStatus.Rejected));
+            Assert.That(reservation!.Status, Is.EqualTo(CapitalReservationStatus.Released));
+            Assert.That(reservation.ReleasedAt, Is.EqualTo(Now.AddSeconds(4)));
+        });
     }
 
     private static Order NewOrder(SeedIds x) => new(OrderId.New(), "client-" + Guid.NewGuid().ToString("N"), x.Portfolio, x.Account, x.Proposal, x.Instrument, OrderSide.Buy, new Quantity(10, "shares"), Currency.USD, OrderType.Market, null, TimeInForce.Day, Now);

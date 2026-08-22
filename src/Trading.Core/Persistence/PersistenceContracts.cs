@@ -483,6 +483,26 @@ public interface IBrokerInboxRepository
     Task<PersistenceWriteResult> FailAsync(BrokerMessageId id, string owner, string errorCode, DateTimeOffset failedAt, CancellationToken token);
 }
 
+public sealed record ApplyBrokerOrderEventCommand(
+    BrokerInboxEnvelope Message,
+    string LeaseOwner,
+    BrokerAccountId BrokerAccountId,
+    string Environment,
+    ClientOrderIdentity ClientOrderId,
+    string? BrokerOrderId,
+    BrokerOrderEventKind Kind,
+    string Code,
+    DateTimeOffset OccurredAt,
+    DateTimeOffset ProcessedAt);
+
+public enum BrokerOrderEventWriteDisposition { Applied, Duplicate, Deferred, Reconcile, Rejected, Contention }
+public sealed record BrokerOrderEventWriteResult(BrokerOrderEventWriteDisposition Disposition, string Code);
+
+public interface IBrokerOrderEventRepository
+{
+    Task<BrokerOrderEventWriteResult> ApplyAsync(ApplyBrokerOrderEventCommand command, CancellationToken token);
+}
+
 public sealed record PortfolioSummary(
     PortfolioId Id,
     string Name,

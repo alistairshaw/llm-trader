@@ -567,6 +567,11 @@ Normalized outcomes use stable codes for accepted, rejected, unknown, retryable,
 and uncertain results. Unknown submission outcomes permit reconciliation only; they never authorize blind resubmission.
 Durable inbox and outbox envelopes contain bounded canonical payloads and stable idempotency keys.
 
+Normalized paper order-status events are authorized against both the client and broker identities before mutation.
+Acknowledgement, cancel request, rejection, cancellation, and expiration use the Order transition matrix; duplicate
+events are idempotent, terminal Orders cannot reactivate, and stale or conflicting events produce reconciliation or a
+stable safe disposition. Execution events are handed to the separate atomic fill-accounting boundary.
+
 `Fill` is an `Order` child for the MVP and may become an aggregate root if it later develops an independent lifecycle.
 
 ## 10. Risk Model

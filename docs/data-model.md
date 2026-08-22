@@ -691,6 +691,13 @@ Inbox receipt is idempotent before dispatch. The bounded processor applies the s
 retry, terminalization, cancellation, and independent-failure rules as outbox processing. Business dispatch therefore
 observes a canonical message once even if its source delivery or worker execution is repeated.
 
+Stage 6 broker-order event dispatch accepts only the versioned canonical paper schema and pins the Broker Account,
+client order ID, optional broker order ID, stable event code, kind, and UTC occurrence time. A claimed message is
+completed in the same transaction that conditionally advances the Order, appends its immutable transition, releases
+an active remaining-capital reservation for terminal non-fill outcomes, and schedules reconciliation when required.
+Unknown Orders, identity or environment mismatches, stale messages, impossible transitions, fill conflicts, and
+duplicates retain stable durable dispositions. Lease or Order contention rolls back the entire operation for retry.
+
 ### 11.3 `schema_metadata`
 
 Key/value records containing `key`, `value`, and `updated_at` track application data-format versions independently of EF Core's migrations-history table.
