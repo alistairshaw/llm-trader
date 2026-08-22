@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Trading.Core.Persistence;
+using Trading.Engine.Runtime;
 using Trading.Host;
 
 namespace Trading.IntegrationTests;
@@ -8,6 +10,49 @@ namespace Trading.IntegrationTests;
 [TestFixture, Category("HostLifecycle"), Category("WpfHostLifecycle")]
 public sealed class WpfHostLifecycleTests
 {
+    private static readonly string[] ExpectedProfilePortfolios = ["smoke portfolio", "smoke portfolio two"];
+
+    [Test, Category("WpfTestProfile")]
+    public async Task DeterministicProfileMigratesSeedsPaperJourneysAndCleansUpOnFirstAttempt()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"trading-wpf-profile-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var database = Path.Combine(directory, "trading.db");
+        try
+        {
+            var host = HostBootstrap.Build([], builder => builder.Configuration.AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["Trading:Mode"] = "Simulated",
+                    ["Trading:DataDirectory"] = directory,
+                    ["Trading:OperatorMode"] = "true",
+                    ["Trading:WpfTestProfile"] = "true",
+                    ["Research:Mode"] = "Fixture",
+                }));
+            await using var lifecycle = new TradingApplicationLifecycle(host, TimeSpan.FromSeconds(10));
+
+            await lifecycle.StartAsync(default);
+            await using (var scope = host.Services.CreateAsyncScope())
+            {
+                var portfolios = await scope.ServiceProvider.GetRequiredService<IPortfolioQueries>()
+                    .GetPortfoliosAsync(new PortfolioQueryFilter(), new PageRequest(0, 10), default);
+                Assert.That(portfolios, Has.Count.EqualTo(2));
+                Assert.That(portfolios.Select(x => x.Name), Is.EquivalentTo(ExpectedProfilePortfolios));
+                Assert.That(host.Services.GetRequiredService<IUtcClock>().UtcNow,
+                    Is.EqualTo(new DateTimeOffset(2026, 8, 20, 23, 0, 0, TimeSpan.Zero)));
+            }
+
+            await lifecycle.StopAsync();
+            File.Delete(database);
+            Assert.That(File.Exists(database), Is.False);
+        }
+        finally
+        {
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            Assert.That(Directory.Exists(directory), Is.False);
+        }
+    }
+
     [Test]
     public async Task ReadinessFollowsMigrationAndRecoveryAndDisposalReleasesDatabaseImmediately()
     {

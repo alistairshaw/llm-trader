@@ -18,6 +18,7 @@
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\KillSwitchViewModel.cs" Link="Production\ViewModels\KillSwitchViewModel.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\Services\OperatorUpdates.cs" Link="Production\Services\OperatorUpdates.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\Services\LiveWorkspaceUpdater.cs" Link="Production\Services\LiveWorkspaceUpdater.cs" />
+    <Compile Include="..\..\src\Trading.UI.Wpf\Services\WpfTestProfileRuntime.cs" Link="Production\Services\WpfTestProfileRuntime.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\Trading.UI.Wpf\MainWindow.xaml" Link="MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />

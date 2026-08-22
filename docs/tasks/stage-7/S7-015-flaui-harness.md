@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-015
 title: Build Windows FlaUI automation harness
 stage: 7
-status: planned
+status: ready
 priority: 780
 type: test
 depends_on: [S7-014]
@@ -38,4 +38,3 @@ Build; publish-wpf; HarnessSmoke WPF acceptance; full tests; format.
 
 ## Completion Notes
 Pending implementation.
-

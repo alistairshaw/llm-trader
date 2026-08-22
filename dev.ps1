@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0, Mandatory = $true)]
-    [ValidateSet('restore', 'build', 'format', 'test', 'run', 'solution-list', 'reference-list', 'verify-build-conventions')]
+    [ValidateSet('restore', 'build', 'format', 'test', 'run', 'publish-wpf', 'run-wpf', 'solution-list', 'reference-list', 'verify-build-conventions')]
     [string] $Command,
 
     [string] $Project,
@@ -37,6 +37,40 @@ switch ($Command) {
     'run' {
         & docker compose run --build --rm --no-deps -e Trading__SmokeMode=true trading-host
         exit $LASTEXITCODE
+    }
+    'publish-wpf' {
+        & docker compose run --rm --no-deps dev dotnet publish src/Trading.UI.Wpf/Trading.UI.Wpf.csproj --configuration Release --no-restore --output /workspace/artifacts/wpf/win-x64
+        exit $LASTEXITCODE
+    }
+    'run-wpf' {
+        & $PSCommandPath publish-wpf
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+        $executable = Join-Path $PSScriptRoot 'artifacts\wpf\win-x64\Trading.UI.Wpf.exe'
+        if (-not (Test-Path -LiteralPath $executable)) { throw "Published WPF executable was not found at $executable." }
+        $runId = [Guid]::NewGuid().ToString('N')
+        $runtimeDirectory = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) "LlmTrader\WpfTestRuns\$runId"
+        $readyFile = Join-Path $runtimeDirectory 'ready.json'
+        $shutdownFile = Join-Path $runtimeDirectory 'shutdown.json'
+        [System.IO.Directory]::CreateDirectory($runtimeDirectory) | Out-Null
+        $startInfo = [System.Diagnostics.ProcessStartInfo]::new($executable)
+        $startInfo.UseShellExecute = $false
+        $startInfo.Environment['LLM_TRADER_WPF_TEST_PROFILE'] = '1'
+        $startInfo.Environment['LLM_TRADER_WPF_RUN_ID'] = $runId
+        $startInfo.Environment['LLM_TRADER_WPF_DATA_DIRECTORY'] = $runtimeDirectory
+        $startInfo.Environment['LLM_TRADER_WPF_READY_FILE'] = $readyFile
+        $startInfo.Environment['LLM_TRADER_WPF_SHUTDOWN_FILE'] = $shutdownFile
+        $process = [System.Diagnostics.Process]::Start($startInfo)
+        if ($null -eq $process) { throw 'The WPF process could not be started.' }
+        try {
+            $process.WaitForExit()
+            if (-not (Test-Path -LiteralPath $shutdownFile)) { throw 'The WPF process did not publish its bounded shutdown signal.' }
+            exit $process.ExitCode
+        }
+        finally {
+            $process.Dispose()
+            Remove-Item -LiteralPath $runtimeDirectory -Recurse -Force
+        }
     }
     'solution-list' {
         $toolArguments = @('dotnet', 'sln', 'TradingBot.sln', 'list')

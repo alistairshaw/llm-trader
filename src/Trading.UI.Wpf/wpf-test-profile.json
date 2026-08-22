@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "profile": "deterministic-paper",
+  "runtime": "win-x64",
+  "selfContained": true,
+  "networkAuthority": false,
+  "credentialAuthority": false,
+  "liveTradingAuthority": false,
+  "researchProvider": "fixture",
+  "brokerEnvironment": "paper"
+}

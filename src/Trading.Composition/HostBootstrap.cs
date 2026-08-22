@@ -33,6 +33,7 @@ public sealed class TradingHostOptions
     public bool SmokeMode { get; init; }
     public bool ExecutePaperSmoke { get; init; } = true;
     public bool OperatorMode { get; init; }
+    public bool WpfTestProfile { get; init; }
     public int GlobalRunConcurrency { get; init; } = 1;
     public int QueueCapacity { get; init; } = 16;
     public int LeaseSeconds { get; init; } = 300;
@@ -178,7 +179,7 @@ public static class HostBootstrap
         builder.Services.AddSingleton(databaseOptions);
         builder.Services.AddSingleton(databaseIdentity);
         builder.Services.AddSingleton<RuntimeReadiness>();
-        builder.Services.AddSingleton<HostClock>(_ => new(options.SmokeMode ? new DateTimeOffset(2026, 8, 20, 23, 0, 0, TimeSpan.Zero) : null));
+        builder.Services.AddSingleton<HostClock>(_ => new(options.SmokeMode || options.WpfTestProfile ? new DateTimeOffset(2026, 8, 20, 23, 0, 0, TimeSpan.Zero) : null));
         builder.Services.AddSingleton<IUtcClock>(x => x.GetRequiredService<HostClock>());
         builder.Services.AddSingleton<IResearchClock>(x => x.GetRequiredService<HostClock>());
         builder.Services.AddSingleton<IRuntimeIdentifierGenerator, RuntimeIdentifiers>();
@@ -268,7 +269,7 @@ public static class HostBootstrap
         builder.Services.AddScoped<IHumanProposalDecisionService, HumanProposalDecisionService>();
         builder.Services.AddScoped<ICapitalReservationService, CapitalReservationService>();
         builder.Services.AddScoped<IProposalGovernanceOrchestrator, ProposalGovernanceOrchestrator>();
-        AddResearch(builder.Services, research, options.SmokeMode);
+        AddResearch(builder.Services, research, options.SmokeMode || options.WpfTestProfile);
         builder.Services.AddScoped<TradingBotResearchToolDispatcher>();
         builder.Services.AddScoped<IToolDispatcher, ProposalToolDispatcher>();
         builder.Services.AddHostedService<TradingRuntimeHostedService>();
@@ -344,12 +345,12 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
             await using var scope = scopes.CreateAsyncScope();
             var services = scope.ServiceProvider;
             await services.GetRequiredService<DatabaseInitializer>().InitializeAsync(stoppingToken);
-            if (options.SmokeMode) await SmokeFixture.SeedAsync(services, stoppingToken);
+            if (options.SmokeMode || options.WpfTestProfile) await SmokeFixture.SeedAsync(services, stoppingToken);
             var researchRecovery = await services.GetRequiredService<ResearchRestartRecovery>().RecoverAsync(stoppingToken);
             var recovery = await services.GetRequiredService<RuntimeRecoveryService>().RecoverExpiredLeasesAsync(stoppingToken);
             var paperRecovery = await services.GetRequiredService<PaperExecutionRecoveryService>().RecoverAndDrainAsync(stoppingToken);
             if (!paperRecovery.IsReady) throw new InvalidOperationException("Paper execution recovery did not reach readiness.");
-            var ids = options.SmokeMode ? [SmokeFixture.BotId, SmokeFixture.BotTwoId] : options.BotIds.Select(TradingBotId.Parse).ToArray();
+            var ids = options.SmokeMode || options.WpfTestProfile ? [SmokeFixture.BotId, SmokeFixture.BotTwoId] : options.BotIds.Select(TradingBotId.Parse).ToArray();
             foreach (var id in ids) await ValidateBotAsync(services, id, stoppingToken);
             supervisor = new MultiBotSupervisor(new MultiBotSupervisorOptions { GlobalRunConcurrency = options.GlobalRunConcurrency, QueueCapacity = options.QueueCapacity }, services.GetRequiredService<BotRunOrchestrationService>());
             readiness.MarkReady();

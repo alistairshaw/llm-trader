@@ -119,6 +119,20 @@ This is the default desktop feedback loop:
 3. Launch the generated self-contained application on the Windows host.
 4. Repeat after changes.
 
+`./dev.ps1 publish-wpf` performs the locked `win-x64` self-contained publish inside the Linux SDK container and
+writes only to the ignored `artifacts/wpf/win-x64` directory. The publish includes `wpf-test-profile.json`, a
+machine-readable declaration that the automation profile has fixture Research, paper broker identity, and no network,
+credential, or live-trading authority. `./dev.ps1 run-wpf` republishes, launches that executable without a host .NET
+runtime, and gives the process a unique directory below `%LOCALAPPDATA%\LlmTrader\WpfTestRuns`. The launcher waits for
+normal process exit, requires the redacted shutdown signal, and deletes that database, WAL, signals, and other runtime
+artifacts on the first attempt.
+
+The explicit WPF test profile migrates a fresh SQLite database, uses the fixed UTC fixture clock and stable smoke
+identities, seeds two operator Bot/Portfolio journeys, fixture Research, and the simulated paper broker, and has no
+configuration surface for credentials or network providers. It atomically writes bounded `ready.json` and
+`shutdown.json` documents inside its isolated run directory. Startup failures expose only a bounded alphanumeric phase
+and exception code. These signals are automation seams, not an external control or authorization channel.
+
 The host process runs outside Docker, so it must use host-accessible local configuration and storage. Its development database must still remain outside the OneDrive source tree. The launcher should assign a per-developer data directory under a non-synchronized local application-data location and set safe simulated or research-only defaults.
 
 A self-contained artifact is larger than a framework-dependent build, but it keeps the host free of a separately installed .NET runtime and makes the tested runtime version explicit. We can add a faster framework-dependent option later if developers choose to install the matching runtime.

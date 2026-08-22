@@ -13,25 +13,29 @@ namespace Trading.UI.Wpf;
 public partial class App : Application, IAsyncDisposable
 {
     private TradingApplicationLifecycle? lifecycle;
+    private WpfTestProfileRuntime? testProfile;
     private bool closing;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        var dataDirectory = Path.Combine(
+        testProfile = WpfTestProfileRuntime.FromEnvironment();
+        var dataDirectory = testProfile?.DataDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LlmTrader");
-        var host = HostBootstrap.Build(e.Args, builder => builder.Configuration.AddInMemoryCollection(
-            new Dictionary<string, string?>
-            {
-                ["Trading:Mode"] = "Simulated",
-                ["Trading:DataDirectory"] = dataDirectory,
-                ["Trading:OperatorMode"] = "true",
-                ["Research:Mode"] = "Fixture",
-            }));
+        var configuration = testProfile?.Configuration ?? new Dictionary<string, string?>
+        {
+            ["Trading:Mode"] = "Simulated",
+            ["Trading:DataDirectory"] = dataDirectory,
+            ["Trading:OperatorMode"] = "true",
+            ["Research:Mode"] = "Fixture",
+        };
+        var host = HostBootstrap.Build(e.Args, builder => builder.Configuration.AddInMemoryCollection(configuration));
         lifecycle = new(host, TimeSpan.FromSeconds(30));
+        var startupPhase = "host-start";
         try
         {
             await lifecycle.StartAsync(CancellationToken.None);
+            startupPhase = "service-resolution";
             var queries = lifecycle.Services.GetService<IOperatorQueries>();
             var botService = lifecycle.Services.GetService<IBotOperatorService>();
             var runService = lifecycle.Services.GetService<IRunOperatorService>();
@@ -41,6 +45,7 @@ public partial class App : Application, IAsyncDisposable
             var principal = lifecycle.Services.GetService<OperatorPrincipal>();
             var updates = new PollingOperatorUpdateSource(TimeSpan.FromSeconds(2));
             var dispatcher = new WpfUiDispatcher(Dispatcher);
+            startupPhase = "window-construction";
             var window = queries is not null && botService is not null && runService is not null && researchService is not null && proposalService is not null && killSwitchService is not null && principal is not null
                 ? new MainWindow(new WpfNavigationPageFactory(
                     () => new BotManagementViewModel(queries, botService, principal),
@@ -54,10 +59,13 @@ public partial class App : Application, IAsyncDisposable
             window.Closing += OnMainWindowClosing;
             MainWindow = window;
             ShutdownMode = ShutdownMode.OnMainWindowClose;
+            startupPhase = "window-show";
             window.Show();
+            testProfile?.PublishReady();
         }
         catch (Exception exception)
         {
+            testProfile?.PublishFailed($"{startupPhase}.{exception.GetType().Name}.{exception.Message}");
             MessageBox.Show($"Trading Bot could not start.\n\n{exception.Message}", "Startup failed",
                 MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
@@ -70,6 +78,7 @@ public partial class App : Application, IAsyncDisposable
         e.Cancel = true;
         closing = true;
         if (lifecycle is not null) await lifecycle.StopAsync();
+        testProfile?.PublishStopped();
         if (sender is Window window)
         {
             window.Closing -= OnMainWindowClosing;
@@ -80,6 +89,7 @@ public partial class App : Application, IAsyncDisposable
     protected override void OnExit(ExitEventArgs e)
     {
         lifecycle?.StopAsync().GetAwaiter().GetResult();
+        testProfile?.PublishStopped();
         base.OnExit(e);
     }
 
