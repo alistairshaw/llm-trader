@@ -655,6 +655,11 @@ eligible-work ordering and `(status, lease_expires_at)` supports stale-claim rec
 Order, work kind, source identity, payload, hash, correlation, and creation time while permitting retry and lease state
 to advance. `Claimed` rows require a complete owner/expiry pair; terminal rows require `completed_at`.
 
+The outbox processor claims a bounded batch in one committed transaction, renews ownership before external broker I/O,
+and records the normalized result in a later conditional update. Retry delays use capped exponential backoff. Malformed
+or non-canonical payloads, exhausted attempts, and terminal adapter failures become `Failed` with stable redacted codes;
+cancellation returns claimed work to `Pending`. One item's failure does not prevent later claimed items from advancing.
+
 ### 11.2 `inbox_messages`
 
 Columns exactly represent `BrokerInboxEnvelope` plus durable processing state: broker message `id`, unique bounded
@@ -666,6 +671,10 @@ Unique `idempotency_key` deduplicates broker events. `(status, available_at, rec
 eligible messages and `(status, lease_expires_at)` supports stale-claim recovery. The broker message identity,
 idempotency key, correlation, received payload, hash, and receipt time are immutable after insertion; processing state
 advances independently under the same lease and terminal-state constraints as outbox work.
+
+Inbox receipt is idempotent before dispatch. The bounded processor applies the same committed-claim, lease-renewal,
+retry, terminalization, cancellation, and independent-failure rules as outbox processing. Business dispatch therefore
+observes a canonical message once even if its source delivery or worker execution is repeated.
 
 ### 11.3 `schema_metadata`
 

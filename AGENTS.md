@@ -133,6 +133,9 @@ If documents disagree, identify the disagreement explicitly and resolve it in do
 - LLMs may research and create structured proposals. They may not approve, reserve capital, submit orders, weaken policy, alter published reports, or expand their own permissions.
 - Preserve bot, portfolio, account, report-visibility, and artifact isolation.
 - Make material transitions explicit, idempotent, auditable, and recoverable.
+- Implement durable inbox/outbox claim, renewal, retry, completion, and failure changes as conditional server-side
+  updates. Do not rely on tracked EF entities after `ExecuteUpdateAsync`; the change tracker can retain pre-claim lease
+  state and falsely reject the current owner.
 - Keep durable tool-audit arguments, results, usage, timings, and errors canonical and bounded; redact diagnostic detail rather than persisting secrets or unbounded provider payloads.
 - Canonicalize and hash Research report content before persistence; validate every citation against provenance retrieved by the same run, and publish report, provenance, request completion, and refresh supersession in one transaction.
 - Mark a Research subscription delivered only in the same transaction that creates its source-keyed Trading Bot trigger; retry subscriber delivery independently and never expose report facts outside the subscription's visibility.

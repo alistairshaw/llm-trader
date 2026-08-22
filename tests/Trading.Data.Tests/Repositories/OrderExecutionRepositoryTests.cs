@@ -44,9 +44,12 @@ public sealed class OrderExecutionRepositoryTests
         Assert.That(first, Has.Count.EqualTo(1)); Assert.That(await repository.ClaimAsync(1, Now, new("owner-b", Now.AddMinutes(1)), default), Is.Empty);
         var recovered = await repository.ClaimAsync(1, Now.AddMinutes(2), new("owner-b", Now.AddMinutes(3)), default);
         Assert.That(recovered.Single().Attempt, Is.EqualTo(2));
+        Assert.That(await repository.RenewAsync(work.Id, "owner-b", Now.AddMinutes(4), default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
         Assert.That(await repository.RetryAsync(work.Id, "owner-b", "broker.retryable", Now.AddMinutes(5), default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
         Assert.That(await repository.ClaimAsync(1, Now.AddMinutes(4), new("owner-c", Now.AddMinutes(6)), default), Is.Empty);
         Assert.That(await repository.ClaimAsync(1, Now.AddMinutes(5), new("owner-c", Now.AddMinutes(6)), default), Has.Count.EqualTo(1));
+        Assert.That(await repository.FailAsync(work.Id, "owner-c", "broker_work.retry_exhausted", Now.AddMinutes(6), default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
+        Assert.That(await repository.ClaimAsync(1, Now.AddMinutes(7), new("owner-d", Now.AddMinutes(8)), default), Is.Empty);
     }
 
     [Test]
@@ -55,7 +58,10 @@ public sealed class OrderExecutionRepositoryTests
         await using var fixture = await SeedAsync(); var inbox = new BrokerInboxRepository(fixture.Database.Context); var message = new BrokerInboxEnvelope(BrokerMessageId.New(), "event-1", "{\"a\":1}", new("corr-event"), Now);
         Assert.That(await inbox.ReceiveAsync(message, default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
         Assert.That(await inbox.ReceiveAsync(message with { Id = BrokerMessageId.New() }, default), Is.TypeOf<PersistenceWriteResult.UniquenessConflict>());
-        Assert.That(await inbox.ClaimAsync(1, Now, new("owner", Now.AddMinutes(1)), default), Has.Count.EqualTo(1));
+        var claimed = await inbox.ClaimAsync(1, Now, new("owner", Now.AddMinutes(1)), default);
+        Assert.That(claimed, Has.Count.EqualTo(1));
+        Assert.That(claimed.Single().Attempt, Is.EqualTo(1));
+        Assert.That(await inbox.RenewAsync(message.Id, "owner", Now.AddMinutes(2), default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
         Assert.That(await inbox.CompleteAsync(message.Id, "owner", "broker.accepted", Now.AddSeconds(1), default), Is.TypeOf<PersistenceWriteResult.Succeeded>());
         var reconciliations = new BrokerReconciliationRepository(fixture.Database.Context);
         foreach (var minute in new[] { 2, 1 }) Assert.That(await reconciliations.AppendAsync(new(Guid.NewGuid().ToString("N"), fixture.Ids.Account, "Matched", Now.AddMinutes(minute), Now.AddMinutes(minute), "{}", "{}", "{}", new($"corr-{minute}"), new string((char)('a' + minute), 64)), default), Is.TypeOf<PersistenceWriteResult.Succeeded>());

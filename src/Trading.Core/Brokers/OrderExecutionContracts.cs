@@ -198,11 +198,13 @@ public sealed record BrokerInboxEnvelope(
     string IdempotencyKey,
     string CanonicalPayload,
     CorrelationIdentity CorrelationId,
-    DateTimeOffset ReceivedAt)
+    DateTimeOffset ReceivedAt,
+    int Attempt = 0)
 {
     public string IdempotencyKey { get; } = BrokerContractValidation.Required(IdempotencyKey, nameof(IdempotencyKey), 200);
     public string CanonicalPayload { get; } = BrokerContractValidation.Required(CanonicalPayload, nameof(CanonicalPayload), 16_384);
     public DateTimeOffset ReceivedAt { get; } = BrokerContractValidation.Utc(ReceivedAt, nameof(ReceivedAt));
+    public int Attempt { get; } = Attempt >= 0 ? Attempt : throw new ArgumentOutOfRangeException(nameof(Attempt));
 }
 
 internal static class BrokerContractValidation

@@ -336,6 +336,8 @@ public interface IOrderWorkRepository
     Task<IReadOnlyList<OrderWorkEnvelope>> ClaimAsync(int limit, DateTimeOffset now, DurableWorkLease lease, CancellationToken token);
     Task<PersistenceWriteResult> CompleteAsync(OrderWorkItemId id, string owner, string result, DateTimeOffset at, CancellationToken token);
     Task<PersistenceWriteResult> RetryAsync(OrderWorkItemId id, string owner, string errorCode, DateTimeOffset availableAt, CancellationToken token);
+    Task<PersistenceWriteResult> RenewAsync(OrderWorkItemId id, string owner, DateTimeOffset expiresAt, CancellationToken token);
+    Task<PersistenceWriteResult> FailAsync(OrderWorkItemId id, string owner, string errorCode, DateTimeOffset failedAt, CancellationToken token);
 }
 public interface IBrokerInboxRepository
 {
@@ -343,6 +345,8 @@ public interface IBrokerInboxRepository
     Task<IReadOnlyList<BrokerInboxEnvelope>> ClaimAsync(int limit, DateTimeOffset now, DurableWorkLease lease, CancellationToken token);
     Task<PersistenceWriteResult> CompleteAsync(BrokerMessageId id, string owner, string result, DateTimeOffset at, CancellationToken token);
     Task<PersistenceWriteResult> RetryAsync(BrokerMessageId id, string owner, string errorCode, DateTimeOffset availableAt, CancellationToken token);
+    Task<PersistenceWriteResult> RenewAsync(BrokerMessageId id, string owner, DateTimeOffset expiresAt, CancellationToken token);
+    Task<PersistenceWriteResult> FailAsync(BrokerMessageId id, string owner, string errorCode, DateTimeOffset failedAt, CancellationToken token);
 }
 
 public sealed record PortfolioSummary(
