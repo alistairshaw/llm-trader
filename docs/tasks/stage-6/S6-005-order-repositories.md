@@ -3,13 +3,15 @@ schema_version: 1
 id: S6-005
 title: Implement order execution repositories
 stage: 6
-status: planned
+status: blocked
 priority: 900
 type: data
-depends_on: [S6-004]
+depends_on: [S6-004, S6-017]
 labels: [repositories, orders, fills, reconciliation]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
+owner: s6_005
+blocked_reason: The S6-004 schema cannot exactly persist or rehydrate the S6-002 Order aggregate; S6-017 must align the schema first.
 ---
 
 # S6-005: Implement Order Execution Repositories
@@ -50,4 +52,9 @@ Use [Architecture — Persistence Design](../../architecture.md#13-persistence-d
 
 ## Completion Notes
 
-Pending.
+Blocked on 2026-08-22 before implementation. Inspection of the S6-004 EF model and migration found that
+`orders` omits the aggregate's currency and quantity unit, persists lifecycle tokens that do not match
+`OrderStatus`, and constrains `TimeInForce` to a differently spelled, incomplete token set. An exact repository
+round trip would therefore require inventing financial facts or ambiguous token translation. S6-017 records the
+required schema correction. No production or test files were changed and no .NET validation was applicable to
+this documentation-only blocker record.
