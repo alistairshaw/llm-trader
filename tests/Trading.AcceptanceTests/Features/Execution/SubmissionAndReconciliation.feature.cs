@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Execution
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Submit paper orders idempotently and reconcile uncertain outcomes")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage6")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("paper-trading")]
@@ -40,8 +39,7 @@ namespace Trading.AcceptanceTests.Features.Execution
                 "execution",
                 "idempotency",
                 "recovery",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Execution", "Submit paper orders idempotently and reconcile uncertain outcomes", "  Durable work and stable client identity prevent retries from creating duplicate" +
                 " broker orders.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

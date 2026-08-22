@@ -1,4 +1,4 @@
-@stage6 @acceptance @paper-trading @execution @idempotency @cross-platform @ignore
+@stage6 @acceptance @paper-trading @execution @idempotency @cross-platform
 Feature: Process broker order events safely
   Broker acknowledgements and terminal outcomes advance Orders once without corrupting valid state.
 

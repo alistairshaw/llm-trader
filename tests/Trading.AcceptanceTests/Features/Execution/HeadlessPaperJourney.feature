@@ -1,4 +1,4 @@
-@stage6 @acceptance @paper-trading @execution @accounting @recovery @cross-platform @ignore
+@stage6 @acceptance @paper-trading @execution @accounting @recovery @cross-platform
 Feature: Demonstrate the complete paper trading audit chain
   The deterministic headless host proves the first complete research-to-Fill trading slice.
 

@@ -1,4 +1,4 @@
-@stage6 @acceptance @paper-trading @execution @idempotency @cross-platform @ignore
+@stage6 @acceptance @paper-trading @execution @idempotency @cross-platform
 Feature: Convert an approved proposal into a paper order
   Only fresh, executable proposal authority can create an Order and its durable submission work.
 

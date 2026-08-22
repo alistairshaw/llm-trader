@@ -1,4 +1,4 @@
-@stage6 @acceptance @paper-trading @execution @recovery @idempotency @cross-platform @ignore
+@stage6 @acceptance @paper-trading @execution @recovery @idempotency @cross-platform
 Feature: Recover durable paper execution after restart
   Pending submission, reconciliation, broker events, and Fill accounting resume from persisted state.
 

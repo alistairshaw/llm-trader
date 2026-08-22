@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Execution
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Apply paper Fills atomically")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage6")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("paper-trading")]
@@ -42,8 +41,7 @@ namespace Trading.AcceptanceTests.Features.Execution
                 "accounting",
                 "idempotency",
                 "concurrency",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Execution", "Apply paper Fills atomically", "  Each unique Fill changes the Order, Position, ledger, and Reservation together " +
                 "using exact decimals.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

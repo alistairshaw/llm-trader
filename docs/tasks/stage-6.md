@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S6-015`](stage-6/S6-015-stage-6-acceptance.md) is the next ready task.
+[`S6-016`](stage-6/S6-016-stage-6-review.md) is the next ready task.
 
 ## Ordered Backlog
 
@@ -30,8 +30,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S6-013`](stage-6/S6-013-order-projections.md) | Build order, fill, and execution audit projections | Done | 740 | `S6-011` |
 | [`S6-014`](stage-6/S6-014-headless-paper-demo.md) | Demonstrate the complete paper workflow in the headless host | Done | 720 | `S6-012`, `S6-013` |
 | [`S6-020`](stage-6/S6-020-align-order-conversion-rejection-codes.md) | Align Proposal-to-Order rejection codes with the execution contract | Done | 980 | `S6-014` |
-| [`S6-015`](stage-6/S6-015-stage-6-acceptance.md) | Complete production-backed Stage 6 acceptance bindings | Ready | 700 | `S6-014`, `S6-020` |
-| [`S6-016`](stage-6/S6-016-stage-6-review.md) | Complete Stage 6 acceptance and review | Planned | 1000 | `S6-001`–`S6-015` |
+| [`S6-015`](stage-6/S6-015-stage-6-acceptance.md) | Complete production-backed Stage 6 acceptance bindings | Done | 700 | `S6-014`, `S6-020` |
+| [`S6-016`](stage-6/S6-016-stage-6-review.md) | Complete Stage 6 acceptance and review | Ready | 1000 | `S6-001`–`S6-015` |
 
 ## Stage Exit Gate
 
@@ -50,4 +50,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Stage 6 implementation is in progress. The executable acceptance contract is complete and 34 temporarily pending Stage 6 test cases are discoverable. Order and durable broker-work persistence exactly represent the Core contracts, durable work is processed with bounded leases and retries, approved paper Proposals convert atomically, unknown outcomes reconcile by client identity, and partial/final executions atomically update Fill audit, Orders, Positions, ledger facts, Reservations, and inbox completion. The deterministic headless host now demonstrates the complete governed research-to-final-Fill workflow with stable outcomes and zero live authority. `S6-015` is ready.
+Stage 6 implementation is complete pending final review. All 34 production-backed Stage 6 examples pass with zero pending or skipped cases. Order and durable broker-work persistence exactly represent the Core contracts, durable work is processed with bounded leases and retries, approved paper Proposals convert atomically, unknown outcomes reconcile by client identity, and partial/final executions atomically update Fill audit, Orders, Positions, ledger facts, Reservations, and inbox completion. The deterministic headless host demonstrates the complete governed research-to-final-Fill workflow with stable outcomes and zero live authority. `S6-016` is ready.

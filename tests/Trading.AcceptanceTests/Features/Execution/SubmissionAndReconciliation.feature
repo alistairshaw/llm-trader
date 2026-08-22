@@ -1,4 +1,4 @@
-@stage6 @acceptance @paper-trading @execution @idempotency @recovery @cross-platform @ignore
+@stage6 @acceptance @paper-trading @execution @idempotency @recovery @cross-platform
 Feature: Submit paper orders idempotently and reconcile uncertain outcomes
   Durable work and stable client identity prevent retries from creating duplicate broker orders.
 

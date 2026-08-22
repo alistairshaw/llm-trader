@@ -3,13 +3,13 @@ schema_version: 1
 id: S6-016
 title: Complete Stage 6 acceptance and review
 stage: 6
-status: planned
+status: ready
 priority: 1000
 type: test
 depends_on: [S6-001, S6-002, S6-003, S6-004, S6-005, S6-006, S6-007, S6-008, S6-009, S6-010, S6-011, S6-012, S6-013, S6-014, S6-015]
 labels: [review, ci, security, stage-gate]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
 # S6-016: Complete Stage 6 Acceptance and Review

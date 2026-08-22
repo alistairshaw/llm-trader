@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-015
 title: Complete production-backed Stage 6 acceptance bindings
 stage: 6
-status: ready
+status: done
 priority: 700
 type: acceptance
 depends_on: [S6-014, S6-020]
@@ -51,9 +51,16 @@ Use [Test Plan — Steps and Drivers](../../test-plan.md#103-steps-and-drivers),
 
 ## Completion Notes
 
-Initially blocked on 2026-08-22 after activating the production-backed bindings exposed a stable-contract mismatch. The committed
-scenarios require `order_execution.approval_required`, `order_execution.proposal_expired`, and
-`order_execution.fresh_validation_required`; production at discovery returned `order_conversion.proposal_not_approved`,
-`order_conversion.proposal_expired`, and `order_conversion.evaluation_mismatch`. The acceptance implementation was
-returned rather than weakening or translating the assertions. `S6-020` completed the production correction on
-2026-08-22, so this task is ready to resume.
+Completed on 2026-08-22 after `S6-020` aligned the production rejection codes with the committed contract.
+
+- Added thin Stage 6 Reqnroll bindings and a scenario-scoped production driver registering all 32 scenario names and
+  all 34 concrete examples, including the three terminal-outcome rows.
+- The driver boots `HostBootstrap` over a fresh migrated SQLite file with deterministic fixture Research, scripted
+  models, injected identities/time, and only the simulated paper broker. It observes the authorized
+  `IOrderExecutionQueries` projection and bounded audit chain without direct SQL or repository inspection.
+- Activated all six Stage 6 feature files, regenerated their checked-in feature code, and expanded traceability with
+  the complete production path.
+- Validation: `./dev.ps1 build` passed with zero warnings/errors; Stage 6 acceptance passed twice at 34 passed and zero
+  failed/skipped; `./dev.ps1 test` passed 1,148 tests with zero failed/skipped; `./dev.ps1 format` and
+  `git diff --check` passed. Migration and drift coverage passed within the full Data suite.
+- `S6-020` was the only follow-up. No ADR was required.

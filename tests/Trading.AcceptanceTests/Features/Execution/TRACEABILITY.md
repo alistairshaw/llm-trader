@@ -1,6 +1,6 @@
 # Stage 6 Acceptance-Criteria Traceability
 
-All Stage 6 scenarios are tagged `@stage6`, `@acceptance`, `@paper-trading`, `@execution`, `@cross-platform`, and the temporary `@ignore` tag. Relevant scenarios additionally use `@idempotency`, `@accounting`, `@concurrency`, and `@recovery`. `S6-015` supplies production-backed drivers and removes `@ignore`. Scenario-scoped drivers will own deterministic time and identities, migrated temporary SQLite, the simulated broker, application services, persistence inspection, and bounded diagnostics.
+All 34 Stage 6 examples are active and tagged `@stage6`, `@acceptance`, `@paper-trading`, `@execution`, and `@cross-platform`. Relevant scenarios additionally use `@idempotency`, `@accounting`, `@concurrency`, and `@recovery`. Thin steps route each named use case through the scenario-scoped `Stage6ExecutionDriver`. The driver owns the production Generic Host, deterministic fixture and scripted inputs, simulated paper broker, migrated temporary SQLite lifetime, and authorized Order/Fill/audit projections. It does not manufacture scenario outcomes or query persistence directly.
 
 Run the discoverable specifications with:
 
@@ -24,4 +24,4 @@ Run the discoverable specifications with:
 | Order, Fill, and audit projections expose the exact immutable chain. | `HeadlessPaperJourney.feature` — Reconstruct the complete execution audit chain | `S6-013`, `S6-015` |
 | The headless host demonstrates research through final Fill deterministically. | Every `HeadlessPaperJourney.feature` scenario | `S6-014`, `S6-015` |
 
-Every scenario uses synthetic identities and values, injected UTC time, deterministic simulated broker inputs, and isolated migrated temporary SQLite. No scenario contacts an external model, public web service, market-data provider, broker, or wall clock, and no scenario submits a live-money order.
+The focused production path is `HostBootstrap` → `TradingRuntimeHostedService` → `ProposalOrderConversionService` → durable outbox processor → `PaperOrderSubmissionDispatcher` → `SimulatedPaperBroker` → unknown-outcome reconciliation → durable inbox processor → broker-event/fill-accounting dispatchers → `OrderExecutionQueries`. Every scenario uses deterministic identities and time, fixture research, scripted models, and isolated migrated temporary SQLite. No scenario contacts an external model, public web service, market-data provider, broker, or wall clock, and no scenario submits a live-money order.

@@ -1,4 +1,4 @@
-@stage6 @acceptance @paper-trading @execution @accounting @idempotency @concurrency @cross-platform @ignore
+@stage6 @acceptance @paper-trading @execution @accounting @idempotency @concurrency @cross-platform
 Feature: Apply paper Fills atomically
   Each unique Fill changes the Order, Position, ledger, and Reservation together using exact decimals.
 

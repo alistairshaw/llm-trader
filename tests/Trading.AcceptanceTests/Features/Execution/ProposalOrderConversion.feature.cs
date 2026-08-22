@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Execution
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Convert an approved proposal into a paper order")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage6")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("paper-trading")]
@@ -38,8 +37,7 @@ namespace Trading.AcceptanceTests.Features.Execution
                 "paper-trading",
                 "execution",
                 "idempotency",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Execution", "Convert an approved proposal into a paper order", "  Only fresh, executable proposal authority can create an Order and its durable s" +
                 "ubmission work.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());
