@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-009
 title: Build Research catalog and Report viewer
 stage: 7
-status: ready
+status: done
 priority: 850
 type: feature
 depends_on: [S7-002, S7-005]
@@ -37,4 +37,21 @@ None.
 Build; ResearchCatalog WPF tests; OperatorResearch integration tests; full tests; format.
 
 ## Completion Notes
-Pending implementation.
+Implemented the keyboard-accessible Research workspace with authorized catalog filtering and paging, exact immutable
+Report selection, version history, freshness and visibility state, content hash, generator metadata, structured
+provenance, and authorized Research requests. Expanded the UI-neutral operator Report contracts with the immutable
+metadata required by the viewer. Report and source content is displayed only in read-only plain-text controls inside
+explicit untrusted-evidence boundaries; exact-detail identity and version mismatches use the same non-disclosing
+result as missing or inaccessible Reports.
+
+Validation completed on 2026-08-22:
+
+- `.\dev.ps1 restore` passed in locked mode after one Docker Desktop `unexpected EOF`; the immediate retry completed.
+- `.\dev.ps1 build` passed with zero warnings and zero errors.
+- `.\dev.ps1 test -Project tests/Trading.UI.Wpf.Tests -Filter "Category=ResearchCatalog"` passed 5/5.
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=OperatorResearch"` passed 2/2.
+- `.\dev.ps1 test` passed 1,193 tests with four expected pending Stage 7 acceptance scenarios skipped.
+- `.\dev.ps1 format` passed.
+- `git diff --check` passed.
+
+No scope deviations, follow-up tasks, or ADRs.

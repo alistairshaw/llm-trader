@@ -3,7 +3,9 @@ using Trading.UI.Wpf.Views;
 
 namespace Trading.UI.Wpf.Navigation;
 
-public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> createBots, Func<BotRunsViewModel> createRuns) : INavigationPageFactory
+public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> createBots,
+    Func<BotRunsViewModel> createRuns,
+    Func<ResearchCatalogViewModel>? createResearch = null) : INavigationPageFactory
 {
     public INavigationPage Create(ShellRoute route)
     {
@@ -16,6 +18,11 @@ public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> create
         {
             var runs = createRuns();
             return new Page(new BotRunsView { DataContext = runs }, token => runs.RefreshAsync(token), runs);
+        }
+        if (route.Key == "research" && createResearch is not null)
+        {
+            var research = createResearch();
+            return new Page(new ResearchCatalogView { DataContext = research }, token => research.RefreshAsync(token), research);
         }
         return new Placeholder(route.Title);
     }

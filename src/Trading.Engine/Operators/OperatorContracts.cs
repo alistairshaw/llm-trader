@@ -121,9 +121,14 @@ public sealed record RunDetail(RunSummary Summary, TradingBotConfigurationVersio
     DateTimeOffset? RequestedNextRunAt, DateTimeOffset? AcceptedNextRunAt, string? FailureCode,
     bool WasRecovered);
 public sealed record ResearchSummary(ResearchReportId Id, string SeriesId, int Version, string Subject,
-    ResearchReportStatus Status, DateTimeOffset PublishedAt);
-public sealed record ResearchDetail(ResearchSummary Summary, string ContentHash, string Content,
-    ImmutableArray<string> Citations);
+    ResearchReportStatus Status, DateTimeOffset PublishedAt, DateTimeOffset DataCutoff, DateTimeOffset ExpiresAt,
+    ResearchVisibility Visibility, bool IsFresh);
+public sealed record OperatorResearchGenerator(string Provider, string Model, string PromptVersion,
+    string ToolSetVersion, string ReportSchemaVersion);
+public sealed record OperatorResearchProvenance(string Provider, string SourceIdentifier, DateTimeOffset? PublishedAt,
+    DateTimeOffset RetrievedAt, string ContentHash);
+public sealed record ResearchDetail(ResearchSummary Summary, string Question, string ContentHash, string Content,
+    OperatorResearchGenerator Generator, ImmutableArray<OperatorResearchProvenance> Provenance);
 public sealed record ProposalSummary(TradeProposalId Id, TradingBotId TradingBotId, PortfolioId PortfolioId,
     ProposalStatus Status, DateTimeOffset ValidUntil, long Version);
 public sealed record ProposalDetail(ProposalSummary Summary, string Rationale, string ContentHash,

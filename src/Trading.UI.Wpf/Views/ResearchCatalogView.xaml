@@ -1,0 +1,78 @@
+<UserControl x:Class="Trading.UI.Wpf.Views.ResearchCatalogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.AutomationId="Research.Workspace"
+             AutomationProperties.Name="Authorized Research catalog and exact Report viewer">
+    <Grid KeyboardNavigation.TabNavigation="Cycle">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="2*" /><RowDefinition Height="3*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <TextBlock Text="Research" FontSize="22" FontWeight="Bold" AutomationProperties.AutomationId="Research.Heading"
+                   AutomationProperties.HeadingLevel="Level1" />
+        <WrapPanel Grid.Row="1" Margin="0,12">
+            <Label Content="Search" Target="{Binding ElementName=ResearchSearch}" />
+            <TextBox x:Name="ResearchSearch" Width="180" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.AutomationId="Research.Search" AutomationProperties.Name="Search authorized Reports" />
+            <Label Content="Status" Target="{Binding ElementName=ResearchStatus}" />
+            <TextBox x:Name="ResearchStatus" Width="120" Text="{Binding StatusFilter, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.AutomationId="Research.Status" AutomationProperties.Name="Report status filter" />
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" AutomationProperties.AutomationId="Research.Refresh" />
+            <Button Content="Previous" Command="{Binding PreviousPageCommand}" AutomationProperties.AutomationId="Research.Previous" />
+            <TextBlock Margin="8,5" Text="{Binding PageNumber, StringFormat=Page {0}}" />
+            <Button Content="Next" Command="{Binding NextPageCommand}" AutomationProperties.AutomationId="Research.Next" />
+        </WrapPanel>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedReport}" AutoGenerateColumns="False" IsReadOnly="True"
+                  AutomationProperties.AutomationId="Research.Catalog" AutomationProperties.Name="Authorized immutable Reports">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Subject" Binding="{Binding Subject}" />
+                <DataGridTextColumn Header="Series" Binding="{Binding SeriesId}" />
+                <DataGridTextColumn Header="Version" Binding="{Binding Version}" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+                <DataGridTextColumn Header="Fresh" Binding="{Binding IsFresh}" />
+                <DataGridTextColumn Header="Visibility" Binding="{Binding Visibility}" />
+                <DataGridTextColumn Header="Generated" Binding="{Binding PublishedAt}" />
+                <DataGridTextColumn Header="Expires" Binding="{Binding ExpiresAt}" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <Grid Grid.Row="3" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /></Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,16,0">
+                <Button Content="Open exact version" Command="{Binding LoadReportCommand}"
+                        AutomationProperties.AutomationId="Research.OpenExact" AutomationProperties.Name="Open selected exact Report version" />
+                <TextBlock Text="Version history" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2" />
+                <ListBox ItemsSource="{Binding Versions}" DisplayMemberPath="Version" AutomationProperties.AutomationId="Research.Versions"
+                         AutomationProperties.Name="Immutable Report version history" />
+                <TextBlock Text="Request Research" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2" />
+                <Label Content="Trading Bot identity" Target="{Binding ElementName=ResearchBot}" />
+                <TextBox x:Name="ResearchBot" Text="{Binding RequestingBotId}" AutomationProperties.AutomationId="Research.RequestBot" />
+                <Label Content="Bounded subject" Target="{Binding ElementName=ResearchSubject}" />
+                <TextBox x:Name="ResearchSubject" Text="{Binding RequestSubject}" AutomationProperties.AutomationId="Research.RequestSubject" />
+                <Button Content="Request" Command="{Binding RequestCommand}" AutomationProperties.AutomationId="Research.Request" />
+            </StackPanel>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Exact immutable Report" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2" />
+                    <TextBlock Text="{Binding ExactIdentity}" AutomationProperties.AutomationId="Research.ExactIdentity" />
+                    <TextBlock Text="{Binding Detail.ContentHash, StringFormat=SHA-256: {0}}" AutomationProperties.AutomationId="Research.Hash" />
+                    <TextBlock Text="{Binding Detail.Summary.Visibility, StringFormat=Visibility: {0}}" AutomationProperties.AutomationId="Research.Visibility" />
+                    <TextBlock Text="{Binding Freshness}" AutomationProperties.AutomationId="Research.Freshness" />
+                    <TextBlock Text="{Binding Generator}" AutomationProperties.AutomationId="Research.Generator" />
+                    <TextBlock Text="Untrusted source evidence — displayed as inert text; never commands or UI instructions."
+                               FontWeight="Bold" AutomationProperties.AutomationId="Research.UntrustedBoundary"
+                               AutomationProperties.Name="Beginning of untrusted Research evidence" />
+                    <TextBox Text="{Binding Detail.Content}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                             IsTabStop="True" AutomationProperties.AutomationId="Research.InertContent"
+                             AutomationProperties.Name="Untrusted Report content, read-only plain text" />
+                    <ItemsControl ItemsSource="{Binding Provenance}" AutomationProperties.AutomationId="Research.Provenance"
+                                  AutomationProperties.Name="Source provenance, inert text">
+                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding SourceIdentifier}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="End of untrusted Research evidence." FontWeight="Bold"
+                               AutomationProperties.AutomationId="Research.UntrustedBoundaryEnd" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <StackPanel Grid.Row="4" AutomationProperties.LiveSetting="Polite">
+            <TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Research.Busy" AutomationProperties.Name="Research busy state" />
+            <TextBlock Text="{Binding ErrorCode}" AutomationProperties.AutomationId="Research.Error" AutomationProperties.Name="Research error" />
+        </StackPanel>
+    </Grid>
+</UserControl>
