@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-005
 title: Implement order execution repositories
 stage: 6
-status: blocked
+status: ready
 priority: 900
 type: data
 depends_on: [S6-004, S6-017, S6-018, S6-019]
@@ -11,7 +11,6 @@ labels: [repositories, orders, fills, reconciliation]
 created: 2026-08-21
 updated: 2026-08-22
 owner: s6_005
-blocked_reason: The Stage 6 inbox and outbox schema cannot persist the complete durable work envelopes or leases; S6-019 must align it first.
 ---
 
 # S6-005: Implement Order Execution Repositories

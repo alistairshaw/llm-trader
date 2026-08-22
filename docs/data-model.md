@@ -642,24 +642,30 @@ a lowercase SHA-256 `content_hash`. Every relationship uses `ON DELETE RESTRICT`
 
 ### 11.1 `outbox_messages`
 
-Columns: `id`, `message_type`, `aggregate_type`, `aggregate_id`, canonical `payload_json`, lowercase SHA-256
-`payload_hash`, `occurred_at`, `available_at`, nullable `processed_at`, `attempt_count`, nullable bounded `last_error`, and
-concurrency `version`.
+Columns exactly represent `OrderWorkEnvelope` plus durable processing state: `id`, restrictive `order_id`, constrained
+`work_kind`, unique bounded `idempotency_key`, canonical bounded `payload_json`, lowercase SHA-256 `payload_hash`,
+bounded `correlation_id`, constrained `status`, `attempt_count`, `available_at`, `created_at`, nullable bounded
+`lease_owner`, nullable `lease_expires_at`, nullable bounded `last_error`, nullable `completed_at`, and concurrency
+`version`.
 
 The same transaction that changes an aggregate inserts its outgoing message. A background worker processes it with bounded retries. Examples include starting research, notifying report subscribers, submitting an order, and scheduling a follow-up run.
 
-Index `(processed_at, available_at)`.
-Unique `(aggregate_type, aggregate_id, message_type)` identifies one durable operation. A trigger prevents mutation of
-the source identity, payload, hash, and occurrence time while permitting bounded retry state to advance.
+Unique `idempotency_key` identifies one durable operation. `(status, available_at, created_at, id)` provides deterministic
+eligible-work ordering and `(status, lease_expires_at)` supports stale-claim recovery. A trigger prevents mutation of the
+Order, work kind, source identity, payload, hash, correlation, and creation time while permitting retry and lease state
+to advance. `Claimed` rows require a complete owner/expiry pair; terminal rows require `completed_at`.
 
 ### 11.2 `inbox_messages`
 
-Columns: `id`, `source`, `external_message_id`, `message_type`, `received_at`, nullable `processed_at`, constrained
-`status`, canonical `payload_json`, lowercase SHA-256 `payload_hash`, nullable bounded `last_error`, and concurrency
-`version`.
+Columns exactly represent `BrokerInboxEnvelope` plus durable processing state: broker message `id`, unique bounded
+`idempotency_key`, bounded `correlation_id`, `received_at`, `available_at`, constrained `status`, canonical bounded
+`payload_json`, lowercase SHA-256 `payload_hash`, `attempt_count`, nullable bounded `lease_owner`, nullable
+`lease_expires_at`, nullable bounded `last_error`, nullable `completed_at`, and concurrency `version`.
 
-Unique `(source, external_message_id)`. This deduplicates broker events, fills, callbacks, and internal durable notifications.
-The source identity, received payload, and hash are immutable after insertion; processing state advances independently.
+Unique `idempotency_key` deduplicates broker events. `(status, available_at, received_at, id)` deterministically orders
+eligible messages and `(status, lease_expires_at)` supports stale-claim recovery. The broker message identity,
+idempotency key, correlation, received payload, hash, and receipt time are immutable after insertion; processing state
+advances independently under the same lease and terminal-state constraints as outbox work.
 
 ### 11.3 `schema_metadata`
 
@@ -848,8 +854,12 @@ orders(client_order_id) UNIQUE
 orders(broker_account_id, broker_order_id) UNIQUE WHERE broker_order_id IS NOT NULL
 orders(portfolio_id, status)
 fills(broker_account_id, broker_execution_id) UNIQUE
-outbox_messages(processed_at, available_at)
-inbox_messages(source, external_message_id) UNIQUE
+outbox_messages(idempotency_key) UNIQUE
+outbox_messages(status, available_at, created_at, id)
+outbox_messages(status, lease_expires_at)
+inbox_messages(idempotency_key) UNIQUE
+inbox_messages(status, available_at, received_at, id)
+inbox_messages(status, lease_expires_at)
 ```
 
 Add indexes only for demonstrated query or constraint needs; validate important plans with SQLite `EXPLAIN QUERY PLAN`.

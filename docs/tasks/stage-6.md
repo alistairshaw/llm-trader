@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S6-019`](stage-6/S6-019-align-durable-work-persistence.md) is the next ready task. `S6-005` resumes after it completes.
+[`S6-005`](stage-6/S6-005-order-repositories.md) is the next ready task.
 
 ## Ordered Backlog
 
@@ -18,8 +18,8 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S6-004`](stage-6/S6-004-order-persistence.md) | Add the Stage 6 order execution persistence migration | Done | 920 | `S6-002` |
 | [`S6-017`](stage-6/S6-017-align-order-persistence-contract.md) | Align order persistence with the execution contract | Done | 950 | `S6-004` |
 | [`S6-018`](stage-6/S6-018-align-initial-order-version.md) | Align the initial Order concurrency version | Done | 945 | `S6-017` |
-| [`S6-019`](stage-6/S6-019-align-durable-work-persistence.md) | Align durable broker-work persistence | Ready | 940 | `S6-018` |
-| [`S6-005`](stage-6/S6-005-order-repositories.md) | Implement order execution repositories | Blocked | 900 | `S6-004`, `S6-017`, `S6-018`, `S6-019` |
+| [`S6-019`](stage-6/S6-019-align-durable-work-persistence.md) | Align durable broker-work persistence | Done | 940 | `S6-018` |
+| [`S6-005`](stage-6/S6-005-order-repositories.md) | Implement order execution repositories | Ready | 900 | `S6-004`, `S6-017`, `S6-018`, `S6-019` |
 | [`S6-006`](stage-6/S6-006-durable-inbox-outbox.md) | Implement durable broker inbox and outbox processing | Planned | 880 | `S6-003`, `S6-005` |
 | [`S6-007`](stage-6/S6-007-proposal-order-conversion.md) | Convert approved proposals to order intents atomically | Planned | 860 | `S6-005` |
 | [`S6-008`](stage-6/S6-008-idempotent-order-submission.md) | Submit paper orders with stable client identities | Planned | 840 | `S6-006`, `S6-007` |
@@ -49,4 +49,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Stage 6 implementation is in progress. The executable acceptance contract is complete and 34 temporarily pending Stage 6 test cases are discoverable. Order persistence now exactly represents the Core aggregate; `S6-005` is ready.
+Stage 6 implementation is in progress. The executable acceptance contract is complete and 34 temporarily pending Stage 6 test cases are discoverable. Order and durable broker-work persistence now exactly represent the Core contracts; `S6-005` is ready.

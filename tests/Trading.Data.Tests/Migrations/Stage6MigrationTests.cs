@@ -43,7 +43,10 @@ internal sealed class Stage6MigrationTests
             Assert.That(objects, Does.Contain("index|IX_orders_client_order_id"));
             Assert.That(objects, Does.Contain("index|IX_orders_broker_account_id_broker_order_id"));
             Assert.That(objects, Does.Contain("index|IX_fills_broker_account_id_broker_execution_id"));
-            Assert.That(objects, Does.Contain("index|IX_inbox_messages_source_external_message_id"));
+            Assert.That(objects, Does.Contain("index|IX_inbox_messages_idempotency_key"));
+            Assert.That(objects, Does.Contain("index|IX_outbox_messages_idempotency_key"));
+            Assert.That(objects, Does.Contain("trigger|inbox_payload_immutable"));
+            Assert.That(objects, Does.Contain("trigger|outbox_payload_immutable"));
             Assert.That(objects, Does.Contain("trigger|fills_immutable_update"));
             Assert.That(objects, Does.Contain("trigger|order_transitions_immutable_delete"));
             Assert.That(objects, Does.Contain("trigger|orders_ownership_consistent_insert"));

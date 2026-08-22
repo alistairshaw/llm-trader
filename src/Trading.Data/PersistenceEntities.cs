@@ -287,23 +287,31 @@ internal sealed class BrokerReconciliationEntity : PersistenceEntity
 }
 internal sealed class OutboxMessageEntity : PersistenceEntity
 {
-    public string MessageType { get; set; } = string.Empty; public string AggregateType { get; set; } = string.Empty;
-    public string AggregateId { get; set; } = string.Empty; public string PayloadJson { get; set; } = string.Empty;
-    public string PayloadHash { get; set; } = string.Empty; public long OccurredAt { get; set; }
+    public string OrderId { get; set; } = string.Empty; public string WorkKind { get; set; } = string.Empty;
+    public string IdempotencyKey { get; set; } = string.Empty; public string PayloadJson { get; set; } = string.Empty;
+    public string PayloadHash { get; set; } = string.Empty; public string CorrelationId { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
     public long AvailableAt { get; set; }
-    public long? ProcessedAt { get; set; }
+    public long CreatedAt { get; set; }
     public int AttemptCount { get; set; }
+    public string? LeaseOwner { get; set; }
+    public long? LeaseExpiresAt { get; set; }
     public string? LastError { get; set; }
+    public long? CompletedAt { get; set; }
     public long Version { get; set; }
 }
 internal sealed class InboxMessageEntity : PersistenceEntity
 {
-    public string Source { get; set; } = string.Empty; public string ExternalMessageId { get; set; } = string.Empty;
-    public string MessageType { get; set; } = string.Empty; public long ReceivedAt { get; set; }
-    public long? ProcessedAt { get; set; }
+    public string IdempotencyKey { get; set; } = string.Empty;
+    public string CorrelationId { get; set; } = string.Empty; public long ReceivedAt { get; set; }
+    public long AvailableAt { get; set; }
     public string Status { get; set; } = string.Empty;
     public string PayloadJson { get; set; } = string.Empty; public string PayloadHash { get; set; } = string.Empty;
+    public int AttemptCount { get; set; }
+    public string? LeaseOwner { get; set; }
+    public long? LeaseExpiresAt { get; set; }
     public string? LastError { get; set; }
+    public long? CompletedAt { get; set; }
     public long Version { get; set; }
 }
 internal sealed class SchemaMetadataEntity

@@ -3,13 +3,14 @@ schema_version: 1
 id: S6-019
 title: Align durable broker-work persistence
 stage: 6
-status: ready
+status: done
 priority: 940
 type: defect
 depends_on: [S6-018]
 labels: [ef-core, sqlite, inbox, outbox, leases]
 created: 2026-08-22
 updated: 2026-08-22
+owner: s6_019
 ---
 
 # S6-019: Align Durable Broker-Work Persistence
@@ -59,4 +60,19 @@ Also run the repository EF migration drift check documented in [Local Developmen
 
 ## Completion Notes
 
-Pending.
+- Replaced the generic inbox/outbox persistence shape with exact `OrderWorkEnvelope` and `BrokerInboxEnvelope` facts,
+  explicit lifecycle state, deterministic eligibility/recovery indexes, stable idempotency identities, complete leases,
+  bounded diagnostics, terminal timestamps, canonical hashes, and restrictive Order ownership.
+- Added migrations `20260822044716_AlignDurableBrokerWorkPersistence` and
+  `20260822045128_RestoreDurableBrokerWorkTriggers`. Generated SQL drops both affected immutable-source triggers before
+  SQLite rebuilds either table (lines 4/6), rebuilds at lines 68/100, and restores the triggers at lines 166/168.
+- Added real-SQLite exact round-trip, exclusive atomic claim, active/expired lease, deterministic reclaim, retry
+  scheduling, terminalization, deduplication, invalid-constraint, immutability, fresh-database, completed-Stage-5 upgrade,
+  schema-equivalence, and EF-drift coverage. Updated the data model and historical migration fixtures.
+- Validation: `./dev.ps1 build` passed with 0 warnings/errors; focused `Category=Stage6Migrations` passed 9/9 and
+  `Category=DurableBrokerWork` passed 4/4; all Data tests passed 158/158; the full suite passed 1,039 tests with 34
+  expected temporarily pending Stage 6 acceptance cases and 0 failures; `./dev.ps1 format` passed; EF reported no
+  pending model changes.
+- Existing pre-alignment inbox/outbox rows cannot contain the newly required correlation and idempotency facts. The
+  forward migration therefore rejects a non-empty legacy work queue instead of inventing audit identities; the required
+  fresh and completed-Stage-5 upgrade paths are lossless and pass. Follow-up tasks: none. ADRs: none.
