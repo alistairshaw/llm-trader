@@ -23,7 +23,7 @@ public sealed class DurableBrokerProcessorIntegrationTests
         Assert.Multiple(() => { Assert.That(results.Sum(x => x.Claimed), Is.EqualTo(2)); Assert.That(results.Sum(x => x.Completed), Is.EqualTo(1)); Assert.That(results.Sum(x => x.Failed), Is.EqualTo(1)); Assert.That(calls, Is.EqualTo(2)); Assert.That(repository.Codes, Does.Contain(DurableBrokerProcessingCodes.TerminalFailure)); });
     }
 
-    [Test]
+    [Test, Category("PaperExecutionRestart")]
     public async Task RetrySurvivesProcessorReplacementAndCompletesOnce()
     {
         var repository = new ConcurrentStore(Work("restart")); var attempts = 0;

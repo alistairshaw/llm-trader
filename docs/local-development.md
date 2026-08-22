@@ -28,6 +28,11 @@ The container image is part of the project's build definition and should be pinn
 
 The cross-platform `Trading.Host` process is the primary local executable. It runs in a Linux container using the same .NET Generic Host composition as production-like headless environments.
 
+The paper-execution composition keeps readiness false until migrations, expired-lease recovery, and reconciliation of
+every account owning incomplete work have completed. Recovery processes durable order work before deferred broker
+events and fills. Shutdown cancellation stops subsequent claims; claimed work is either durably completed or returned
+to a bounded retry state with cleared lease ownership, so the next process reconstructs its action from SQLite alone.
+
 Local infrastructure is intentionally small:
 
 - SQLite remains the application-owned system of record.

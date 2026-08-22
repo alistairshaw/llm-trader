@@ -223,6 +223,12 @@ client order ID outside the database transaction. Found state is applied atomica
 Authoritative absence must survive a bounded grace period and repeated lookup before the original stable submit work is
 made pending again; ambiguity, outage, identity mismatch, cancellation, and attempt exhaustion never submit directly.
 
+Paper-execution startup recovers expired durable claims before workers become ready. An expired claimed submission is
+atomically converted to an `Unknown` Order and source-keyed reconciliation work; it is never returned directly to the
+submit worker. Required paper accounts reconcile before outbox or inbox claims begin. Recovery drains durable outbox
+work before deferred broker events, persists one bounded account-scoped recovery audit, and leaves terminal poison work
+isolated. Cancellation stops new drain cycles while the processors release claimed-but-unfinished work for restart.
+
 ### 6.5 Trading.Research
 
 `Trading.Research` provides the shared Research Bot and research artifact service.

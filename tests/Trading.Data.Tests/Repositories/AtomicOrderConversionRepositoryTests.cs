@@ -3,6 +3,7 @@ using Trading.Core.Bots;
 using Trading.Core.Brokers;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
+using Trading.Core.Orders;
 using Trading.Core.Persistence;
 using Trading.Core.Policies;
 using Trading.Core.Proposals;
@@ -24,6 +25,75 @@ public sealed class AtomicOrderConversionRepositoryTests
     private const string Connection = "01BCEEEEEEEEEEEEEEEEEEEEEE";
     private const string Account = "01BAEEEEEEEEEEEEEEEEEEEEEE";
     private const string Mapping = "01MMEEEEEEEEEEEEEEEEEEEEEE";
+
+    [Test, Category("ExecutionRecovery")]
+    public async Task ExpiredSubmissionClaimBecomesUnknownAndReconciliationBeforeAnyResubmit()
+    {
+        await using var fixture = await CreateAsync();
+        var request = Request(fixture.Proposal, fixture.Reservation.Id);
+        await new AtomicOrderConversionRepository(fixture.Database.Context).TryConvertAsync(request, default);
+        fixture.Database.Context.ChangeTracker.Clear();
+        var work = (await new OrderWorkRepository(fixture.Database.Context).ClaimAsync(1, Now.AddMinutes(7),
+            new("terminated-host", Now.AddMinutes(8)), default)).Single();
+        fixture.Database.Context.ChangeTracker.Clear();
+
+        var repository = new PaperExecutionRecoveryRepository(fixture.Database.Context);
+        var first = await repository.RecoverAsync(new(Now.AddMinutes(9),
+            [OrderTransitionId.New(), OrderTransitionId.New()], [OrderWorkItemId.New()]), default);
+        fixture.Database.Context.ChangeTracker.Clear();
+        var second = await repository.RecoverAsync(new(Now.AddMinutes(10), [], []), default);
+
+        var order = fixture.Database.Context.Orders.Single();
+        var submission = fixture.Database.Context.OutboxMessages.Single(x => x.Id == work.Id.ToString());
+        var reconciliation = fixture.Database.Context.OutboxMessages.Single(x => x.WorkKind == "Reconcile");
+        Assert.Multiple(() =>
+        {
+            Assert.That(first.SubmissionClaimsConverted, Is.EqualTo(1));
+            Assert.That(second.SubmissionClaimsConverted, Is.Zero);
+            Assert.That(order.Status, Is.EqualTo(OrderStatus.Unknown));
+            Assert.That(order.Version, Is.EqualTo(2));
+            Assert.That(fixture.Database.Context.OrderTransitions.Select(x => x.NewStatus),
+                Is.EqualTo(new[] { OrderStatus.Submitting, OrderStatus.Unknown }));
+            Assert.That(submission.Status, Is.EqualTo("Completed"));
+            Assert.That(submission.LastError, Is.EqualTo(PaperExecutionRecoveryCodes.SubmissionOutcomeUnknown));
+            Assert.That(reconciliation.Status, Is.EqualTo("Pending"));
+            Assert.That(reconciliation.IdempotencyKey, Is.EqualTo($"reconcile:{request.ClientOrderId.Value}"));
+            Assert.That(fixture.Database.Context.OutboxMessages.Count(), Is.EqualTo(2));
+        });
+    }
+
+    [Test, Category("ExecutionRecovery")]
+    public async Task ExpiredInboxLeaseIsReleasedWhilePoisonRemainsFailed()
+    {
+        await using var fixture = await CreateAsync();
+        var inbox = new BrokerInboxRepository(fixture.Database.Context);
+        var expired = new BrokerInboxEnvelope(BrokerMessageId.New(), "event:expired", "{}",
+            new("paper:event:expired"), Now);
+        var poison = new BrokerInboxEnvelope(BrokerMessageId.New(), "event:poison", "{}",
+            new("paper:event:poison"), Now);
+        await inbox.ReceiveAsync(expired, default);
+        await inbox.ReceiveAsync(poison, default);
+        fixture.Database.Context.ChangeTracker.Clear();
+        var claims = await inbox.ClaimAsync(2, Now.AddMinutes(1),
+            new("terminated-host", Now.AddMinutes(2)), default);
+        await inbox.FailAsync(claims.Single(x => x.Id == poison.Id).Id, "terminated-host",
+            "broker_work.terminal_failure", Now.AddMinutes(1), default);
+        fixture.Database.Context.ChangeTracker.Clear();
+
+        var result = await new PaperExecutionRecoveryRepository(fixture.Database.Context).RecoverAsync(
+            new(Now.AddMinutes(3), [], []), default);
+        fixture.Database.Context.ChangeTracker.Clear();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.InboxClaimsReleased, Is.EqualTo(1));
+            Assert.That(result.FailedInboxItems, Is.EqualTo(1));
+            Assert.That(fixture.Database.Context.InboxMessages.Single(x => x.Id == expired.Id.ToString()).Status,
+                Is.EqualTo("Pending"));
+            Assert.That(fixture.Database.Context.InboxMessages.Single(x => x.Id == poison.Id.ToString()).Status,
+                Is.EqualTo("Failed"));
+        });
+    }
 
     [Test]
     public async Task CreatesIntentReservationBindingAndSubmitWorkAtomicallyAndRetryReusesOrder()

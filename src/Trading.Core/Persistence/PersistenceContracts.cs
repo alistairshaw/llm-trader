@@ -384,6 +384,36 @@ public interface IOrderWorkRepository
     Task<PersistenceWriteResult> FailAsync(OrderWorkItemId id, string owner, string errorCode, DateTimeOffset failedAt, CancellationToken token);
 }
 
+public static class PaperExecutionRecoveryCodes
+{
+    public const string ExpiredLease = "paper_execution.recovery.expired_lease";
+    public const string SubmissionOutcomeUnknown = "paper_execution.recovery.submission_unknown";
+}
+
+public sealed record PaperExecutionRecoveryRequest(
+    DateTimeOffset RecoveredAt,
+    IReadOnlyList<OrderTransitionId> TransitionIds,
+    IReadOnlyList<OrderWorkItemId> ReconciliationWorkItemIds);
+
+public sealed record PaperExecutionRecoveryScope(
+    BrokerAccountId BrokerAccountId,
+    PortfolioId PortfolioId,
+    OrderId OrderId);
+
+public sealed record PaperExecutionRecoveryResult(
+    int SubmissionClaimsConverted,
+    int OutboxClaimsReleased,
+    int InboxClaimsReleased,
+    int FailedOutboxItems,
+    int FailedInboxItems,
+    IReadOnlyList<PaperExecutionRecoveryScope> Scopes);
+
+public interface IPaperExecutionRecoveryRepository
+{
+    Task<PaperExecutionRecoveryResult> RecoverAsync(
+        PaperExecutionRecoveryRequest request, CancellationToken token);
+}
+
 public sealed record SubmitOrderAuthorization(
     string OrderId, string ClientOrderId, string ProposalId, int ProposalContentVersion,
     string ProposalContentHash, string ConfigurationVersionId, string EvaluationId, string EvaluationHash,

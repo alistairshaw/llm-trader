@@ -857,6 +857,17 @@ complete their inbox item without another financial write; conflicting reuse, ov
 with stable rejection codes. Contention or any persistence failure rolls back the Fill, Order transition, Position,
 marker, both ledger entries, Reservation transition, and inbox completion together.
 
+#### 13.4.1 Recover Paper Execution
+
+Startup recovery uses one short transaction to inspect expired paper inbox and outbox claims. Ordinary expired claims
+return to `Pending` with cleared ownership and the stable `paper_execution.recovery.expired_lease` reason. An expired
+claimed `Submit` is treated conservatively as having crossed broker I/O: the transaction appends `Submitting` and
+`Unknown` Order transitions, completes the original submission work with
+`paper_execution.recovery.submission_unknown`, and creates or restores the unique
+`reconcile:<client-order-id>` work item. Terminal failed work remains terminal and is counted for diagnostics rather
+than retried with unrelated work. Required accounts then reconcile outside the transaction, and each account receives
+an immutable bounded recovery audit before durable workers claim new work.
+
 ### 13.5 Decide a Research Request
 
 ```text
