@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-001
 title: Write Stage 6 executable Gherkin specifications
 stage: 6
-status: ready
+status: done
 priority: 1000
 type: acceptance
 depends_on: []
@@ -47,4 +47,13 @@ Use [Implementation Plan — Stage 6](../../implementation-plan.md#8-stage-6-pap
 
 ## Completion Notes
 
-Pending.
+Completed 2026-08-21.
+
+- Added six Stage 6 feature files containing 32 named scenarios and 34 discoverable Reqnroll test cases covering authorized Proposal-to-Order conversion, atomic submission work, stable client identities, submission retry and unknown-outcome reconciliation, broker acknowledgements and terminal outcomes, duplicate and out-of-order events, partial and final Fill accounting, restart recovery, paper/live separation, and the complete headless audit chain.
+- Added criterion-to-scenario and implementing-task traceability in `tests/Trading.AcceptanceTests/Features/Execution/TRACEABILITY.md`.
+- Tagged every scenario for cross-platform discovery and applied the temporary `@ignore` acceptance-harness tag until `S6-015` supplies production-backed bindings.
+- Generated and committed synchronized Reqnroll `.feature.cs` files through the repository build.
+- Validation: `.\dev.ps1 build` passed with zero warnings and errors; `.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage6"` discovered 34 tests with 34 explicitly skipped, zero failed, and zero passed; `.\dev.ps1 format` passed; `git diff --check` passed.
+- The first build attempt encountered a stale generated `Trading.Host.AssemblyInfoInputs.cache` file that Docker could not overwrite. Removing that disposable build artifact and rerunning produced the clean build recorded above.
+- Local validation used the Linux Docker workflow. Windows execution remains delegated to hosted CI at the Stage 6 gate.
+- No deviations, follow-up tasks, ADRs, README changes, AGENTS.md changes, or authoritative-document changes were required because this task defined specifications without changing durable project guidance.

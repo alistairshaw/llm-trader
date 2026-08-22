@@ -6,14 +6,14 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S6-001`](stage-6/S6-001-write-stage-6-gherkin.md) is ready.
+[`S6-002`](stage-6/S6-002-order-execution-contracts.md) is ready.
 
 ## Ordered Backlog
 
 | ID | Task | Status | Priority | Depends on |
 | --- | --- | --- | ---: | --- |
-| [`S6-001`](stage-6/S6-001-write-stage-6-gherkin.md) | Write Stage 6 executable Gherkin specifications | Ready | 1000 | — |
-| [`S6-002`](stage-6/S6-002-order-execution-contracts.md) | Define order execution and broker contracts | Planned | 960 | `S6-001` |
+| [`S6-001`](stage-6/S6-001-write-stage-6-gherkin.md) | Write Stage 6 executable Gherkin specifications | Done | 1000 | — |
+| [`S6-002`](stage-6/S6-002-order-execution-contracts.md) | Define order execution and broker contracts | Ready | 960 | `S6-001` |
 | [`S6-003`](stage-6/S6-003-simulated-broker.md) | Implement the deterministic simulated paper broker | Planned | 940 | `S6-002` |
 | [`S6-004`](stage-6/S6-004-order-persistence.md) | Add the Stage 6 order execution persistence migration | Planned | 920 | `S6-002` |
 | [`S6-005`](stage-6/S6-005-order-repositories.md) | Implement order execution repositories | Planned | 900 | `S6-004` |
@@ -46,4 +46,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Stage 6 is planned. Implementation has not begun.
+Stage 6 implementation is in progress. The executable acceptance contract is complete and 34 temporarily pending Stage 6 test cases are discoverable; `S6-002` is ready.

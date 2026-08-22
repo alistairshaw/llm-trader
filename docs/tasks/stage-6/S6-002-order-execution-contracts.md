@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-002
 title: Define order execution and broker contracts
 stage: 6
-status: planned
+status: ready
 priority: 960
 type: feature
 depends_on: [S6-001]
