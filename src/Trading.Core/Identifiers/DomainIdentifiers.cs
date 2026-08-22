@@ -233,3 +233,21 @@ public sealed record FillId
     public static FillId Parse(string value) => new(DomainIdentifierValue.Parse(value, nameof(value)));
     public override string ToString() => Value.ToString();
 }
+
+public sealed record BrokerMessageId
+{
+    private BrokerMessageId(DomainIdentifierValue value) => Value = value;
+    private DomainIdentifierValue Value { get; }
+    public static BrokerMessageId New() => new(DomainIdentifierValue.New());
+    public static BrokerMessageId Parse(string value) => new(DomainIdentifierValue.Parse(value, nameof(value)));
+    public override string ToString() => Value.ToString();
+}
+
+public sealed record OrderWorkItemId
+{
+    private OrderWorkItemId(DomainIdentifierValue value) => Value = value;
+    private DomainIdentifierValue Value { get; }
+    public static OrderWorkItemId New() => new(DomainIdentifierValue.New());
+    public static OrderWorkItemId Parse(string value) => new(DomainIdentifierValue.Parse(value, nameof(value)));
+    public override string ToString() => Value.ToString();
+}

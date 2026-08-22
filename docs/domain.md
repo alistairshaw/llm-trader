@@ -556,6 +556,17 @@ Created -> Submitting -> Submitted -> Acknowledged -> PartiallyFilled -> Filled
 
 `ClientOrderId` is globally unique. Proposal conversion and fills are idempotent. Filled quantity cannot exceed ordered quantity. State changes follow the state machine. Unknown submissions are reconciled before retry. Terminal orders cannot return to active states.
 
+The client identity is canonical, bounded, and immutable from intent creation through broker reconciliation. Broker
+execution identity is immutable within the Order, and duplicate execution identities do not change quantity, gross
+amount, fees, state, or version. Cumulative quantity, gross execution amount, and fees are exact decimal sums of the
+Order's immutable Fill children.
+
+Every broker command carries an account, connection, environment, correlation identity, request time, and cancellation
+boundary. Paper and live identities are distinct contract types: the paper gateway cannot accept a live identity.
+Normalized outcomes use stable codes for accepted, rejected, unknown, retryable, terminal, duplicate, found, absent,
+and uncertain results. Unknown submission outcomes permit reconciliation only; they never authorize blind resubmission.
+Durable inbox and outbox envelopes contain bounded canonical payloads and stable idempotency keys.
+
 `Fill` is an `Order` child for the MVP and may become an aggregate root if it later develops an independent lifecycle.
 
 ## 10. Risk Model

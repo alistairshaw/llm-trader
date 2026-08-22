@@ -58,6 +58,8 @@ public sealed class Order
     public IReadOnlyList<OrderTransition> Transitions => transitions.AsReadOnly();
     public IReadOnlyList<Fill> Fills => fills.AsReadOnly();
     public decimal FilledQuantity => fills.Sum(fill => fill.Quantity.Amount);
+    public decimal CumulativeGrossAmount => fills.Sum(fill => checked(fill.Quantity.Amount * fill.Price.Amount));
+    public decimal CumulativeFeeAmount => fills.Sum(fill => fill.Fee.Amount);
     public bool RequiresReconciliation => Status == OrderStatus.Unknown;
 
     public void BeginSubmission(OrderTransitionId id, DateTimeOffset at) =>

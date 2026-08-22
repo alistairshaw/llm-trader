@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-003
 title: Implement the deterministic simulated paper broker
 stage: 6
-status: planned
+status: ready
 priority: 940
 type: feature
 depends_on: [S6-002]

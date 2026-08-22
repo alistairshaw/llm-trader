@@ -142,6 +142,9 @@ If documents disagree, identify the disagreement explicitly and resolve it in do
   reservation, order conversion, and broker submission from that pinned mode regardless of later configuration.
 - Never add a test that contacts a real LLM, the public web, live market data, or a live broker to the default or commit-gating suite.
 - Never submit a live-money order during development or automated validation.
+- Keep paper and live broker identities structurally distinct. Every paper broker operation must require the typed paper
+  environment, stable client and correlation identities, UTC timestamps, and cancellation; an unknown submission must
+  reconcile by client identity before any resubmission decision.
 
 ## Testing Rules
 

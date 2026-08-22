@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-004
 title: Add the Stage 6 order execution persistence migration
 stage: 6
-status: planned
+status: ready
 priority: 920
 type: data
 depends_on: [S6-002]

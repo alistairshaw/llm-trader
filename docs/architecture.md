@@ -346,6 +346,10 @@ The Trading Bot workflow is specified in [Trading Bot](trading-bot.md). Research
 Key rules:
 
 - An LLM creates a structured trade proposal; it never receives a broker-order submission tool.
+- Order execution is available only through deterministic Engine ports. The production paper broker port accepts a
+  typed paper-environment context on every operation; a live-environment identity is not assignable to it. Broker
+  adapters return bounded provider-neutral results and stable codes, while provider DTOs and exceptions remain inside
+  `Trading.Brokers`.
 - The versioned proposal-tool dispatcher records only immutable proposals after validating canonical
   arguments against the Bot Run's pinned identity, configuration, Portfolio snapshot, evidence
   visibility, tool policy, and budgets; it has no approval, reservation, order, or broker port.

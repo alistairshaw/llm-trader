@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-002
 title: Define order execution and broker contracts
 stage: 6
-status: ready
+status: done
 priority: 960
 type: feature
 depends_on: [S6-001]
@@ -51,4 +51,14 @@ Use [Domain Model — Broker Integration](../../domain.md#6-broker-integration),
 
 ## Completion Notes
 
-Pending.
+- Added provider-neutral paper broker operation, submission, reconciliation, cancellation, execution, inbox, outbox,
+  correlation, idempotency, capability, clock, identifier, transaction, conversion, and accounting contracts.
+- Extended Order accounting with exact cumulative gross and fee totals while retaining exhaustive lifecycle authority,
+  immutable client/broker execution identities, duplicate execution idempotency, and overfill prevention.
+- Made paper and live operation identities structurally distinct and kept all LLM tool dispatch surfaces free of broker
+  or order-execution authority.
+- Updated `AGENTS.md`, architecture, domain, and Trading Bot documentation with the durable execution rules.
+- Validation: `./dev.ps1 build` passed with 0 warnings/errors; focused Core OrderExecution tests passed 9/9;
+  focused Engine BrokerContracts tests passed 3/3; architecture tests passed 22/22; the full suite passed 1,015 tests
+  with 34 expected temporarily pending Stage 6 acceptance cases and 0 failures; `./dev.ps1 format` passed.
+- Deviations: none. Follow-up tasks: none. ADRs: none.
