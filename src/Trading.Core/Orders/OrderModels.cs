@@ -11,7 +11,7 @@ public enum OrderTransitionSource { Platform, Broker, Reconciliation }
 
 public sealed class OrderTransition
 {
-    internal OrderTransition(OrderTransitionId id, int sequence, OrderStatus previousStatus, OrderStatus newStatus,
+    public OrderTransition(OrderTransitionId id, int sequence, OrderStatus previousStatus, OrderStatus newStatus,
         string reason, OrderTransitionSource source, DateTimeOffset occurredAt)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));
@@ -35,7 +35,7 @@ public sealed class OrderTransition
 
 public sealed class Fill
 {
-    internal Fill(FillId id, string brokerExecutionId, Quantity quantity, Price price, Money fee,
+    public Fill(FillId id, string brokerExecutionId, Quantity quantity, Price price, Money fee,
         DateTimeOffset executedAt, DateTimeOffset receivedAt)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));

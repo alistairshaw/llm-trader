@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-007
 title: Convert approved proposals to order intents atomically
 stage: 6
-status: planned
+status: ready
 priority: 860
 type: feature
 depends_on: [S6-005]

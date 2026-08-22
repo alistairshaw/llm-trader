@@ -62,6 +62,25 @@ public sealed class Order
     public decimal CumulativeFeeAmount => fills.Sum(fill => fill.Fee.Amount);
     public bool RequiresReconciliation => Status == OrderStatus.Unknown;
 
+    public static Order Rehydrate(OrderId id, string clientOrderId, PortfolioId portfolioId, BrokerAccountId brokerAccountId,
+        TradeProposalId tradeProposalId, InstrumentId instrumentId, OrderSide side, Quantity quantity, Currency currency,
+        OrderType orderType, Price? limitPrice, TimeInForce timeInForce, DateTimeOffset createdAt, string? brokerOrderId,
+        DateTimeOffset? submittedAt, DateTimeOffset? completedAt, long version,
+        IReadOnlyList<OrderTransition> persistedTransitions, IReadOnlyList<Fill> persistedFills)
+    {
+        ArgumentNullException.ThrowIfNull(persistedTransitions); ArgumentNullException.ThrowIfNull(persistedFills);
+        if (version < 0 || persistedTransitions.Count != version) throw new ArgumentException("Persisted version and transition count differ.", nameof(version));
+        var order = new Order(id, clientOrderId, portfolioId, brokerAccountId, tradeProposalId, instrumentId, side, quantity, currency, orderType, limitPrice, timeInForce, createdAt);
+        for (var index = 0; index < persistedTransitions.Count; index++)
+        {
+            var transition = persistedTransitions[index];
+            if (transition.Sequence != index + 1 || transition.PreviousStatus != order.Status) throw new ArgumentException("Persisted transitions are not contiguous.", nameof(persistedTransitions));
+            order.transitions.Add(transition); order.Status = transition.NewStatus;
+        }
+        order.fills.AddRange(persistedFills); order.BrokerOrderId = brokerOrderId; order.SubmittedAt = submittedAt;
+        order.CompletedAt = completedAt; order.Version = version; return order;
+    }
+
     public void BeginSubmission(OrderTransitionId id, DateTimeOffset at) =>
         Transition(id, OrderStatus.Submitting, "Submission started.", OrderTransitionSource.Platform, at);
 

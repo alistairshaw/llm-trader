@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-005
 title: Implement order execution repositories
 stage: 6
-status: ready
+status: done
 priority: 900
 type: data
 depends_on: [S6-004, S6-017, S6-018, S6-019]
@@ -67,3 +67,16 @@ Blocked again after the S6-018 correction because the inbox/outbox tables omit r
 including correlation identity and lease ownership/expiry. The outbox also omits its explicit idempotency identity;
 the inbox omits retry availability and attempt state. Exact conditional claims, stale recovery, and envelope round trips
 cannot be implemented by overloading error, aggregate, or completion columns. S6-019 records the required schema alignment.
+
+Completed on 2026-08-22 after S6-019. Added aggregate-oriented Order and reconciliation repositories, exact scoped
+lookups, append-only transition/fill persistence, optimistic version checks, durable inbox/outbox enqueue, atomic
+deterministic claims, active-lease exclusion, expired-lease recovery, retry scheduling, completion, and stable
+duplicate-identity outcomes. Added real migrated-SQLite coverage for initial and evolved Order round trips, ownership
+isolation, histories, fills, stale writers, inbox/outbox idempotency, lease recovery, retry timing, and account-isolated
+reconciliation order. Updated the data-model repository contract. The formatter also corrected two pre-existing
+formatting defects in S6-019 migration output and its migration test.
+
+Validation: `./dev.ps1 build` passed with zero warnings/errors; `Category=OrderRepositories` passed 3/3;
+`Category=DurableBrokerWork` passed 7/7; Trading.Data.Tests passed 161/161; the full suite passed 1,042 tests with
+34 intentionally pending Stage 6 acceptance scenarios and no failures; `./dev.ps1 format` passed after applying the
+repository formatter; and EF reported no pending model changes. No deviations, follow-up tasks, or ADRs.

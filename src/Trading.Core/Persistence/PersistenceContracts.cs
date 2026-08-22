@@ -2,6 +2,7 @@ using Trading.Core.Bots;
 using Trading.Core.Brokers;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
+using Trading.Core.Orders;
 using Trading.Core.Policies;
 using Trading.Core.Portfolios;
 using Trading.Core.Proposals;
@@ -308,6 +309,40 @@ public interface IAtomicCapitalReservationRepository
 {
     Task<AtomicCapitalReservationWriteResult> TryReserveAsync(
         AtomicCapitalReservationRequest request, CancellationToken token);
+}
+
+public sealed record OrderPersistenceEnvelope(Order Order, CapitalReservationId? ReservationId, CorrelationIdentity CorrelationId);
+public interface IOrderRepository
+{
+    Task<PersistenceWriteResult> AddAsync(OrderPersistenceEnvelope value, CancellationToken token);
+    Task<PersistenceWriteResult> SaveAsync(OrderPersistenceEnvelope value, long expectedVersion, CancellationToken token);
+    Task<Order?> GetAsync(OrderId id, BrokerAccountId account, PortfolioId portfolio, CancellationToken token);
+    Task<Order?> FindByProposalAsync(TradeProposalId proposal, BrokerAccountId account, PortfolioId portfolio, CancellationToken token);
+    Task<Order?> FindByClientOrderIdAsync(ClientOrderIdentity clientOrderId, BrokerAccountId account, CancellationToken token);
+    Task<Order?> FindByBrokerOrderIdAsync(string brokerOrderId, BrokerAccountId account, CancellationToken token);
+    Task<Fill?> FindFillAsync(string executionId, BrokerAccountId account, OrderId order, CancellationToken token);
+}
+public sealed record BrokerReconciliationRecord(string Id, BrokerAccountId AccountId, string Status, DateTimeOffset StartedAt,
+    DateTimeOffset? CompletedAt, string SnapshotJson, string DifferencesJson, string ResolutionJson, CorrelationIdentity CorrelationId, string ContentHash);
+public interface IBrokerReconciliationRepository
+{
+    Task<PersistenceWriteResult> AppendAsync(BrokerReconciliationRecord value, CancellationToken token);
+    Task<IReadOnlyList<BrokerReconciliationRecord>> ListAsync(BrokerAccountId account, CancellationToken token);
+}
+public sealed record DurableWorkLease(string Owner, DateTimeOffset ExpiresAt);
+public interface IOrderWorkRepository
+{
+    Task<PersistenceWriteResult> EnqueueAsync(OrderWorkEnvelope value, CancellationToken token);
+    Task<IReadOnlyList<OrderWorkEnvelope>> ClaimAsync(int limit, DateTimeOffset now, DurableWorkLease lease, CancellationToken token);
+    Task<PersistenceWriteResult> CompleteAsync(OrderWorkItemId id, string owner, string result, DateTimeOffset at, CancellationToken token);
+    Task<PersistenceWriteResult> RetryAsync(OrderWorkItemId id, string owner, string errorCode, DateTimeOffset availableAt, CancellationToken token);
+}
+public interface IBrokerInboxRepository
+{
+    Task<PersistenceWriteResult> ReceiveAsync(BrokerInboxEnvelope value, CancellationToken token);
+    Task<IReadOnlyList<BrokerInboxEnvelope>> ClaimAsync(int limit, DateTimeOffset now, DurableWorkLease lease, CancellationToken token);
+    Task<PersistenceWriteResult> CompleteAsync(BrokerMessageId id, string owner, string result, DateTimeOffset at, CancellationToken token);
+    Task<PersistenceWriteResult> RetryAsync(BrokerMessageId id, string owner, string errorCode, DateTimeOffset availableAt, CancellationToken token);
 }
 
 public sealed record PortfolioSummary(

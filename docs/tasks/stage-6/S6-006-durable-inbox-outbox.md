@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-006
 title: Implement durable broker inbox and outbox processing
 stage: 6
-status: planned
+status: ready
 priority: 880
 type: feature
 depends_on: [S6-003, S6-005]

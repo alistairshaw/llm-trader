@@ -733,6 +733,12 @@ Repositories return domain objects or purpose-built results, never EF entities, 
 
 ## 13. Unit of Work and Transactions
 
+Order execution repositories return domain aggregates and bounded durable-work envelopes rather than EF entities.
+Order reads require the owning broker account and Portfolio, transition and Fill histories are rehydrated in stable
+sequence order, and optimistic saves append only new history rows. Inbox and outbox claims atomically move a
+deterministically ordered eligible batch to a named lease; active leases exclude competitors, expired leases are
+reclaimable, and retry completion clears lease ownership while preserving attempt history.
+
 ```csharp
 public interface IUnitOfWork
 {
