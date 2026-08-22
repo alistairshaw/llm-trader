@@ -3,13 +3,14 @@ schema_version: 1
 id: S6-018
 title: Align the initial Order concurrency version
 stage: 6
-status: ready
+status: done
 priority: 945
 type: defect
 depends_on: [S6-017]
 labels: [ef-core, sqlite, orders, concurrency]
 created: 2026-08-22
 updated: 2026-08-22
+owner: s6_018
 ---
 
 # S6-018: Align the Initial Order Concurrency Version
@@ -59,4 +60,24 @@ Also run the repository EF migration drift check documented in [Local Developmen
 
 ## Completion Notes
 
-Pending.
+Implemented `orders.version >= 0` through forward migrations
+`20260822042907_AlignInitialOrderVersion` and
+`20260822043030_RestoreInitialOrderVersionTriggers`. The first migration explicitly drops every trigger attached to
+or referring to the rebuilt `orders` table; the immediately following migration restores them and adds a monotonic
+version trigger. EF configuration, snapshot, migration fixtures, and the data-model concurrency contract now match the
+Core aggregate.
+
+Validation completed on 2026-08-22:
+
+- `./dev.ps1 build` — passed with zero warnings and errors.
+- `./dev.ps1 test -Project tests/Trading.Core.Tests -Filter "Category=OrderExecution"` — 9 passed.
+- `./dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage6Migrations"` — 5 passed.
+- `./dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=PersistenceMappings"` — 5 passed.
+- `./dev.ps1 test -Project tests/Trading.Data.Tests` — 154 passed.
+- `./dev.ps1 test` — 1,035 passed, 34 expected pending Stage 6 acceptance scenarios, zero failures.
+- `./dev.ps1 format` — passed.
+- `dotnet ef migrations has-pending-model-changes` inside the development container — no pending model changes.
+- Generated SQL from the previous trigger-restoration migration through the new pair — verified trigger drops precede
+  the `orders` rebuild and all affected triggers are recreated afterward.
+
+No scope deviations, follow-up tasks, or ADRs.

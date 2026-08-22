@@ -59,7 +59,7 @@ internal sealed class InitialMigrationTests
         await initializer.InitializeAsync();
         await initializer.InitializeAsync();
 
-        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(11));
+        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(13));
         Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("6"));
     }
 
@@ -80,7 +80,7 @@ internal sealed class InitialMigrationTests
             await new DatabaseInitializer(context).InitializeAsync();
 
             Assert.That(await TableNamesAsync(context.Database.GetDbConnection()), Does.Contain("portfolios"));
-            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(11));
+            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(13));
         }
         finally
         {
@@ -138,7 +138,7 @@ internal sealed class InitialMigrationTests
         Assert.That(foreignKeys, Has.Count.EqualTo(62));
         Assert.That(foreignKeys.Select(key => key.DeleteAction), Is.All.EqualTo("RESTRICT"));
         Assert.That(foreignKeys, Does.Contain(("portfolio_ledger_entries", "portfolio_ledger_entries", "RESTRICT")));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_RestoreAlignedOrderIntegrityTriggers"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_RestoreInitialOrderVersionTriggers"));
         Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("6"));
     }
 

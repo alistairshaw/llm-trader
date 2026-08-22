@@ -47,12 +47,15 @@ internal sealed class Stage6MigrationTests
             Assert.That(objects, Does.Contain("trigger|fills_immutable_update"));
             Assert.That(objects, Does.Contain("trigger|order_transitions_immutable_delete"));
             Assert.That(objects, Does.Contain("trigger|orders_ownership_consistent_insert"));
+            Assert.That(objects, Does.Contain("trigger|orders_execution_identity_immutable"));
+            Assert.That(objects, Does.Contain("trigger|orders_version_monotonic_update"));
+            Assert.That(objects, Does.Contain("trigger|fills_account_consistent_insert"));
         });
         foreach (var table in Tables) Assert.That(await StringsAsync(db.Context, $"SELECT on_delete FROM pragma_foreign_key_list('{table}')"), Is.All.EqualTo("RESTRICT"));
     }
 
     [Test]
-    public async Task ExactValuesUtcAndConcurrencyRoundTrip()
+    public async Task InitialOrderVersionZeroRoundTripsAndConcurrencyRemainsMonotonic()
     {
         await using var db = await SeedAsync();
         var order = await db.Context.Orders.SingleAsync();
@@ -64,11 +67,13 @@ internal sealed class Stage6MigrationTests
             Assert.That(order.Currency, Is.EqualTo("USD"));
             Assert.That(order.Status, Is.EqualTo(OrderStatus.Created));
             Assert.That(order.TimeInForce, Is.EqualTo(TimeInForce.Day));
+            Assert.That(order.Version, Is.Zero);
             Assert.That(fill.Price, Is.EqualTo("210.125"));
             Assert.That(fill.ExecutedAt, Is.EqualTo(1735689600123));
         });
         await using var other = new TradingDbContext(new DbContextOptionsBuilder<TradingDbContext>().UseSqlite((SqliteConnection)db.Context.Database.GetDbConnection()).Options);
-        var stale = await other.Orders.SingleAsync(); order.Status = OrderStatus.Submitted; order.Version = 2; await db.Context.SaveChangesAsync(); stale.Status = OrderStatus.Rejected; stale.Version = 2;
+        var stale = await other.Orders.SingleAsync(); order.Status = OrderStatus.Submitted; order.Version = 1; await db.Context.SaveChangesAsync(); stale.Status = OrderStatus.Rejected; stale.Version = 1;
+        Assert.That(order.Version, Is.EqualTo(1));
         Assert.That(async () => await other.SaveChangesAsync(), Throws.TypeOf<DbUpdateConcurrencyException>());
     }
 
@@ -109,6 +114,8 @@ internal sealed class Stage6MigrationTests
             Assert.That(async () => await SqlAsync(db.Context, OrderSql("bad-tif", "bad-tif", "bad-tif", "account", "Created", "GoodTilCancelled")), Throws.TypeOf<SqliteException>());
             Assert.That(async () => await SqlAsync(db.Context, OrderSql("bad-currency", "bad-currency", "bad-currency", "account", "Created", "Day", "usd")), Throws.TypeOf<SqliteException>());
             Assert.That(async () => await SqlAsync(db.Context, OrderSql("bad-unit", "bad-unit", "bad-unit", "account", "Created", "Day", "USD", "Shares")), Throws.TypeOf<SqliteException>());
+            Assert.That(async () => await SqlAsync(db.Context, OrderSql("bad-version", "bad-version", "bad-version", "account", version: -1)), Throws.TypeOf<SqliteException>());
+            Assert.That(async () => await SqlAsync(db.Context, "UPDATE orders SET version=2 WHERE id='order'"), Throws.TypeOf<SqliteException>());
         });
     }
 
@@ -133,8 +140,8 @@ internal sealed class Stage6MigrationTests
         db.Context.ChangeTracker.Clear(); return db;
     }
     private static string OrderSql(string id, string client, string correlation, string account,
-        string status = "Created", string timeInForce = "Day", string currency = "USD", string quantityUnit = "shares") =>
-        $"INSERT INTO orders (id,client_order_id,portfolio_id,broker_account_id,trade_proposal_id,capital_reservation_id,instrument_id,side,quantity,quantity_unit,currency,order_type,limit_price,time_in_force,status,broker_order_id,correlation_id,created_at,submitted_at,completed_at,version) VALUES ('{id}','{client}','portfolio','{account}','proposal',NULL,'instrument','Buy','1234567890123456.12345678','{quantityUnit}','{currency}','Market',NULL,'{timeInForce}','{status}',NULL,'{correlation}',1735689600123,NULL,NULL,1)";
+        string status = "Created", string timeInForce = "Day", string currency = "USD", string quantityUnit = "shares", long version = 0) =>
+        $"INSERT INTO orders (id,client_order_id,portfolio_id,broker_account_id,trade_proposal_id,capital_reservation_id,instrument_id,side,quantity,quantity_unit,currency,order_type,limit_price,time_in_force,status,broker_order_id,correlation_id,created_at,submitted_at,completed_at,version) VALUES ('{id}','{client}','portfolio','{account}','proposal',NULL,'instrument','Buy','1234567890123456.12345678','{quantityUnit}','{currency}','Market',NULL,'{timeInForce}','{status}',NULL,'{correlation}',1735689600123,NULL,NULL,{version})";
     private static async Task SqlAsync(TradingDbContext context, string sql) { await using var command = context.Database.GetDbConnection().CreateCommand(); command.CommandText = sql; await command.ExecuteNonQueryAsync(); }
     private static async Task<T> ScalarAsync<T>(TradingDbContext context, string sql) { await using var command = context.Database.GetDbConnection().CreateCommand(); command.CommandText = sql; return (T)(await command.ExecuteScalarAsync())!; }
     private static async Task<string[]> StringsAsync(TradingDbContext context, string sql) { await using var command = context.Database.GetDbConnection().CreateCommand(); command.CommandText = sql; await using var reader = await command.ExecuteReaderAsync(); var values = new List<string>(); while (await reader.ReadAsync()) values.Add(reader.GetString(0)); return [.. values]; }

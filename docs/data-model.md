@@ -30,6 +30,11 @@ The domain model remains authoritative for behavior and invariants. This schema 
 | Immutable structured content | Canonical JSON `TEXT` with a schema version |
 | Content hashes | Lowercase SHA-256 hexadecimal `TEXT` |
 | Optimistic concurrency | Application-maintained `INTEGER version` |
+
+An Order is initially persisted exactly at version `0`. Each accepted Order aggregate transition increments the
+version by one. Repository updates compare the caller's expected version and write the strictly greater aggregate
+version, returning the stable concurrency outcome when another writer has already advanced the row. SQLite rejects
+negative Order versions; persistence does not manufacture a transition merely to make a new Order storable.
 | External identifiers | `TEXT` with scope-appropriate unique indexes |
 
 ### 3.1 Identifiers
