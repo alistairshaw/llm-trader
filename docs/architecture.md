@@ -214,6 +214,12 @@ The engine coordinates domain and infrastructure abstractions but must not depen
 
 Application services in the engine load and persist aggregate roots through repository abstractions, coordinate domain behavior, and define transaction boundaries. They must not use EF Core directly.
 
+Operator hosts use the immutable, UI-neutral contracts in `Trading.Engine.Operators`. The authorized application
+service checks the operator principal, required authority, and target resource before invoking an intent-oriented query
+or command port. Missing and unauthorized resources return the same stable unavailable result so hosts cannot disclose
+resource existence. Every operator operation is asynchronous and cancellable; the boundary exposes no EF, WPF,
+`IQueryable`, or broker-SDK types.
+
 Paper submission is an outbox-driven Engine application service. Its persistence port prepares an immutable broker
 command from durable authorization facts and atomically finalizes the Order and claimed work item after normalized
 broker I/O. The adapter call is bounded and occurs outside every database transaction. Accepted and duplicate-known

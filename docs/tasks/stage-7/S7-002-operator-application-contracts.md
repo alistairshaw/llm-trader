@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-002
 title: Define authorized operator application contracts
 stage: 7
-status: ready
+status: done
 priority: 960
 type: feature
 depends_on: [S7-001]
@@ -37,4 +37,20 @@ None.
 Build; OperatorContracts Engine/integration tests; architecture tests; full tests; format.
 
 ## Completion Notes
-Pending implementation.
+Implemented immutable Engine-owned operator principals, authorities, resources, pagination, filters, summaries,
+details, warnings, commands, progress, and stable query/command results for the complete Stage 7 surface. Added typed
+query, Bot management, manual-run, Research, Proposal-decision, and kill-switch services over an intent-oriented
+workflow port. `AuthorizedOperatorService` checks authority before every disclosure or mutation and maps both denied
+and missing resources to `operator.unavailable`; all operations accept cancellation.
+
+Validation:
+
+- `./dev.ps1 build` — passed with 0 warnings and 0 errors.
+- `./dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=OperatorContracts"` — 5 passed, 0 failed, 0 skipped.
+- `./dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=OperatorContracts"` — 1 passed, 0 failed, 0 skipped.
+- `./dev.ps1 test -Project tests/Trading.Architecture.Tests -Filter "Category=OperatorContracts"` — 2 passed, 0 failed, 0 skipped.
+- `./dev.ps1 test` — 1,156 passed, 0 failed, 4 skipped. The four skips are the Stage 7 scenarios explicitly staged by
+  `S7-001` for activation in `S7-016`.
+- `./dev.ps1 format` — passed.
+
+No deviations, follow-up tasks, or ADRs.
