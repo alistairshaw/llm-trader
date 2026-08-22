@@ -8,6 +8,7 @@
     <ProjectReference Include="..\Trading.Engine\Trading.Engine.csproj" />
     <ProjectReference Include="..\Trading.Data\Trading.Data.csproj" />
     <ProjectReference Include="..\Trading.Research\Trading.Research.csproj" />
+    <ProjectReference Include="..\Trading.Brokers\Trading.Brokers.csproj" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 </Project>

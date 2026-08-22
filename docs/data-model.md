@@ -868,6 +868,8 @@ claimed `Submit` is treated conservatively as having crossed broker I/O: the tra
 than retried with unrelated work. Required accounts then reconcile outside the transaction, and each account receives
 an immutable bounded recovery audit before durable workers claim new work.
 
+The deterministic headless workflow verifies the correlated persisted chain through one Order, two immutable Fills, one Position, settlement and fee ledger facts, consumed capital, reconciliation audit, and fully drained durable work.
+
 ### 13.5 Decide a Research Request
 
 ```text

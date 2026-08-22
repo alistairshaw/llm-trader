@@ -45,7 +45,7 @@ public sealed class HeadlessHostTests
         Assert.That(Directory.Exists(directory), Is.False);
     }
 
-    [Test, Category("Stage5Host")]
+    [Test, Category("Stage5Host"), Category("Stage6Host")]
     public async Task SmokeModeMigratesSeedsRunsAndStopsCleanly()
     {
         var directory = Path.Combine(Path.GetTempPath(), "headless-host", Guid.NewGuid().ToString("N"));
@@ -79,8 +79,13 @@ public sealed class HeadlessHostTests
                     var proposals = await ScalarAsync(connection, "SELECT COUNT(*) FROM trade_proposals");
                     var evaluations = await ScalarAsync(connection, "SELECT COUNT(*) FROM guardrail_evaluations");
                     var approvals = await ScalarAsync(connection, "SELECT COUNT(*) FROM proposal_approvals");
-                    var reservations = await ScalarAsync(connection, "SELECT COUNT(*) FROM capital_reservations WHERE status = 'Active'");
-                    var reserved = await ScalarAsync(connection, "SELECT amount FROM capital_reservations WHERE status = 'Active'");
+                    var reservations = await ScalarAsync(connection, "SELECT COUNT(*) FROM capital_reservations WHERE status = 'Consumed'");
+                    var reserved = await ScalarAsync(connection, "SELECT amount FROM capital_reservations WHERE status = 'Consumed'");
+                    var order = await ScalarAsync(connection, "SELECT status FROM orders");
+                    var fills = await ScalarAsync(connection, "SELECT COUNT(*) FROM fills");
+                    var quantity = await ScalarAsync(connection, "SELECT quantity FROM positions");
+                    var ledger = await ScalarAsync(connection, "SELECT SUM(CAST(amount AS REAL)) FROM portfolio_ledger_entries");
+                    var unknown = await ScalarAsync(connection, "SELECT COUNT(*) FROM broker_submission_attempts WHERE outcome = 'Unknown'");
                     var invalid = await ScalarAsync(connection, "SELECT status FROM trade_proposals WHERE id = '01J5QH8M000000000000000403'");
                     var researchOnly = await ScalarAsync(connection, "SELECT c.execution_mode || ':' || p.status FROM trade_proposals p JOIN trading_bot_configuration_versions c ON c.id = p.configuration_version_id WHERE p.id = '01J5QH8M000000000000000404'");
                     var initialHash = await ScalarAsync(connection, "SELECT content_hash FROM guardrail_evaluations WHERE trade_proposal_id = '01J5QH8M000000000000000401' ORDER BY evaluation_sequence LIMIT 1");
@@ -99,6 +104,11 @@ public sealed class HeadlessHostTests
                         Assert.That(Convert.ToInt64(approvals, CultureInfo.InvariantCulture), Is.EqualTo(2));
                         Assert.That(Convert.ToInt64(reservations, CultureInfo.InvariantCulture), Is.EqualTo(1));
                         Assert.That(reserved, Is.EqualTo("700"));
+                        Assert.That(order, Is.EqualTo("Filled"));
+                        Assert.That(Convert.ToInt64(fills, CultureInfo.InvariantCulture), Is.EqualTo(2));
+                        Assert.That(quantity, Is.EqualTo("70"));
+                        Assert.That(Convert.ToDecimal(ledger, CultureInfo.InvariantCulture), Is.EqualTo(-702m));
+                        Assert.That(Convert.ToInt64(unknown, CultureInfo.InvariantCulture), Is.EqualTo(1));
                         Assert.That(invalid, Is.EqualTo("Rejected"));
                         Assert.That(researchOnly, Is.EqualTo("ResearchOnly:Rejected"));
                         Assert.That(initialHash, Is.Not.EqualTo(freshHash));

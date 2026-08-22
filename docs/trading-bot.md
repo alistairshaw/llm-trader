@@ -231,6 +231,8 @@ Each paper operation uses the Order's stable client identity and a typed paper-e
 unknown, retryable, terminal, duplicate, and reconciliation results are normalized before reaching the engine. An
 unknown submission is reconciled by client identity before any later submission decision.
 
+The headless smoke exercises this boundary end to end: durable broker events drive acknowledgement, partial Fill, final Fill, Position, ledger, and Reservation changes without exposing broker authority to the Bot or model.
+
 ## 11. Execution Modes
 
 - `ResearchOnly`: store and fully evaluate proposals, pin the mode from the proposal's configuration version,

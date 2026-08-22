@@ -15,12 +15,12 @@ namespace Trading.Host;
 internal static partial class ProposalSmoke
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 20, 23, 0, 0, TimeSpan.Zero);
-    private static readonly TradeProposalId ValidId = TradeProposalId.Parse("01J5QH8M000000000000000401");
+    internal static readonly TradeProposalId ValidId = TradeProposalId.Parse("01J5QH8M000000000000000401");
     private static readonly TradeProposalId CompetingId = TradeProposalId.Parse("01J5QH8M000000000000000402");
     private static readonly TradeProposalId InvalidId = TradeProposalId.Parse("01J5QH8M000000000000000403");
     private static readonly TradeProposalId ResearchOnlyId = TradeProposalId.Parse("01J5QH8M000000000000000404");
 
-    public static async Task RunAsync(IServiceProvider services, IReadOnlyList<BotRunExecutionResult> runs,
+    public static async Task<CapitalReservation> RunAsync(IServiceProvider services, IReadOnlyList<BotRunExecutionResult> runs,
         ILogger logger, CancellationToken token)
     {
         var repository = services.GetRequiredService<ITradeProposalRepository>();
@@ -30,7 +30,7 @@ internal static partial class ProposalSmoke
         await state.SeedFreshSnapshotsAsync(services, token);
 
         await RecordAsync(repository, Proposal(ValidId, humanRun, SmokeFixture.PortfolioTwoId,
-            SmokeFixture.SnapshotTwoId, ExecutionMode.HumanApproval,
+            SmokeFixture.SnapshotTwoId, ExecutionMode.PaperTrading,
             new DirectTradeAction(TradeSide.Buy, new Quantity(70, "shares"), ProposedOrderType.Limit,
                 new Price(10, Currency.USD), ProposedTimeInForce.Day), 'a', "valid direct trade"), token);
         await RecordAsync(repository, Proposal(CompetingId, humanRun, SmokeFixture.PortfolioTwoId,
@@ -79,6 +79,7 @@ internal static partial class ProposalSmoke
             reserved.Reservation!.Id.ToString(), reserved.Reservation.Amount.ToString(), denied.Code,
             InvalidId.ToString(), invalid.Code, ResearchOnlyId.ToString(), researchOnly.Code, queue.Count,
             active.Sum(x => x.Amount.Amount), brokerSubmissions: 0, recoverable: true);
+        return reserved.Reservation!;
     }
 
     private static HumanProposalDecisionCommand Approve(ProposalOrchestrationResult validated)

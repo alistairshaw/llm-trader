@@ -133,6 +133,7 @@ public sealed class Stage5GovernanceDriver : IAsyncDisposable
             ["Trading:Mode"] = "Simulated",
             ["Trading:DataDirectory"] = directory,
             ["Trading:SmokeMode"] = "true",
+            ["Trading:ExecutePaperSmoke"] = "false",
             ["Trading:ShutdownSeconds"] = "5",
             ["Research:Mode"] = "Fixture",
             ["Research:FixtureVersion"] = "v1",

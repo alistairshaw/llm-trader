@@ -56,7 +56,7 @@ S1-002 defines the repository-root `dev.ps1` interface. Once implemented, use th
 - `.\dev.ps1 test -Project <path> [-Filter <expression>]` — run a focused project or category in Linux Docker.
 - `.\dev.ps1 solution-list` — list solution projects in Linux Docker.
 - `.\dev.ps1 reference-list` — list project references in Linux Docker.
-- `.\dev.ps1 run` — build and run the deterministic fixture-backed Trading, Research, and proposal-governance headless smoke through Docker Compose.
+- `.\dev.ps1 run` — build and run the deterministic fixture-backed research-to-final-paper-Fill smoke through Docker Compose.
 - `.\dev.ps1 publish-wpf` — publish a self-contained `win-x64` artifact from Linux Docker to an ignored host-visible directory when introduced.
 - `.\dev.ps1 run-wpf` — launch the published artifact on the Windows host for manual testing when introduced.
 

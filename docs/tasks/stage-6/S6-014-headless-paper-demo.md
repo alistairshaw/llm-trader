@@ -3,13 +3,13 @@ schema_version: 1
 id: S6-014
 title: Demonstrate the complete paper workflow in the headless host
 stage: 6
-status: planned
+status: done
 priority: 720
 type: feature
 depends_on: [S6-012, S6-013]
 labels: [host, smoke, paper-trading, demonstration]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
 # S6-014: Demonstrate the Complete Paper Workflow in the Headless Host
@@ -52,4 +52,17 @@ Use [Implementation Plan — Stage 6 Demonstration](../../implementation-plan.md
 
 ## Completion Notes
 
-Pending.
+- Registered the Stage 6 paper repositories, conversion, durable processors, simulated broker, reconciliation,
+  status-event, Fill-accounting, recovery, and projection ports in `Trading.Host`. The fixed workflow converts the
+  governed Proposal, exercises timeout-after-acceptance reconciliation, ingests acknowledgement plus partial/final
+  execution events, filters an exact duplicate source message, and verifies the fully correlated projection.
+- The stable outcome is Order `01J5QH8M000000000000000001`, client identity
+  `paper-0189b4bdb753e1f6fabf521e1fc83ba9ff9686e86d78ba38`, broker Order `paper-broker-0004`, two Fills,
+  70 shares, 700 USD gross execution, 2 USD fees, a consumed 700 USD Reservation, 18 projected audit events, and
+  zero live submissions. Two clean `./dev.ps1 run` executions reproduced those business facts.
+- Validation: `./dev.ps1 build` passed with zero warnings/errors; `Category=HeadlessHost` passed 3/3;
+  `Category=Stage6Migrations` passed 9/9; the full suite passed 1,109 with 34 expected pending Stage 6 acceptance
+  cases; `./dev.ps1 format` passed; EF reported no pending model changes; and the smoke passed twice.
+- Updated README, AGENTS, architecture, data model, Trading Bot, local-development, and test-plan guidance. The
+  Stage 5 acceptance driver explicitly disables only the Stage 6 extension so its historical governance assertions
+  continue to observe the Stage 5 boundary. Deviations: none. Follow-up tasks: none. ADRs: none.

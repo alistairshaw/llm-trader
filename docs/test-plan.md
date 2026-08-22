@@ -204,7 +204,7 @@ Production startup must not use `EnsureCreated`.
 
 ## 8. Component and Integration Tests
 
-`Trading.IntegrationTests` composes the Generic Host with production engine and data services while replacing external providers. `Category=Stage5Host` verifies the migrated fixture-backed proposal smoke through durable proposal, evaluation, approval, reservation, projection, ResearchOnly, and shutdown facts; the host graph contains no broker-submission service.
+`Trading.IntegrationTests` composes the Generic Host with production engine and data services while replacing external providers. `Category=Stage6Host` verifies the migrated fixture-backed workflow through proposal governance, atomic Order conversion, unknown-submission reconciliation, partial and final Fill accounting, projections, and shutdown. The graph contains only the deterministic paper broker and no live or network broker authority.
 
 Core workflows:
 

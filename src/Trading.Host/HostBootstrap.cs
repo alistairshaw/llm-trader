@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Trading.Brokers.Simulation;
 using Trading.Core.Bots;
 using Trading.Core.Brokers;
 using Trading.Core.FinancialValues;
@@ -14,6 +15,7 @@ using Trading.Core.Policies;
 using Trading.Core.Portfolios;
 using Trading.Core.Proposals;
 using Trading.Data;
+using Trading.Engine.Execution;
 using Trading.Engine.Proposals;
 using Trading.Engine.Runtime;
 using Trading.Research;
@@ -27,6 +29,7 @@ public sealed class TradingHostOptions
     public string Mode { get; init; } = "Simulated";
     public string DataDirectory { get; init; } = "/data";
     public bool SmokeMode { get; init; }
+    public bool ExecutePaperSmoke { get; init; } = true;
     public int GlobalRunConcurrency { get; init; } = 1;
     public int QueueCapacity { get; init; } = 16;
     public int LeaseSeconds { get; init; } = 300;
@@ -168,6 +171,52 @@ public static class HostBootstrap
         builder.Services.AddScoped<IAtomicCapitalReservationRepository, AtomicCapitalReservationRepository>();
         builder.Services.AddScoped<IProposalQueries, ProposalQueries>();
         builder.Services.AddScoped<IOrderExecutionQueries, OrderExecutionQueries>();
+        builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+        builder.Services.AddScoped<IOrderWorkRepository, OrderWorkRepository>();
+        builder.Services.AddScoped<IBrokerInboxRepository, BrokerInboxRepository>();
+        builder.Services.AddScoped<IAtomicOrderConversionRepository, AtomicOrderConversionRepository>();
+        builder.Services.AddScoped<IOrderSubmissionRepository, OrderSubmissionRepository>();
+        builder.Services.AddScoped<IOrderReconciliationRepository, OrderReconciliationRepository>();
+        builder.Services.AddScoped<IBrokerOrderEventRepository, BrokerOrderEventRepository>();
+        builder.Services.AddScoped<IFillAccountingRepository, FillAccountingRepository>();
+        builder.Services.AddScoped<IPaperExecutionRecoveryRepository, PaperExecutionRecoveryRepository>();
+        builder.Services.AddScoped<IBrokerReconciliationRepository, BrokerReconciliationRepository>();
+        builder.Services.AddSingleton<PaperSmokeState>();
+        builder.Services.AddSingleton<IOrderExecutionClock>(x => x.GetRequiredService<PaperSmokeState>());
+        builder.Services.AddSingleton<IOrderExecutionIdentifierSource>(x => x.GetRequiredService<PaperSmokeState>());
+        builder.Services.AddSingleton<ISimulatedBrokerClock>(x => x.GetRequiredService<PaperSmokeState>());
+        builder.Services.AddSingleton<ISimulatedBrokerIdentifierSource>(x => x.GetRequiredService<PaperSmokeState>());
+        builder.Services.AddSingleton<ISimulatedBrokerLatency, ImmediatePaperLatency>();
+        builder.Services.AddSingleton(x => new SimulatedPaperBroker(
+            BrokerConnectionId.Parse("01J5QH8M000000000000000304"), SmokeFixture.AccountTwoId,
+            "Deterministic paper fixture", x.GetRequiredService<ISimulatedBrokerClock>(),
+            x.GetRequiredService<ISimulatedBrokerIdentifierSource>(), x.GetRequiredService<ISimulatedBrokerLatency>()));
+        builder.Services.AddSingleton<IPaperBrokerGateway>(x => x.GetRequiredService<SimulatedPaperBroker>());
+        builder.Services.AddScoped<IOrderConversionService, ProposalOrderConversionService>();
+        builder.Services.AddScoped<IPaperBrokerAccountReconciler, SmokePaperAccountReconciler>();
+        builder.Services.AddScoped<IOrderWorkDispatcher>(x => new PaperWorkDispatcher(
+            new PaperOrderSubmissionDispatcher(x.GetRequiredService<IOrderSubmissionRepository>(),
+                x.GetRequiredService<IPaperBrokerGateway>(), x.GetRequiredService<IOrderExecutionClock>(),
+                x.GetRequiredService<IOrderExecutionIdentifierSource>(), PaperOrderSubmissionOptions.Default),
+            new PaperOrderReconciliationDispatcher(x.GetRequiredService<IOrderReconciliationRepository>(),
+                x.GetRequiredService<IPaperBrokerGateway>(), x.GetRequiredService<IOrderExecutionClock>(),
+                x.GetRequiredService<IOrderExecutionIdentifierSource>(), PaperOrderReconciliationOptions.Default)));
+        builder.Services.AddScoped<IBrokerInboxDispatcher>(x => new PaperInboxDispatcher(
+            new BrokerOrderEventDispatcher(x.GetRequiredService<IBrokerOrderEventRepository>(),
+                x.GetRequiredService<IOrderExecutionClock>(), "paper-host-worker"),
+            new FillAccountingDispatcher(x.GetRequiredService<IFillAccountingRepository>(),
+                x.GetRequiredService<IOrderExecutionClock>(), "paper-host-worker")));
+        builder.Services.AddScoped(x => new OrderOutboxProcessor(x.GetRequiredService<IOrderWorkRepository>(),
+            x.GetRequiredService<IOrderWorkDispatcher>(), x.GetRequiredService<IOrderExecutionClock>(),
+            "paper-host-worker", DurableBrokerProcessorOptions.Default));
+        builder.Services.AddScoped(x => new BrokerInboxProcessor(x.GetRequiredService<IBrokerInboxRepository>(),
+            x.GetRequiredService<IBrokerInboxDispatcher>(), x.GetRequiredService<IOrderExecutionClock>(),
+            "paper-host-worker", DurableBrokerProcessorOptions.Default));
+        builder.Services.AddScoped(x => new PaperExecutionRecoveryService(
+            x.GetRequiredService<IPaperExecutionRecoveryRepository>(), x.GetRequiredService<IBrokerReconciliationRepository>(),
+            x.GetRequiredService<IPaperBrokerAccountReconciler>(), x.GetRequiredService<OrderOutboxProcessor>(),
+            x.GetRequiredService<BrokerInboxProcessor>(), x.GetRequiredService<IOrderExecutionClock>(),
+            x.GetRequiredService<IOrderExecutionIdentifierSource>(), PaperExecutionRecoveryOptions.Default));
         builder.Services.AddSingleton<ProposalSmokeState>();
         builder.Services.AddSingleton<IProposalGovernanceClock>(x => x.GetRequiredService<ProposalSmokeState>());
         builder.Services.AddSingleton<IProposalGovernanceIdentifierSource>(x => x.GetRequiredService<ProposalSmokeState>());
@@ -258,6 +307,8 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
             if (options.SmokeMode) await SmokeFixture.SeedAsync(services, stoppingToken);
             var researchRecovery = await services.GetRequiredService<ResearchRestartRecovery>().RecoverAsync(stoppingToken);
             var recovery = await services.GetRequiredService<RuntimeRecoveryService>().RecoverExpiredLeasesAsync(stoppingToken);
+            var paperRecovery = await services.GetRequiredService<PaperExecutionRecoveryService>().RecoverAndDrainAsync(stoppingToken);
+            if (!paperRecovery.IsReady) throw new InvalidOperationException("Paper execution recovery did not reach readiness.");
             var ids = options.SmokeMode ? [SmokeFixture.BotId, SmokeFixture.BotTwoId] : options.BotIds.Select(TradingBotId.Parse).ToArray();
             foreach (var id in ids) await ValidateBotAsync(services, id, stoppingToken);
             supervisor = new MultiBotSupervisor(new MultiBotSupervisorOptions { GlobalRunConcurrency = options.GlobalRunConcurrency, QueueCapacity = options.QueueCapacity }, services.GetRequiredService<BotRunOrchestrationService>());
@@ -285,7 +336,9 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
                     throw new InvalidOperationException("One or more smoke Bots did not complete.");
                 }
                 await ResearchSmoke.RunAsync(services, logger, stoppingToken);
-                await ProposalSmoke.RunAsync(services, results, logger, stoppingToken);
+                var reservation = await ProposalSmoke.RunAsync(services, results, logger, stoppingToken);
+                if (options.ExecutePaperSmoke)
+                    await PaperSmoke.RunAsync(services, reservation, logger, stoppingToken);
                 lifetime.StopApplication();
             }
             else await Task.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
@@ -377,8 +430,12 @@ internal static class SmokeFixture
         var connection = new BrokerConnection(BrokerConnectionId.Parse("01J5QH8M000000000000000304"), "fixture", "Deterministic paper fixture", BrokerEnvironment.Paper, "fixture://no-secret", [], now);
         connection.Enable();
         _ = await services.GetRequiredService<IBrokerConnectionRepository>().AddAsync(connection, token);
-        _ = await services.GetRequiredService<IBrokerAccountRepository>().AddAsync(new(AccountId, connection.Id, "paper-a", "Paper A", "Cash", Currency.USD, createdAt: now), token);
-        _ = await services.GetRequiredService<IBrokerAccountRepository>().AddAsync(new(AccountTwoId, connection.Id, "paper-b", "Paper B", "Cash", Currency.USD, createdAt: now), token);
-        _ = await services.GetRequiredService<IInstrumentRepository>().AddAsync(new(InstrumentId, InstrumentType.Equity, "ACME", "ACME fixture", Currency.USD, "FIXTURE", createdAt: now), token);
+        var accountA = new BrokerAccount(AccountId, connection.Id, "paper-a", "Paper A", "Cash", Currency.USD, createdAt: now); accountA.Reconcile(now);
+        var accountB = new BrokerAccount(AccountTwoId, connection.Id, "paper-b", "Paper B", "Cash", Currency.USD, createdAt: now); accountB.Reconcile(now);
+        _ = await services.GetRequiredService<IBrokerAccountRepository>().AddAsync(accountA, token);
+        _ = await services.GetRequiredService<IBrokerAccountRepository>().AddAsync(accountB, token);
+        var instrument = new Instrument(InstrumentId, InstrumentType.Equity, "ACME", "ACME fixture", Currency.USD, "FIXTURE", createdAt: now);
+        instrument.AddBrokerMapping(InstrumentBrokerMappingId.Parse("01J5QH8M000000000000000305"), connection.Id, "ACME-PAPER", "ACME", "FIXTURE", now);
+        _ = await services.GetRequiredService<IInstrumentRepository>().AddAsync(instrument, token);
     }
 }

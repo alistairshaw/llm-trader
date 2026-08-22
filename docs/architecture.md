@@ -335,7 +335,7 @@ Trading.Engine
       └── Trading.Brokers
 ```
 
-The headless process responds to `Ctrl+C`, `SIGINT`, and `SIGTERM` through Generic Host lifetime handling. It composes the Trading and shared Research supervisors plus proposal-governance application services. Database migrations and both recovery services complete before readiness or new claims; shutdown stops accepting work, propagates cancellation, and leaves active attempts, notifications, Trading runs, evaluations, decisions, and reservations recoverable. The local smoke composition uses fixture state and paper-neutral account identities and registers no order or broker-submission implementation.
+The headless process responds to `Ctrl+C`, `SIGINT`, and `SIGTERM` through Generic Host lifetime handling. It composes the Trading and shared Research supervisors, proposal governance, and paper execution services. Database migrations and recovery complete before readiness or new claims; shutdown stops accepting work, propagates cancellation, and leaves durable work recoverable. The local smoke uses the deterministic simulated broker to demonstrate conversion, timeout-after-acceptance reconciliation, acknowledgement, partial and final Fill accounting, duplicate protection, projections, and clean shutdown without any live adapter or network authority.
 
 ## 9. Core Execution Flow
 
