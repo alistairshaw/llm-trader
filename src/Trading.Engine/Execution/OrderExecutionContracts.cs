@@ -19,13 +19,11 @@ public static class OrderConversionCodes
     public const string Created = "order_conversion.created";
     public const string AlreadyCreated = "order_conversion.already_created";
     public const string NotFound = "order_conversion.not_found";
-    public const string ProposalNotApproved = AtomicOrderConversionCodes.ProposalNotApproved;
+    public const string ApprovalRequired = AtomicOrderConversionCodes.ApprovalRequired;
     public const string ProposalExpired = AtomicOrderConversionCodes.ProposalExpired;
+    public const string FreshValidationRequired = AtomicOrderConversionCodes.FreshValidationRequired;
     public const string ResearchOnly = AtomicOrderConversionCodes.ResearchOnly;
     public const string EnvironmentMismatch = AtomicOrderConversionCodes.EnvironmentMismatch;
-    public const string ApprovalMismatch = AtomicOrderConversionCodes.ApprovalMismatch;
-    public const string EvaluationMismatch = AtomicOrderConversionCodes.EvaluationMismatch;
-    public const string SnapshotMismatch = AtomicOrderConversionCodes.SnapshotMismatch;
     public const string ReservationMismatch = AtomicOrderConversionCodes.ReservationMismatch;
     public const string PortfolioMismatch = AtomicOrderConversionCodes.PortfolioMismatch;
     public const string AccountRestricted = AtomicOrderConversionCodes.AccountRestricted;

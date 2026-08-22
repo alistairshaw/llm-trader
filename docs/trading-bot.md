@@ -227,6 +227,11 @@ Paper conversion derives a stable client order identity from the Proposal identi
 approved Proposal's conversion, normalized Order intent, active Reservation attachment, and canonical submission work.
 It repeats ownership, fresh evaluation/snapshot, account reconciliation, paper environment, instrument mapping,
 currency, expiry, and instruction checks inside that transaction. Authorization failure has no durable side effect.
+The application returns `order_execution.approval_required` when exact approval is absent,
+`order_execution.proposal_expired` when validity has elapsed, and
+`order_execution.fresh_validation_required` when approval content, the latest passing evaluation, or its pinned
+snapshot no longer matches. These stable outcomes are returned before any Order, outbox work, or Reservation
+consumption is written.
 Each paper operation uses the Order's stable client identity and a typed paper-environment context. Accepted, rejected,
 unknown, retryable, terminal, duplicate, and reconciliation results are normalized before reaching the engine. An
 unknown submission is reconciled by client identity before any later submission decision.

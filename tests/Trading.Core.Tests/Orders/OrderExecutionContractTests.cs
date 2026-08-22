@@ -76,7 +76,12 @@ public sealed class OrderExecutionContractTests
             Assert.That(request.ProposalId, Is.EqualTo(proposal));
             Assert.That(request.ReservationId, Is.EqualTo(reservation));
             Assert.That(request.At, Is.EqualTo(Now));
-            Assert.That(AtomicOrderConversionCodes.ProposalExpired, Is.EqualTo("order_conversion.proposal_expired"));
+            Assert.That(AtomicOrderConversionCodes.ApprovalRequired,
+                Is.EqualTo("order_execution.approval_required"));
+            Assert.That(AtomicOrderConversionCodes.ProposalExpired,
+                Is.EqualTo("order_execution.proposal_expired"));
+            Assert.That(AtomicOrderConversionCodes.FreshValidationRequired,
+                Is.EqualTo("order_execution.fresh_validation_required"));
             Assert.That(AtomicOrderConversionCodes.EnvironmentMismatch,
                 Is.EqualTo("order_conversion.environment_mismatch"));
         });

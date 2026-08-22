@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-020
 title: Align Proposal-to-Order rejection codes with the execution contract
 stage: 6
-status: ready
+status: done
 priority: 980
 type: defect
 depends_on: [S6-014]
@@ -58,4 +58,20 @@ Use [Architecture — Paper Execution](../../architecture.md), [Data Model — O
 
 ## Completion Notes
 
-Pending.
+Completed on 2026-08-22.
+
+- Centralized the committed public rejection codes as `order_execution.approval_required`,
+  `order_execution.proposal_expired`, and `order_execution.fresh_validation_required` across Core, Engine, and the
+  atomic Data conversion boundary.
+- Normalized absent approval, changed approved content, invalid or stale evaluation authority, and mismatched pinned
+  snapshot state before Order/outbox creation or Reservation consumption.
+- Inspected tracked fixtures and Git history. Upgrade fixtures stop at Stage 2, rejected conversions persist no result
+  row, and Stage 6 has not produced a released fixture containing the replaced values; no historical read translation
+  or data migration is required.
+- Updated Data, Engine, Core contract, and integration coverage plus the authoritative Data Model and Trading Bot
+  documentation. No migration or ADR was required.
+- Validation: `./dev.ps1 build` passed with zero warnings/errors; focused `OrderConversion` Engine (7), Data (10), and
+  Integration (1) tests passed; Stage 6 acceptance discovery found all 34 scenarios (still intentionally ignored by
+  S6-015); `./dev.ps1 test` passed 1,114 tests with only those 34 expected skips; `./dev.ps1 format` passed; and the
+  `Stage6Migrations` suite passed 9 tests including model-drift verification.
+- Deviations: none. Follow-up: S6-015.

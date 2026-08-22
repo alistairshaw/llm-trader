@@ -338,13 +338,11 @@ public interface IAtomicOrderConversionRepository
 
 public static class AtomicOrderConversionCodes
 {
-    public const string ProposalNotApproved = "order_conversion.proposal_not_approved";
-    public const string ProposalExpired = "order_conversion.proposal_expired";
+    public const string ApprovalRequired = "order_execution.approval_required";
+    public const string ProposalExpired = "order_execution.proposal_expired";
+    public const string FreshValidationRequired = "order_execution.fresh_validation_required";
     public const string ResearchOnly = "order_conversion.research_only";
     public const string EnvironmentMismatch = "order_conversion.environment_mismatch";
-    public const string ApprovalMismatch = "order_conversion.approval_mismatch";
-    public const string EvaluationMismatch = "order_conversion.evaluation_mismatch";
-    public const string SnapshotMismatch = "order_conversion.snapshot_mismatch";
     public const string ReservationMismatch = "order_conversion.reservation_mismatch";
     public const string PortfolioMismatch = "order_conversion.portfolio_mismatch";
     public const string AccountRestricted = "order_conversion.account_restricted";

@@ -5,7 +5,7 @@ using Trading.Engine.Execution;
 
 namespace Trading.IntegrationTests;
 
-[TestFixture, Category("ProposalOrderConversion"), Category("OrderConversionBoundary")]
+[TestFixture, Category("OrderConversion"), Category("ProposalOrderConversion"), Category("OrderConversionBoundary")]
 public sealed class ProposalOrderConversionBoundaryTests
 {
     [Test]
@@ -20,7 +20,7 @@ public sealed class ProposalOrderConversionBoundaryTests
         Assert.Multiple(() =>
         {
             Assert.That(result.Outcome, Is.EqualTo(OrderConversionOutcome.Rejected));
-            Assert.That(result.Code, Is.EqualTo(AtomicOrderConversionCodes.ProposalNotApproved));
+            Assert.That(result.Code, Is.EqualTo(AtomicOrderConversionCodes.ApprovalRequired));
             Assert.That(repository.Calls, Is.EqualTo(1));
             Assert.That(typeof(ProposalOrderConversionService).GetConstructors().Single().GetParameters()
                 .Select(parameter => parameter.ParameterType), Has.None.EqualTo(typeof(IPaperBrokerGateway)));
@@ -35,7 +35,7 @@ public sealed class ProposalOrderConversionBoundaryTests
         {
             Calls++;
             return Task.FromResult<AtomicOrderConversionWriteResult>(new AtomicOrderConversionWriteResult.Rejected(
-                AtomicOrderConversionCodes.ProposalNotApproved));
+                AtomicOrderConversionCodes.ApprovalRequired));
         }
     }
 

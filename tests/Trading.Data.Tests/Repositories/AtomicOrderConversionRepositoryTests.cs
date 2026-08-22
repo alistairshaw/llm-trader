@@ -12,7 +12,7 @@ using Trading.TestInfrastructure;
 
 namespace Trading.Data.Tests.Repositories;
 
-[TestFixture, Category("OrderConversionTransaction")]
+[TestFixture, Category("OrderConversion"), Category("OrderConversionTransaction")]
 public sealed class AtomicOrderConversionRepositoryTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 22, 12, 0, 0, TimeSpan.Zero);
@@ -161,6 +161,54 @@ public sealed class AtomicOrderConversionRepositoryTests
         });
     }
 
+    [Test]
+    public async Task MissingApprovalUsesCommittedExecutionCodeAndWritesNothing()
+    {
+        await AssertRejectedWithoutSideEffectsAsync(
+            AtomicOrderConversionCodes.ApprovalRequired,
+            arrange: context => context.TradeProposals.Single().Status = "Recorded");
+    }
+
+    [Test]
+    public async Task ExpiredProposalUsesCommittedExecutionCodeAndPreservesReservation()
+    {
+        await AssertRejectedWithoutSideEffectsAsync(
+            AtomicOrderConversionCodes.ProposalExpired,
+            create: () => CreateAsync(validUntil: Now.AddMinutes(5)));
+    }
+
+    [Test]
+    public async Task StaleValidatedSnapshotUsesCommittedExecutionCodeAndWritesNothing()
+    {
+        await AssertRejectedWithoutSideEffectsAsync(
+            AtomicOrderConversionCodes.FreshValidationRequired,
+            create: () => CreateAsync(freshStateHash: Hash('x')));
+    }
+
+    private static async Task AssertRejectedWithoutSideEffectsAsync(string expectedCode,
+        Func<Task<Fixture>>? create = null, Action<TradingDbContext>? arrange = null)
+    {
+        await using var fixture = await (create ?? (() => CreateAsync()))();
+        if (arrange is not null)
+        {
+            arrange(fixture.Database.Context);
+            await fixture.Database.Context.SaveChangesAsync();
+            fixture.Database.Context.ChangeTracker.Clear();
+        }
+
+        var result = await new AtomicOrderConversionRepository(fixture.Database.Context)
+            .TryConvertAsync(Request(fixture.Proposal, fixture.Reservation.Id), default);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.EqualTo(new AtomicOrderConversionWriteResult.Rejected(expectedCode)));
+            Assert.That(fixture.Database.Context.Orders.Count(), Is.Zero);
+            Assert.That(fixture.Database.Context.OutboxMessages.Count(), Is.Zero);
+            Assert.That(fixture.Database.Context.CapitalReservations.Single().OrderId, Is.Null);
+            Assert.That(fixture.Database.Context.CapitalReservations.Single().Status, Is.EqualTo("Active"));
+        });
+    }
+
     [Test, Category("OrderSubmission")]
     public async Task SubmissionPreparationAndAcceptedCompletionAtomicallyFinalizeOrderAndClaimedOutbox()
     {
@@ -304,7 +352,8 @@ public sealed class AtomicOrderConversionRepositoryTests
         new(proposal.Id, reservationId, OrderId.New(), OrderWorkItemId.New(), new("conversion-correlation"),
             new ClientOrderIdentity("paper-conversion-stable"), Now.AddMinutes(6));
 
-    private static async Task<Fixture> CreateAsync()
+    private static async Task<Fixture> CreateAsync(
+        DateTimeOffset? validUntil = null, string? freshStateHash = null)
     {
         var database = await TemporarySqliteDatabase.CreateAsync();
         await new DatabaseInitializer(database.Context).InitializeAsync();
@@ -314,7 +363,8 @@ public sealed class AtomicOrderConversionRepositoryTests
             PortfolioDecisionSnapshotId.Parse(Snapshot), InstrumentId.Parse(Instrument),
             new DirectTradeAction(TradeSide.Buy, new Quantity(2, "shares"), ProposedOrderType.Limit,
                 new Price(125, Currency.USD), ProposedTimeInForce.Day), "approved paper order",
-            new ProposalContentVersion(1, Hash('p')), null, [], Now, Now.AddHours(2), ExecutionMode.PaperTrading);
+            new ProposalContentVersion(1, Hash('p')), null, [], Now, validUntil ?? Now.AddHours(2),
+            ExecutionMode.PaperTrading);
         var proposals = new TradeProposalRepository(database.Context);
         await proposals.RecordAsync(proposal, "conversion-proposal", default);
         var policies = new[]
@@ -324,7 +374,8 @@ public sealed class AtomicOrderConversionRepositoryTests
             new GuardrailPolicyReference(GuardrailPolicyLevel.Portfolio, Portfolio, "v1"),
             new GuardrailPolicyReference(GuardrailPolicyLevel.TradingBot, Bot, "v1"),
         };
-        var fresh = new FreshStateReference(PortfolioDecisionSnapshotId.Parse(Snapshot), Now, Hash('s'));
+        var fresh = new FreshStateReference(
+            PortfolioDecisionSnapshotId.Parse(Snapshot), Now, freshStateHash ?? Hash('s'));
         proposal.StartValidation(Now.AddMinutes(1));
         proposal.RecordEvaluation(GuardrailEvaluationId.New(), policies, GuardrailOutcome.Passed,
             [new("notional", GuardrailOutcome.Passed, "within policy")], Now.AddMinutes(1), fresh,

@@ -557,6 +557,12 @@ The Stage 5 schema stores `order_id` without a foreign key because the `orders` 
 
 ## 10. Execution Tables
 
+Proposal-to-Order authorization is checked inside the same serializable transaction that would create the Order and
+submission outbox. Missing approval returns `order_execution.approval_required`, expiry returns
+`order_execution.proposal_expired`, and changed proposal content or stale evaluation/snapshot authority returns
+`order_execution.fresh_validation_required`. A rejection commits no Order or outbox row and does not consume or bind
+the active Reservation. Conversion rejection results are application results rather than stored execution rows.
+
 ### 10.1 `orders`
 
 | Column | Constraints and purpose |

@@ -6,7 +6,7 @@ using Trading.Engine.Execution;
 
 namespace Trading.Engine.Tests;
 
-[TestFixture, Category("ProposalOrderConversion")]
+[TestFixture, Category("OrderConversion"), Category("ProposalOrderConversion")]
 public sealed class ProposalOrderConversionServiceTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 22, 12, 0, 0, TimeSpan.Zero);
@@ -57,8 +57,12 @@ public sealed class ProposalOrderConversionServiceTests
 
     private static IEnumerable<TestCaseData> RejectedOutcomes()
     {
+        yield return new(new AtomicOrderConversionWriteResult.Rejected(OrderConversionCodes.ApprovalRequired),
+            OrderConversionOutcome.Rejected, OrderConversionCodes.ApprovalRequired);
         yield return new(new AtomicOrderConversionWriteResult.Rejected(OrderConversionCodes.ProposalExpired),
             OrderConversionOutcome.Rejected, OrderConversionCodes.ProposalExpired);
+        yield return new(new AtomicOrderConversionWriteResult.Rejected(OrderConversionCodes.FreshValidationRequired),
+            OrderConversionOutcome.Rejected, OrderConversionCodes.FreshValidationRequired);
         yield return new(new AtomicOrderConversionWriteResult.NotFound(), OrderConversionOutcome.NotFound,
             OrderConversionCodes.NotFound);
         yield return new(new AtomicOrderConversionWriteResult.Contention(), OrderConversionOutcome.Contention,

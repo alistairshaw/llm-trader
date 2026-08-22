@@ -38,7 +38,7 @@ public sealed class AtomicOrderConversionRepository(TradingDbContext db) : IAtom
                 db, request.ProposalId.ToString(), token).ConfigureAwait(false);
             if (proposal is null) return new AtomicOrderConversionWriteResult.NotFound();
             if (proposal.Status != ProposalStatus.Approved)
-                return Reject(AtomicOrderConversionCodes.ProposalNotApproved);
+                return Reject(AtomicOrderConversionCodes.ApprovalRequired);
             if (proposal.ValidUntil <= request.At)
                 return Reject(AtomicOrderConversionCodes.ProposalExpired);
             if (proposal.ExecutionMode == ExecutionMode.ResearchOnly)
@@ -48,13 +48,13 @@ public sealed class AtomicOrderConversionRepository(TradingDbContext db) : IAtom
 
             var approval = proposal.ApprovalHistory.Count == 0 ? null : proposal.ApprovalHistory[^1];
             if (approval?.ReviewedContentVersion != proposal.ContentVersion)
-                return Reject(AtomicOrderConversionCodes.ApprovalMismatch);
+                return Reject(AtomicOrderConversionCodes.FreshValidationRequired);
             var evaluation = proposal.GuardrailEvaluations.Count == 0 ? null : proposal.GuardrailEvaluations[^1];
             if (evaluation is null || evaluation.Outcome != GuardrailOutcome.Passed ||
                 evaluation.ProposalContentVersion != proposal.ContentVersion ||
                 evaluation.ConfigurationVersionId != proposal.ConfigurationVersionId ||
                 evaluation.FreshState is null || evaluation.ContentHash is null)
-                return Reject(AtomicOrderConversionCodes.EvaluationMismatch);
+                return Reject(AtomicOrderConversionCodes.FreshValidationRequired);
 
             var snapshot = await db.PortfolioDecisionSnapshots.AsNoTracking().SingleOrDefaultAsync(
                 x => x.Id == evaluation.FreshState.SnapshotId.ToString(), token).ConfigureAwait(false);
@@ -63,7 +63,7 @@ public sealed class AtomicOrderConversionRepository(TradingDbContext db) : IAtom
                 snapshot.ConfigurationVersionId != proposal.ConfigurationVersionId.ToString() ||
                 snapshot.ContentHash != evaluation.FreshState.ContentHash ||
                 snapshot.AsOf != evaluation.FreshState.ObservedAt.ToUnixTimeMilliseconds())
-                return Reject(AtomicOrderConversionCodes.SnapshotMismatch);
+                return Reject(AtomicOrderConversionCodes.FreshValidationRequired);
 
             var reservation = await db.CapitalReservations.SingleOrDefaultAsync(
                 x => x.Id == request.ReservationId.ToString(), token).ConfigureAwait(false);
