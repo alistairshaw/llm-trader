@@ -67,7 +67,7 @@ public sealed class OrderAggregateTests
         });
     }
 
-    [Test]
+    [Test, Category("FillAccounting")]
     public void FillQuantityCannotExceedOrderAndUnitsAndCurrenciesMustMatch()
     {
         var order = OrderIn(OrderStatus.Acknowledged);
@@ -81,7 +81,7 @@ public sealed class OrderAggregateTests
         Assert.That(() => ApplyFill(order, 5, "shares", Currency.USD, "execution-2"), Throws.InvalidOperationException);
     }
 
-    [Test]
+    [Test, Category("FillAccounting")]
     public void DuplicateBrokerExecutionIsIgnoredWithoutChangingStateOrVersion()
     {
         var order = OrderIn(OrderStatus.Acknowledged);

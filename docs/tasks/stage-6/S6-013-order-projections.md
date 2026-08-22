@@ -3,13 +3,13 @@ schema_version: 1
 id: S6-013
 title: Build order, fill, and execution audit projections
 stage: 6
-status: planned
+status: ready
 priority: 740
 type: feature
 depends_on: [S6-011]
 labels: [projections, orders, fills, audit]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
 # S6-013: Build Order, Fill, and Execution Audit Projections

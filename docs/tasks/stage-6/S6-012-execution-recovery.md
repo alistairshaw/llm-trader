@@ -3,13 +3,13 @@ schema_version: 1
 id: S6-012
 title: Recover durable paper execution after restart
 stage: 6
-status: planned
+status: ready
 priority: 760
 type: feature
 depends_on: [S6-011]
 labels: [recovery, restart, leases, reconciliation]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
 # S6-012: Recover Durable Paper Execution after Restart

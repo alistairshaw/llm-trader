@@ -841,6 +841,22 @@ Insert/deduplicate Fill
 
 Fill processing intentionally coordinates several aggregates because partial persistence would corrupt financial state. This is a documented application-level consistency boundary, not permission to create arbitrary cross-aggregate transactions.
 
+Stage 6 applies an execution only from a claimed paper-broker inbox item. The transaction validates the exact account,
+client and broker Order identities, instrument-derived Position, quantity unit, currency, execution identity, and cumulative
+quantity before writing any financial fact. A buy Position's weighted average cost excludes separately posted fees; the
+trade settlement is signed negative for a buy and positive for a sell, while every fee is signed negative. Sell realized
+profit or loss is `(execution price - prior average cost) * quantity - fee` and never permits a negative Position.
+
+Each execution creates one immutable `Settlement` entry with source ID `<execution-id>:trade` and one immutable `Fee`
+entry with source ID `<execution-id>:fee`; both retain the unsuffixed broker execution identity in bounded canonical
+metadata. This satisfies the ledger's one-source-fact uniqueness boundary without conflating trade cash and fees.
+`position_applied_fills` uses the immutable Fill ID as its marker. A partial fill leaves the attached Reservation active;
+its remaining protected capacity is derived exactly as the original reservation amount less cumulative buy settlement
+and fees. The final fill consumes the Reservation and thereby releases any unused capacity. Duplicate exact executions
+complete their inbox item without another financial write; conflicting reuse, overfill, and invalid identities complete
+with stable rejection codes. Contention or any persistence failure rolls back the Fill, Order transition, Position,
+marker, both ledger entries, Reservation transition, and inbox completion together.
+
 ### 13.5 Decide a Research Request
 
 ```text

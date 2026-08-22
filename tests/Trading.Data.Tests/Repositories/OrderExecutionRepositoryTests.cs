@@ -157,6 +157,124 @@ public sealed class OrderExecutionRepositoryTests
         });
     }
 
+    [Test, Category("AtomicFillApplication")]
+    public async Task PartialAndFinalBuyFillsAtomicallyProduceGoldenFinancialState()
+    {
+        await using var fixture = await SeedAsync();
+        var reservationId = CapitalReservationId.New();
+        await fixture.Database.Context.Database.ExecuteSqlRawAsync(
+            "INSERT INTO capital_reservations (id,portfolio_id,trade_proposal_id,order_id,amount,currency,status,created_at,expires_at,consumed_at,released_at,version) VALUES ({0},{1},{2},NULL,'700','USD','Active',{3},{4},NULL,NULL,1)",
+            reservationId.ToString(), fixture.Ids.Portfolio.ToString(), fixture.Ids.Proposal.ToString(), Now.ToUnixTimeMilliseconds(), Now.AddHours(1).ToUnixTimeMilliseconds());
+        var order = NewOrder(fixture.Ids);
+        var orders = new OrderRepository(fixture.Database.Context);
+        var envelope = new OrderPersistenceEnvelope(order, reservationId, new("corr-fill"));
+        await orders.AddAsync(envelope, default);
+        order.BeginSubmission(OrderTransitionId.New(), Now.AddSeconds(1)); await orders.SaveAsync(envelope, 0, default); fixture.Database.Context.ChangeTracker.Clear();
+        order.MarkSubmitted(OrderTransitionId.New(), Now.AddSeconds(2)); await orders.SaveAsync(envelope, 1, default); fixture.Database.Context.ChangeTracker.Clear();
+        order.Acknowledge(OrderTransitionId.New(), "broker-fill", Now.AddSeconds(3)); await orders.SaveAsync(envelope, 2, default); fixture.Database.Context.ChangeTracker.Clear();
+
+        var first = await ApplyFillAsync(fixture, order, "execution-alpha", 4m, 69.5m, 1.25m, 4);
+        fixture.Database.Context.ChangeTracker.Clear();
+        Assert.Multiple(() =>
+        {
+            Assert.That(first.Disposition, Is.EqualTo(FillAccountingWriteDisposition.Applied));
+            Assert.That(fixture.Database.Context.Orders.Single().Status, Is.EqualTo(OrderStatus.PartiallyFilled));
+            Assert.That(fixture.Database.Context.Positions.Single().Quantity, Is.EqualTo("4"));
+            Assert.That(fixture.Database.Context.Positions.Single().AverageCostAmount, Is.EqualTo("69.5"));
+            Assert.That(fixture.Database.Context.CapitalReservations.Single().Status, Is.EqualTo("Active"));
+            Assert.That(fixture.Database.Context.PortfolioLedgerEntries.AsEnumerable().Sum(x => decimal.Parse(x.Amount!, System.Globalization.CultureInfo.InvariantCulture)), Is.EqualTo(-279.25m));
+        });
+
+        var second = await ApplyFillAsync(fixture, order, "execution-beta", 6m, 69.75m, 1.5m, 5);
+        fixture.Database.Context.ChangeTracker.Clear();
+        Assert.Multiple(() =>
+        {
+            Assert.That(second.Disposition, Is.EqualTo(FillAccountingWriteDisposition.Applied));
+            Assert.That(fixture.Database.Context.Orders.Single().Status, Is.EqualTo(OrderStatus.Filled));
+            Assert.That(fixture.Database.Context.Positions.Single().Quantity, Is.EqualTo("10"));
+            Assert.That(fixture.Database.Context.Positions.Single().AverageCostAmount, Is.EqualTo("69.65"));
+            Assert.That(fixture.Database.Context.Fills.Count(), Is.EqualTo(2));
+            Assert.That(fixture.Database.Context.PositionAppliedFills.Count(), Is.EqualTo(2));
+            Assert.That(fixture.Database.Context.PortfolioLedgerEntries.Count(), Is.EqualTo(4));
+            Assert.That(fixture.Database.Context.CapitalReservations.Single().Status, Is.EqualTo("Consumed"));
+        });
+    }
+
+    [Test, Category("AtomicFillApplication")]
+    public async Task DuplicateAndOverfillNeverRepeatFinancialEffects()
+    {
+        await using var fixture = await SeedAsync();
+        var order = NewOrder(fixture.Ids); var orders = new OrderRepository(fixture.Database.Context);
+        var envelope = new OrderPersistenceEnvelope(order, null, new("corr-fill-safety")); await orders.AddAsync(envelope, default);
+        order.BeginSubmission(OrderTransitionId.New(), Now.AddSeconds(1)); await orders.SaveAsync(envelope, 0, default); fixture.Database.Context.ChangeTracker.Clear();
+        order.MarkSubmitted(OrderTransitionId.New(), Now.AddSeconds(2)); await orders.SaveAsync(envelope, 1, default); fixture.Database.Context.ChangeTracker.Clear();
+        order.Acknowledge(OrderTransitionId.New(), "broker-fill", Now.AddSeconds(3)); await orders.SaveAsync(envelope, 2, default); fixture.Database.Context.ChangeTracker.Clear();
+        await ApplyFillAsync(fixture, order, "execution-alpha", 4, 10, 1, 4); fixture.Database.Context.ChangeTracker.Clear();
+        var duplicate = await ApplyFillAsync(fixture, order, "execution-alpha", 4, 10, 1, 5); fixture.Database.Context.ChangeTracker.Clear();
+        var overfill = await ApplyFillAsync(fixture, order, "execution-beta", 7, 10, 0, 6); fixture.Database.Context.ChangeTracker.Clear();
+        Assert.Multiple(() =>
+        {
+            Assert.That(duplicate.Disposition, Is.EqualTo(FillAccountingWriteDisposition.Duplicate));
+            Assert.That(overfill.Code, Is.EqualTo(FillAccountingCodes.Overfill));
+            Assert.That(fixture.Database.Context.Fills.Count(), Is.EqualTo(1));
+            Assert.That(fixture.Database.Context.Positions.Single().Quantity, Is.EqualTo("4"));
+            Assert.That(fixture.Database.Context.PortfolioLedgerEntries.Count(), Is.EqualTo(2));
+        });
+    }
+
+    [Test, Category("AtomicFillApplication")]
+    public async Task LedgerFailpointRollsBackEveryFinancialEffectAndInboxCompletion()
+    {
+        await using var fixture = await SeedAsync();
+        var order = NewOrder(fixture.Ids); var orders = new OrderRepository(fixture.Database.Context);
+        var envelope = new OrderPersistenceEnvelope(order, null, new("corr-fill-rollback")); await orders.AddAsync(envelope, default);
+        order.BeginSubmission(OrderTransitionId.New(), Now.AddSeconds(1)); await orders.SaveAsync(envelope, 0, default); fixture.Database.Context.ChangeTracker.Clear();
+        order.MarkSubmitted(OrderTransitionId.New(), Now.AddSeconds(2)); await orders.SaveAsync(envelope, 1, default); fixture.Database.Context.ChangeTracker.Clear();
+        order.Acknowledge(OrderTransitionId.New(), "broker-fill", Now.AddSeconds(3)); await orders.SaveAsync(envelope, 2, default); fixture.Database.Context.ChangeTracker.Clear();
+        fixture.Database.Context.PortfolioLedgerEntries.Add(new()
+        {
+            Id = PortfolioLedgerEntryId.New().ToString(),
+            PortfolioId = fixture.Ids.Portfolio.ToString(),
+            EntryType = "Settlement",
+            Amount = "0",
+            Currency = "USD",
+            InstrumentId = fixture.Ids.Instrument.ToString(),
+            Quantity = "0",
+            EffectiveAt = Now.ToUnixTimeMilliseconds(),
+            RecordedAt = Now.ToUnixTimeMilliseconds(),
+            SourceType = "BrokerExecution",
+            SourceId = "execution-alpha:trade"
+        });
+        await fixture.Database.Context.SaveChangesAsync(); fixture.Database.Context.ChangeTracker.Clear();
+
+        Assert.That(async () => await ApplyFillAsync(fixture, order, "execution-alpha", 4, 10, 1, 4), Throws.TypeOf<DbUpdateException>());
+        fixture.Database.Context.ChangeTracker.Clear();
+        Assert.Multiple(() =>
+        {
+            Assert.That(fixture.Database.Context.Orders.Single().Status, Is.EqualTo(OrderStatus.Acknowledged));
+            Assert.That(fixture.Database.Context.Positions.Count(), Is.Zero);
+            Assert.That(fixture.Database.Context.Fills.Count(), Is.Zero);
+            Assert.That(fixture.Database.Context.PositionAppliedFills.Count(), Is.Zero);
+            Assert.That(fixture.Database.Context.PortfolioLedgerEntries.Count(), Is.EqualTo(1));
+            Assert.That(fixture.Database.Context.InboxMessages.Single().Status, Is.EqualTo("Claimed"));
+        });
+    }
+
+    private static async Task<FillAccountingWriteResult> ApplyFillAsync(SeedFixture fixture, Order order,
+        string executionId, decimal quantity, decimal price, decimal fee, int second)
+    {
+        var inbox = new BrokerInboxRepository(fixture.Database.Context);
+        var message = new BrokerInboxEnvelope(BrokerMessageId.New(), $"fill:{executionId}:{second}", "{\"event\":\"fill\"}",
+            new($"corr-fill-{second}"), Now.AddSeconds(second));
+        await inbox.ReceiveAsync(message, default);
+        var claimed = (await inbox.ClaimAsync(1, Now.AddSeconds(second), new("fill-worker", Now.AddMinutes(1)), default)).Single();
+        return await new FillAccountingRepository(fixture.Database.Context).ApplyAsync(new(claimed, "fill-worker",
+            fixture.Ids.Account, "Paper", new(order.ClientOrderId), "broker-fill",
+            new(executionId, new(quantity, "shares"), new(price, Currency.USD), new(fee, Currency.USD),
+                Now.AddSeconds(executionId == "execution-alpha" ? 4 : second)),
+            Now.AddSeconds(second)), default);
+    }
+
     private static Order NewOrder(SeedIds x) => new(OrderId.New(), "client-" + Guid.NewGuid().ToString("N"), x.Portfolio, x.Account, x.Proposal, x.Instrument, OrderSide.Buy, new Quantity(10, "shares"), Currency.USD, OrderType.Market, null, TimeInForce.Day, Now);
     private static async Task<SeedFixture> SeedAsync()
     {

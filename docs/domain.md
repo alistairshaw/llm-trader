@@ -574,6 +574,11 @@ stable safe disposition. Execution events are handed to the separate atomic fill
 
 `Fill` is an `Order` child for the MVP and may become an aggregate root if it later develops an independent lifecycle.
 
+Fill accounting is an explicit consistency boundary. A unique broker execution is applied once to its Order, Position,
+trade settlement, fee, applied-fill marker, and attached Capital Reservation in one transaction. Partial fills retain the
+active reservation; final fills consume it and release unused protected capacity. Exact duplicate delivery is inert,
+while conflicting identity reuse and overfills are rejected without partial financial effects.
+
 ## 10. Risk Model
 
 Risk is divided into versioned policies and immutable evaluations:

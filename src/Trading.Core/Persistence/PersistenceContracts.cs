@@ -503,6 +503,24 @@ public interface IBrokerOrderEventRepository
     Task<BrokerOrderEventWriteResult> ApplyAsync(ApplyBrokerOrderEventCommand command, CancellationToken token);
 }
 
+public sealed record ApplyFillAccountingCommand(
+    BrokerInboxEnvelope Message,
+    string LeaseOwner,
+    BrokerAccountId BrokerAccountId,
+    string Environment,
+    ClientOrderIdentity ClientOrderId,
+    string BrokerOrderId,
+    BrokerExecution Execution,
+    DateTimeOffset ProcessedAt);
+
+public enum FillAccountingWriteDisposition { Applied, Duplicate, Rejected, Deferred, Contention }
+public sealed record FillAccountingWriteResult(FillAccountingWriteDisposition Disposition, string Code);
+
+public interface IFillAccountingRepository
+{
+    Task<FillAccountingWriteResult> ApplyAsync(ApplyFillAccountingCommand command, CancellationToken token);
+}
+
 public sealed record PortfolioSummary(
     PortfolioId Id,
     string Name,

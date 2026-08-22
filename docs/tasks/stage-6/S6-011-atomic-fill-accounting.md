@@ -3,13 +3,13 @@ schema_version: 1
 id: S6-011
 title: Apply partial and final fills atomically
 stage: 6
-status: planned
+status: done
 priority: 780
 type: feature
 depends_on: [S6-009, S6-010]
 labels: [fills, positions, ledger, reservations]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
 # S6-011: Apply Partial and Final Fills Atomically
@@ -51,4 +51,29 @@ Use [Domain Model — Position](../../domain.md#42-position-aggregate), [Domain 
 
 ## Completion Notes
 
-Pending.
+Implemented strict paper execution-event dispatch and one serializable SQLite consistency boundary covering Fill
+deduplication, Order transition and cumulative quantity, Position quantity/weighted average cost/realized result,
+applied-fill marker, signed settlement and fee ledger facts, final Reservation consumption, and claimed-inbox
+completion. Exact duplicates are inert; conflicting identities, wrong units/currencies, invalid lifecycle states,
+insufficient Positions, and overfills produce stable outcomes without partial financial effects. A forced duplicate
+ledger source proves every preceding write and inbox completion rolls back together.
+
+Golden buy outcome: 4 shares at 69.50 plus 6 shares at 69.75 produces quantity 10, average cost 69.65, four ledger
+facts, two immutable Fills/markers, and one consumed Reservation. The partial settlement and fee total -279.25 USD.
+
+Validation run in Linux Docker:
+
+- `.\dev.ps1 build` — passed, zero warnings and errors (before tests and after formatting).
+- `.\dev.ps1 test -Project tests/Trading.Core.Tests -Filter "Category=FillAccounting"` — 2 passed.
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=FillAccounting"` — 3 passed.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=AtomicFillApplication"` — 3 passed against migrated SQLite.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage6Migrations"` — 9 passed, including model-drift checks.
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=PartialAndFinalFills"` — no matching tests; the
+  production dispatcher and repository integration is exercised by the Engine and real-SQLite Data suites, and the
+  Stage 6 production-backed Reqnroll binding remains assigned to `S6-015`.
+- `.\dev.ps1 test` — 1,099 passed, 34 Stage 6 scenarios intentionally pending, zero failures.
+- `.\dev.ps1 format` — passed after applying repository formatting.
+
+No migration was required: the existing Stage 6 schema already contains the immutable Fill, transition, Position,
+applied marker, ledger, Reservation, and inbox facts. Documentation now defines exact signed accounting, cost basis,
+realized-result, ledger-source, reservation, duplicate, and rollback rules. No deviations, follow-up tasks, or ADRs.
