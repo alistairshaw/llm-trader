@@ -1,0 +1,48 @@
+<UserControl x:Class="Trading.UI.Wpf.Views.PortfolioBrokerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.AutomationId="PortfolioBroker.View"
+             AutomationProperties.Name="Authorized portfolio and paper broker status">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Portfolios and broker status" FontSize="22" FontWeight="Bold"
+                   AutomationProperties.HeadingLevel="Level1" />
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,12">
+            <Label Content="Search" Target="{Binding ElementName=SearchBox}" />
+            <TextBox x:Name="SearchBox" Width="220" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.AutomationId="PortfolioBroker.Search" />
+            <Label Content="Status" Target="{Binding ElementName=StatusBox}" />
+            <TextBox x:Name="StatusBox" Width="140" Text="{Binding StatusFilter, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.AutomationId="PortfolioBroker.StatusFilter" />
+            <Button Content="Refresh" Command="{Binding RefreshCommand}"
+                    AutomationProperties.AutomationId="PortfolioBroker.Refresh" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" AutomationProperties.LiveSetting="Assertive">
+            <TextBlock Text="{Binding SafetyAnnouncement}" Foreground="DarkRed" FontWeight="SemiBold"
+                       AutomationProperties.AutomationId="PortfolioBroker.SafetyState" />
+            <TextBlock Text="{Binding StateText}" AutomationProperties.AutomationId="PortfolioBroker.LoadState" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+            <Button Content="Previous" Command="{Binding PreviousPageCommand}" AutomationProperties.AutomationId="PortfolioBroker.Previous" />
+            <TextBlock Margin="12,4" Text="{Binding PageNumber, StringFormat=Page {0}}" />
+            <Button Content="Next" Command="{Binding NextPageCommand}" AutomationProperties.AutomationId="PortfolioBroker.Next" />
+        </StackPanel>
+        <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                  AutomationProperties.AutomationId="PortfolioBroker.Grid"
+                  AutomationProperties.Name="Authorized portfolios and broker safety status">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Portfolio" Binding="{Binding PortfolioName}" />
+                <DataGridTextColumn Header="Capital" Binding="{Binding Capital}" />
+                <DataGridTextColumn Header="Positions" Binding="{Binding Positions}" />
+                <DataGridTextColumn Header="Ledger" Binding="{Binding Ledger}" />
+                <DataGridTextColumn Header="Account" Binding="{Binding Account}" />
+                <DataGridTextColumn Header="Connection" Binding="{Binding Connection}" />
+                <DataGridTextColumn Header="Environment" Binding="{Binding Environment}" />
+                <DataGridTextColumn Header="Capabilities" Binding="{Binding Capabilities}" />
+                <DataGridTextColumn Header="Mappings" Binding="{Binding Mappings}" />
+                <DataGridTextColumn Header="Reconciliation" Binding="{Binding Reconciliation}" />
+                <DataGridTextColumn Header="Updated" Binding="{Binding Updated}" />
+                <DataGridTextColumn Header="Safety" Binding="{Binding AutomationStatus}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

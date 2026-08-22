@@ -10,10 +10,12 @@
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ObservableViewModel.cs" Link="Production\ViewModels\ObservableViewModel.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ShellViewModel.cs" Link="Production\ViewModels\ShellViewModel.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\BotManagementViewModel.cs" Link="Production\ViewModels\BotManagementViewModel.cs" />
+    <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\PortfolioBrokerViewModel.cs" Link="Production\ViewModels\PortfolioBrokerViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\Trading.UI.Wpf\MainWindow.xaml" Link="MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\Trading.UI.Wpf\Views\BotManagementView.xaml" Link="BotManagementView.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\Trading.UI.Wpf\Views\PortfolioBrokerView.xaml" Link="PortfolioBrokerView.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trading.Core\Trading.Core.csproj" />

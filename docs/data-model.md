@@ -995,6 +995,11 @@ WPF dashboards, report catalogs, and operational listings should not load aggreg
 
 These projections may query the same SQLite database for the MVP. Separate CQRS infrastructure or a separate read database is not yet justified.
 
+The operator Portfolio/broker projection requires the exact granted Trading Bot and broker-account identities before
+search, status filtering, ordering, or paging. It returns no-tracking Portfolio capital, Position and ledger summaries,
+paper-environment connection/account state, capabilities, active mapping counts, and the latest reconciliation state.
+This keeps ownership filtering inside the query boundary and preserves exact decimal and UTC values for presentation.
+
 The execution query service returns immutable Core order, fill, and chronological audit projections. Its authorization
 join proves the actor's exact Bot, Portfolio, broker account, and structurally typed broker environment before filters
 and bounded pagination are applied. Detail reads correlate proposal governance, evidence reports, reservations,

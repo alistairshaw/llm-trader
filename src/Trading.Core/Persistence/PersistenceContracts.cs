@@ -641,3 +641,40 @@ public interface IPortfolioQueries
     Task<BrokerAccountAssociationView?> GetBrokerAccountAssociationAsync(PortfolioId portfolioId, CancellationToken cancellationToken);
     Task<IReadOnlyList<PortfolioDecisionSnapshotSummary>> GetDecisionSnapshotsAsync(PortfolioDecisionSnapshotQueryFilter filter, PageRequest page, CancellationToken cancellationToken);
 }
+
+public sealed record OperatorPortfolioBrokerView(
+    PortfolioId PortfolioId,
+    string PortfolioName,
+    TradingBotId TradingBotId,
+    BrokerAccountId BrokerAccountId,
+    BrokerConnectionId BrokerConnectionId,
+    string Currency,
+    decimal CapitalAllocation,
+    int PositionCount,
+    decimal PositionQuantity,
+    decimal LedgerTotal,
+    string PortfolioStatus,
+    string AccountName,
+    string AccountStatus,
+    string ConnectionName,
+    string ConnectionStatus,
+    string Environment,
+    IReadOnlyList<string> Capabilities,
+    int MappingCount,
+    string ReconciliationStatus,
+    DateTimeOffset? LastReconciledAt,
+    DateTimeOffset UpdatedAt);
+
+public readonly record struct OperatorPortfolioBrokerFilter(
+    TradingBotId TradingBotId,
+    BrokerAccountId BrokerAccountId,
+    string? Search = null,
+    string? Status = null);
+
+public interface IOperatorPortfolioBrokerQueries
+{
+    Task<IReadOnlyList<OperatorPortfolioBrokerView>> GetAuthorizedAsync(
+        OperatorPortfolioBrokerFilter filter,
+        PageRequest page,
+        CancellationToken cancellationToken);
+}

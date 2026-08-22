@@ -193,6 +193,7 @@ public static class HostBootstrap
         builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
         builder.Services.AddScoped<IPortfolioDecisionSnapshotRepository, PortfolioDecisionSnapshotRepository>();
         builder.Services.AddScoped<IPortfolioQueries, PortfolioQueries>();
+        builder.Services.AddScoped<IOperatorPortfolioBrokerQueries, OperatorPortfolioBrokerQueries>();
         builder.Services.AddScoped<IBotRunRepository, BotRunRepository>();
         builder.Services.AddScoped<IBotRunInputAuditWriter>(x => (BotRunRepository)x.GetRequiredService<IBotRunRepository>());
         builder.Services.AddScoped<IBotRunTriggerRepository, BotRunTriggerRepository>();
