@@ -18,7 +18,9 @@ internal sealed partial class ArtifactWriter(string scenarioName, string runDire
         Directory.CreateDirectory(artifactDirectory);
         if (window is not null)
         {
-            FlaUI.Core.Capturing.Capture.Element(window).ToFile(Path.Combine(artifactDirectory, "safe-fixture-screen.png"));
+            try { FlaUI.Core.Capturing.Capture.Element(window).ToFile(Path.Combine(artifactDirectory, "safe-fixture-screen.png")); }
+            catch (Exception exception) when (IsStaleUi(exception))
+            { WriteRedacted("screenshot-error.txt", $"stale-ui:{exception.GetType().Name}"); }
             WriteRedacted("uia-tree.txt", BuildTree(window));
         }
 
@@ -35,10 +37,26 @@ internal sealed partial class ArtifactWriter(string scenarioName, string runDire
 
     private static string BuildTree(AutomationElement root)
     {
-        var lines = root.FindAllDescendants().Prepend(root).Select(element =>
-            $"{element.ControlType} id={element.AutomationId} name={element.Name}");
-        return string.Join(Environment.NewLine, lines);
+        try
+        {
+            var lines = new List<string>();
+            foreach (var element in root.FindAllDescendants().Prepend(root))
+            {
+                try { lines.Add($"{element.ControlType} id={element.AutomationId} name={element.Name}"); }
+                catch (Exception exception) when (IsStaleUi(exception))
+                { lines.Add($"Unavailable id=[unsupported] name=[unsupported] reason={exception.GetType().Name}"); }
+            }
+            return string.Join(Environment.NewLine, lines);
+        }
+        catch (Exception exception) when (IsStaleUi(exception))
+        {
+            return $"UIA tree unavailable: {exception.GetType().Name}";
+        }
     }
+
+    private static bool IsStaleUi(Exception exception) => exception is
+        FlaUI.Core.Exceptions.PropertyNotSupportedException or System.Runtime.InteropServices.COMException
+        or InvalidOperationException;
 
     private static string SafeName(string value)
     {

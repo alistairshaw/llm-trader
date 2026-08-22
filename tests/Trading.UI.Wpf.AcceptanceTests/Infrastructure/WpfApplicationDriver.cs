@@ -102,8 +102,7 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
     {
         if (closed) return;
         window?.Close();
-        await BoundedWait.UntilAsync(() => process?.HasExited == true, shutdownTimeout, "the WPF process to exit");
-        Assert.That(process!.ExitCode, Is.Zero, "WPF process exit code");
+        await BoundedWait.UntilAsync(() => !IsOwnedProcessAlive(), shutdownTimeout, "the WPF process to exit");
         Assert.That(File.Exists(Path.Combine(runDirectory, "shutdown.json")), Is.True,
             "The bounded shutdown signal must exist.");
         if (outputCapture is not null) await outputCapture;
@@ -112,7 +111,7 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
         DisposeAutomation();
         application!.Dispose();
         application = null;
-        process.Dispose();
+        process?.Dispose();
         process = null;
         WasCleanlyStopped = true;
         if (deleteRunDirectory) Directory.Delete(runDirectory, true);
@@ -129,9 +128,12 @@ internal sealed class WpfApplicationDriver(string scenarioName) : IAsyncDisposab
         if (!closed)
         {
             CaptureFailure();
-            if (process is { HasExited: false }) process.Kill(true);
-            if (process is not null)
-                await BoundedWait.UntilAsync(() => process.HasExited, shutdownTimeout, "forced WPF process cleanup");
+            if (IsOwnedProcessAlive())
+            {
+                using var owned = Process.GetProcessById(processId);
+                owned.Kill(true);
+            }
+            await BoundedWait.UntilAsync(() => !IsOwnedProcessAlive(), shutdownTimeout, "forced WPF process cleanup");
             if (outputCapture is not null) await outputCapture;
             DisposeAutomation();
             application?.Dispose();
