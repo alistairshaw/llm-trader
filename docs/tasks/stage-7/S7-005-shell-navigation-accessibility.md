@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-005
 title: Build shell navigation and accessibility foundations
 stage: 7
-status: planned
+status: review
 priority: 900
 type: feature
 depends_on: [S7-004]
@@ -37,4 +37,17 @@ None.
 Build; Shell and Accessibility WPF tests; full tests; format.
 
 ## Completion Notes
-Pending implementation.
+Implemented the immutable shell route catalog, cancellable navigation and page lifetime contract, asynchronous
+commands, observable busy/error/lifetime state, and an accessible keyboard-reachable WPF shell. Added view-model
+tests for active-route selection, cancellation, disposal, and deterministic failure state, plus XAML metadata
+inspection for stable automation identifiers, accessible names, headings, live status, commands, and keyboard
+navigation.
+
+Validation attempted on 2026-08-22:
+
+- `git diff --check` passed.
+- `./dev.ps1 restore -RefreshLocks` encountered a Docker bind-mount I/O error and its retries stalled because the
+  Docker daemon pipe became unresponsive. Container build, focused tests, full tests, and formatting remain required
+  before this task can move from `review` to `done`.
+
+No scope deviations, follow-up tasks, or ADRs.

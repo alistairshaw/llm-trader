@@ -1,10 +1,55 @@
 <Window x:Class="Trading.UI.Wpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Trading Bot" Height="450" Width="800">
+        xmlns:navigation="clr-namespace:Trading.UI.Wpf.Navigation"
+        Title="Trading Bot" Height="640" Width="1024"
+        AutomationProperties.AutomationId="Shell.Window"
+        AutomationProperties.Name="Trading Bot operator console">
     <Grid>
-        <TextBlock HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Text="Trading Bot bootstrap is ready." />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="0,0,1,0" Padding="12">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Navigation" FontSize="20" FontWeight="SemiBold"
+                           AutomationProperties.HeadingLevel="Level1" />
+                <ListBox Margin="0,12,0,0" ItemsSource="{Binding Routes}" SelectedItem="{Binding ActiveRoute}"
+                         AutomationProperties.AutomationId="Shell.Navigation"
+                         AutomationProperties.Name="Feature navigation">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type navigation:ShellRoute}">
+                            <Button Padding="8" HorizontalContentAlignment="Left" Content="{Binding Title}"
+                                    Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}"
+                                    AutomationProperties.AutomationId="{Binding AutomationId}"
+                                    AutomationProperties.Name="{Binding Title}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+        <Grid Grid.Column="1" Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{Binding ActiveRoute.Title, TargetNullValue=Trading Bot}" FontSize="24" FontWeight="Bold"
+                       AutomationProperties.AutomationId="Shell.ActiveRoute"
+                       AutomationProperties.HeadingLevel="Level1" />
+            <StackPanel Grid.Row="1" Margin="0,12" AutomationProperties.LiveSetting="Polite">
+                <TextBlock Text="{Binding LifetimeStatus}" AutomationProperties.AutomationId="Shell.Status" />
+                <TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Shell.Loading"
+                           AutomationProperties.Name="Loading state" />
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="DarkRed"
+                           AutomationProperties.AutomationId="Shell.Error"
+                           AutomationProperties.Name="Navigation error" />
+            </StackPanel>
+            <ContentControl Grid.Row="2" Content="{Binding Content}"
+                            Focusable="True" KeyboardNavigation.TabNavigation="Cycle"
+                            AutomationProperties.AutomationId="Shell.Content"
+                            AutomationProperties.Name="Active workspace" />
+        </Grid>
     </Grid>
 </Window>

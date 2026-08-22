@@ -16,7 +16,7 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-002`](stage-7/S7-002-operator-application-contracts.md) | Define authorized operator application contracts | Done | 960 | `S7-001` |
 | [`S7-003`](stage-7/S7-003-operational-kill-switches.md) | Implement durable hierarchical kill switches | Done | 940 | `S7-002` |
 | [`S7-004`](stage-7/S7-004-wpf-host-lifecycle.md) | Compose WPF with the Generic Host | Done | 920 | `S7-002` |
-| [`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) | Build shell, navigation, and accessibility foundations | Ready | 900 | `S7-004` |
+| [`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) | Build shell, navigation, and accessibility foundations | Review | 900 | `S7-004` |
 | [`S7-006`](stage-7/S7-006-bot-management.md) | Build Trading Bot management | Planned | 860 | `S7-002`, `S7-005` |
 | [`S7-007`](stage-7/S7-007-portfolio-broker-status.md) | Build Portfolio and broker status | Planned | 860 | `S7-002`, `S7-005` |
 | [`S7-008`](stage-7/S7-008-bot-run-operations.md) | Build Bot Run operations and status | Planned | 850 | `S7-002`, `S7-005` |
