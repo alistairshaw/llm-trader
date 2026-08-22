@@ -1,6 +1,6 @@
 # Stage 7 Non-UI Acceptance Traceability
 
-These specifications are temporarily tagged `@ignore` until `S7-016` binds them through a scenario-scoped production application driver. They use only cross-platform operator contracts and are selected with:
+These specifications are bound through a scenario-scoped production application driver. They use only cross-platform operator contracts and are selected with:
 
 ```powershell
 .\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage7&TestCategory!=windows"

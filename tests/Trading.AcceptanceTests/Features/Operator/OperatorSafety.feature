@@ -1,4 +1,4 @@
-@stage7 @acceptance @operator @cross-platform @ignore
+@stage7 @acceptance @operator @cross-platform
 Feature: Authorize safe operator actions
   Operator commands use application authority and preserve durable operational safety.
 

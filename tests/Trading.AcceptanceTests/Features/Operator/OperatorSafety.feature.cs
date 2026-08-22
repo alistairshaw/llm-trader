@@ -20,7 +20,6 @@ namespace Trading.AcceptanceTests.Features.Operator
     [global::NUnit.Framework.TestFixtureAttribute()]
     [global::NUnit.Framework.DescriptionAttribute("Authorize safe operator actions")]
     [global::NUnit.Framework.FixtureLifeCycleAttribute(global::NUnit.Framework.LifeCycle.InstancePerTestCase)]
-    [global::NUnit.Framework.IgnoreAttribute("Ignored feature")]
     [global::NUnit.Framework.CategoryAttribute("stage7")]
     [global::NUnit.Framework.CategoryAttribute("acceptance")]
     [global::NUnit.Framework.CategoryAttribute("operator")]
@@ -34,8 +33,7 @@ namespace Trading.AcceptanceTests.Features.Operator
                 "stage7",
                 "acceptance",
                 "operator",
-                "cross-platform",
-                "ignore"};
+                "cross-platform"};
         
         private static global::Reqnroll.FeatureInfo featureInfo = new global::Reqnroll.FeatureInfo(new global::System.Globalization.CultureInfo("en-US"), "Features/Operator", "Authorize safe operator actions", "  Operator commands use application authority and preserve durable operational sa" +
                 "fety.", global::Reqnroll.ProgrammingLanguage.CSharp, featureTags, InitializeCucumberMessages());

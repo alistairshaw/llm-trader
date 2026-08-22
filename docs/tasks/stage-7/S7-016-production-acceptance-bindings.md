@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-016
 title: Complete production-backed non-UI acceptance
 stage: 7
-status: ready
+status: done
 priority: 760
 type: test
 depends_on: [S7-003, S7-013]
@@ -37,4 +37,21 @@ None.
 Build; Stage7 cross-platform acceptance twice; full tests; format.
 
 ## Completion Notes
-Pending implementation.
+Activated all four cross-platform Stage 7 scenarios through explicit thin step bindings and a scenario-scoped
+application driver. The driver starts the production Generic Host against a unique freshly migrated SQLite file,
+uses deterministic application-boundary substitutes, routes commands and queries through `AuthorizedOperatorService`,
+persists and queries hierarchical kill switches through the production store, consumes the production bounded update
+contract, and observes bounded authorization audit and lifecycle diagnostics. It contains no scenario-title/keyword
+oracle and no direct EF, repository, or broker access. Removed the non-UI ignore tag and synchronized generated
+Reqnroll sources and traceability.
+
+Validation:
+
+- `.\dev.ps1 build` — passed with 0 warnings and 0 errors.
+- `.\dev.ps1 test -Project tests/Trading.AcceptanceTests -Filter "TestCategory=stage7&TestCategory!=windows"` —
+  passed twice; 4 passed, 0 failed, 0 skipped on each run.
+- `.\dev.ps1 test` — 1,227 passed, 0 failed, 0 skipped.
+- `.\dev.ps1 format` — passed after correcting whitespace reported by the first verification run.
+
+All local validation ran in the Linux development container. Cross-platform Windows execution remains delegated to
+hosted CI. No deviations, follow-up tasks, or ADR changes.
