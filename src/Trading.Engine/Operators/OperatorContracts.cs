@@ -131,8 +131,18 @@ public sealed record ResearchDetail(ResearchSummary Summary, string Question, st
     OperatorResearchGenerator Generator, ImmutableArray<OperatorResearchProvenance> Provenance);
 public sealed record ProposalSummary(TradeProposalId Id, TradingBotId TradingBotId, PortfolioId PortfolioId,
     ProposalStatus Status, DateTimeOffset ValidUntil, long Version);
+public sealed record OperatorProposalIdentity(string ConfigurationVersionId, string SnapshotId,
+    string EvaluationHash);
+public sealed record OperatorProposalEvidence(string Kind, string Id, int? Version, string ContentHash,
+    string Visibility);
+public sealed record OperatorGuardrailResult(string Rule, string Outcome, string Code, string PolicyVersion);
+public sealed record OperatorProposalDecision(string Decision, string ActorId, DateTimeOffset DecidedAt,
+    string? Reason, long ProposalVersion);
+public sealed record OperatorReservationState(string Id, string Status, string Amount, DateTimeOffset ExpiresAt);
 public sealed record ProposalDetail(ProposalSummary Summary, string Rationale, string ContentHash,
-    ImmutableArray<string> Evidence, ImmutableArray<OperatorWarning> Warnings);
+    OperatorProposalIdentity ReviewedIdentity, ImmutableArray<OperatorProposalEvidence> Evidence,
+    ImmutableArray<OperatorGuardrailResult> Guardrails, ImmutableArray<OperatorProposalDecision> Decisions,
+    OperatorReservationState? Reservation, ImmutableArray<OperatorWarning> Warnings);
 public sealed record ExecutionSummary(OrderId Id, PortfolioId PortfolioId, OrderStatus Status, string Instrument,
     decimal Quantity, decimal FilledQuantity, string Currency, DateTimeOffset UpdatedAt);
 public sealed record AuditSummary(string Id, string Kind, string Code, DateTimeOffset At, string CorrelationId);

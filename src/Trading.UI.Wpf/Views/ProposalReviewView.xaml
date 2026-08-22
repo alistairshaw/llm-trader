@@ -1,0 +1,56 @@
+<UserControl x:Class="Trading.UI.Wpf.Views.ProposalReviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.AutomationId="Proposals.Workspace"
+             AutomationProperties.Name="Authorized Proposal review workspace">
+    <Grid KeyboardNavigation.TabNavigation="Cycle">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="2*"/><RowDefinition Height="3*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <TextBlock Text="Proposal review" FontSize="22" FontWeight="Bold" AutomationProperties.AutomationId="Proposals.Heading" AutomationProperties.HeadingLevel="Level1"/>
+        <WrapPanel Grid.Row="1" Margin="0,12">
+            <Label Content="Status" Target="{Binding ElementName=ProposalStatus}"/>
+            <TextBox x:Name="ProposalStatus" Width="180" Text="{Binding StatusFilter, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.AutomationId="Proposals.StatusFilter"/>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" AutomationProperties.AutomationId="Proposals.Refresh"/>
+            <Button Content="Previous" Command="{Binding PreviousPageCommand}" AutomationProperties.AutomationId="Proposals.Previous"/>
+            <TextBlock Margin="8,5" Text="{Binding PageNumber, StringFormat=Page {0}}"/>
+            <Button Content="Next" Command="{Binding NextPageCommand}" AutomationProperties.AutomationId="Proposals.Next"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedProposal}" AutoGenerateColumns="False" IsReadOnly="True"
+                  AutomationProperties.AutomationId="Proposals.Queue" AutomationProperties.Name="Authorized Proposal queue">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Proposal" Binding="{Binding Id}"/><DataGridTextColumn Header="Bot" Binding="{Binding TradingBotId}"/>
+                <DataGridTextColumn Header="Portfolio" Binding="{Binding PortfolioId}"/><DataGridTextColumn Header="Status" Binding="{Binding Status}"/>
+                <DataGridTextColumn Header="Valid until" Binding="{Binding ValidUntil}"/><DataGridTextColumn Header="Version" Binding="{Binding Version}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Grid Grid.Row="3" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="3*"/></Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,16,0">
+                <Button Content="Open exact review" Command="{Binding LoadProposalCommand}" AutomationProperties.AutomationId="Proposals.OpenExact"/>
+                <TextBlock Text="Reviewed identities" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2"/>
+                <TextBlock Text="{Binding Detail.ContentHash, StringFormat=Content: {0}}" AutomationProperties.AutomationId="Proposals.ContentHash"/>
+                <TextBlock Text="{Binding Detail.ReviewedIdentity.ConfigurationVersionId, StringFormat=Configuration: {0}}" AutomationProperties.AutomationId="Proposals.Configuration"/>
+                <TextBlock Text="{Binding Detail.ReviewedIdentity.SnapshotId, StringFormat=Snapshot: {0}}" AutomationProperties.AutomationId="Proposals.Snapshot"/>
+                <TextBlock Text="{Binding Detail.ReviewedIdentity.EvaluationHash, StringFormat=Evaluation: {0}}" AutomationProperties.AutomationId="Proposals.EvaluationHash"/>
+                <TextBlock Text="{Binding DecisionEligibility}" FontWeight="Bold" AutomationProperties.AutomationId="Proposals.Eligibility" AutomationProperties.LiveSetting="Polite"/>
+                <Label Content="Decision reason" Target="{Binding ElementName=DecisionReason}"/>
+                <TextBox x:Name="DecisionReason" Text="{Binding DecisionReason}" AutomationProperties.AutomationId="Proposals.DecisionReason"/>
+                <CheckBox Content="I confirm this decision against the displayed identities" IsChecked="{Binding ConfirmDecision}" AutomationProperties.AutomationId="Proposals.Confirm"/>
+                <WrapPanel><Button Content="Approve" Command="{Binding ApproveCommand}" AutomationProperties.AutomationId="Proposals.Approve"/>
+                    <Button Content="Reject" Command="{Binding RejectCommand}" AutomationProperties.AutomationId="Proposals.Reject"/></WrapPanel>
+                <TextBlock Text="{Binding Detail.Reservation.Status, StringFormat=Reservation: {0}}" AutomationProperties.AutomationId="Proposals.Reservation"/>
+            </StackPanel>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Rationale and evidence" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2"/>
+                    <TextBox Text="{Binding Detail.Rationale}" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.AutomationId="Proposals.Rationale"/>
+                    <ItemsControl ItemsSource="{Binding Evidence}" AutomationProperties.AutomationId="Proposals.Evidence"><ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding Id}" TextWrapping="Wrap"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                    <TextBlock Text="Guardrails and policy versions" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2"/>
+                    <DataGrid ItemsSource="{Binding Guardrails}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.AutomationId="Proposals.Guardrails"><DataGrid.Columns><DataGridTextColumn Header="Rule" Binding="{Binding Rule}"/><DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}"/><DataGridTextColumn Header="Code" Binding="{Binding Code}"/><DataGridTextColumn Header="Policy version" Binding="{Binding PolicyVersion}"/></DataGrid.Columns></DataGrid>
+                    <TextBlock Text="Immutable decisions" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2"/>
+                    <DataGrid ItemsSource="{Binding DecisionHistory}" AutoGenerateColumns="False" IsReadOnly="True" AutomationProperties.AutomationId="Proposals.Decisions"><DataGrid.Columns><DataGridTextColumn Header="Decision" Binding="{Binding Decision}"/><DataGridTextColumn Header="Actor" Binding="{Binding ActorId}"/><DataGridTextColumn Header="Time" Binding="{Binding DecidedAt}"/><DataGridTextColumn Header="Reason" Binding="{Binding Reason}"/></DataGrid.Columns></DataGrid>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <StackPanel Grid.Row="4" AutomationProperties.LiveSetting="Polite"><TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Proposals.Busy"/><TextBlock Text="{Binding ErrorCode}" AutomationProperties.AutomationId="Proposals.Error"/></StackPanel>
+    </Grid>
+</UserControl>

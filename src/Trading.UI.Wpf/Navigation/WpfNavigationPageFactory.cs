@@ -6,7 +6,8 @@ namespace Trading.UI.Wpf.Navigation;
 public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> createBots,
     Func<BotRunsViewModel> createRuns,
     Func<ResearchCatalogViewModel>? createResearch = null,
-    Func<ExecutionRiskAuditViewModel>? createExecution = null) : INavigationPageFactory
+    Func<ExecutionRiskAuditViewModel>? createExecution = null,
+    Func<ProposalReviewViewModel>? createProposals = null) : INavigationPageFactory
 {
     public INavigationPage Create(ShellRoute route)
     {
@@ -29,6 +30,11 @@ public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> create
         {
             var execution = createExecution();
             return new Page(new ExecutionRiskAuditView { DataContext = execution }, token => execution.RefreshAsync(token), execution);
+        }
+        if (route.Key == "proposals" && createProposals is not null)
+        {
+            var proposals = createProposals();
+            return new Page(new ProposalReviewView { DataContext = proposals }, token => proposals.RefreshAsync(token), proposals);
         }
         return new Placeholder(route.Title);
     }

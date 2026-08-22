@@ -51,7 +51,7 @@ public sealed class AuthorizedOperatorService(IOperatorAuthorization authorizati
 
     public Task<OperatorCommandResult> ApproveAsync(OperatorPrincipal principal, TradeProposalId id, long expectedVersion,
         string? reason, CancellationToken cancellationToken) => ProposalDecision(principal, id, expectedVersion,
-        OperatorCommandKind.ApproveProposal, reason, cancellationToken);
+        OperatorCommandKind.ApproveProposal, string.IsNullOrWhiteSpace(reason) ? null : reason.Trim(), cancellationToken);
     public Task<OperatorCommandResult> RejectAsync(OperatorPrincipal principal, TradeProposalId id, long expectedVersion,
         string reason, CancellationToken cancellationToken) => ProposalDecision(principal, id, expectedVersion,
         OperatorCommandKind.RejectProposal, Required(reason, nameof(reason)), cancellationToken);

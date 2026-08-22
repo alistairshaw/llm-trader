@@ -35,12 +35,14 @@ public partial class App : Application, IAsyncDisposable
             var botService = lifecycle.Services.GetService<IBotOperatorService>();
             var runService = lifecycle.Services.GetService<IRunOperatorService>();
             var researchService = lifecycle.Services.GetService<IResearchOperatorService>();
+            var proposalService = lifecycle.Services.GetService<IProposalOperatorService>();
             var principal = lifecycle.Services.GetService<OperatorPrincipal>();
-            var window = queries is not null && botService is not null && runService is not null && researchService is not null && principal is not null
+            var window = queries is not null && botService is not null && runService is not null && researchService is not null && proposalService is not null && principal is not null
                 ? new MainWindow(new WpfNavigationPageFactory(
                     () => new BotManagementViewModel(queries, botService, principal),
                     () => new BotRunsViewModel(queries, runService, principal),
-                    () => new ResearchCatalogViewModel(queries, researchService, principal)))
+                    () => new ResearchCatalogViewModel(queries, researchService, principal),
+                    createProposals: () => new ProposalReviewViewModel(queries, proposalService, principal)))
                 : new MainWindow();
             window.Closing += OnMainWindowClosing;
             MainWindow = window;
