@@ -788,6 +788,14 @@ Revalidate approval and reservation
     = one transaction
 ```
 
+The paper conversion repository performs this graph in one serializable transaction. It rechecks the immutable
+proposal content and configuration, latest exact-content approval, latest passing fresh-state evaluation and snapshot,
+active reservation, Portfolio ownership, reconciled active account, enabled paper connection, active instrument,
+effective broker mapping, currency, quantity, order type, and time in force. The deterministic client order identity is
+derived from the durable Proposal identity. The canonical `Submit` payload records every authorization identity and
+normalized order term; therefore the Order, Reservation attachment, Proposal disposition, and submission work item are
+reconstructable and appear together or not at all.
+
 ### 13.4 Apply a Fill
 
 ```text

@@ -40,4 +40,20 @@ public sealed class OrderExecutionAuthorityTests
             .Select(method => method.GetParameters()[0].ParameterType);
         Assert.That(operationContexts, Has.All.EqualTo(typeof(PaperBrokerOperationContext)));
     }
+
+    [Test]
+    public void ProposalConversionHasOnlyDeterministicPersistenceAndIdentifierAuthority()
+    {
+        var dependencies = typeof(ProposalOrderConversionService).GetConstructors().Single()
+            .GetParameters().Select(parameter => parameter.ParameterType).ToArray();
+        Assert.That(dependencies, Is.EquivalentTo(new[]
+        {
+            typeof(Trading.Core.Persistence.IAtomicOrderConversionRepository),
+            typeof(IOrderExecutionIdentifierSource),
+        }));
+        Assert.That(dependencies, Has.None.Matches<Type>(type =>
+            type.Name.Contains("Model", StringComparison.OrdinalIgnoreCase) ||
+            type.Name.Contains("Llm", StringComparison.OrdinalIgnoreCase) ||
+            type == typeof(IPaperBrokerGateway)));
+    }
 }

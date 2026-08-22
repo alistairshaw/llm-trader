@@ -223,6 +223,10 @@ The proposal-governance orchestrator acquires state before each evaluation, pers
 The reservation service derives exact required capital from the structured action and fresh gross availability, then repeats approval, identity, currency, and fresh-snapshot checks inside a serializable persistence transaction. Every unexpired active reservation in the same Portfolio and currency reduces availability. Exact retries return the existing active reservation; rejection, cancellation, and injected-time expiration release capacity idempotently.
 
 Order conversion and broker operations are separate deterministic application capabilities and are never model tools.
+Paper conversion derives a stable client order identity from the Proposal identity and atomically commits the exact
+approved Proposal's conversion, normalized Order intent, active Reservation attachment, and canonical submission work.
+It repeats ownership, fresh evaluation/snapshot, account reconciliation, paper environment, instrument mapping,
+currency, expiry, and instruction checks inside that transaction. Authorization failure has no durable side effect.
 Each paper operation uses the Order's stable client identity and a typed paper-environment context. Accepted, rejected,
 unknown, retryable, terminal, duplicate, and reconciliation results are normalized before reaching the engine. An
 unknown submission is reconciled by client identity before any later submission decision.

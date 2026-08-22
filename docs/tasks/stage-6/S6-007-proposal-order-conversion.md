@@ -3,13 +3,14 @@ schema_version: 1
 id: S6-007
 title: Convert approved proposals to order intents atomically
 stage: 6
-status: ready
+status: done
 priority: 860
 type: feature
 depends_on: [S6-005]
 labels: [proposals, orders, reservations, transaction]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
+owner: s6_007
 ---
 
 # S6-007: Convert Approved Proposals to Order Intents Atomically
@@ -50,4 +51,26 @@ Use [Trading Bot — Proposal Validation and Execution](../../trading-bot.md#10-
 
 ## Completion Notes
 
-Pending.
+Implemented the deterministic `ProposalOrderConversionService` and serializable
+`AtomicOrderConversionRepository`. Conversion now derives a stable paper client order identity, rechecks the exact
+approved content, latest passing evaluation and fresh snapshot, active Reservation, Portfolio/Bot/account ownership,
+paper connection, reconciliation, instrument mapping, currency, expiry, quantity, order type, and time in force, then
+atomically writes the Order, Proposal disposition, Reservation attachment, and canonical `Submit` outbox work item.
+Exact retries return the existing Order; stable authorization failures and contention write no partial state. The
+canonical payload records all material authorization and normalized execution references. No broker or model call is
+available within the conversion transaction.
+
+Validation completed in the Linux Docker development container on 2026-08-22:
+
+- `./dev.ps1 restore` — passed in locked mode.
+- `./dev.ps1 build` — passed with zero warnings and zero errors.
+- `./dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=ProposalOrderConversion"` — 5 passed.
+- `./dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=OrderConversionTransaction"` — 2 passed.
+- `./dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=OrderConversionBoundary"` — 1 passed.
+- `./dev.ps1 test -Project tests/Trading.Core.Tests -Filter "Category=OrderExecution"` — 10 passed.
+- `./dev.ps1 test -Project tests/Trading.Architecture.Tests` — 23 passed.
+- `./dev.ps1 test` — 1,052 passed, 34 intentionally pending Stage 6 acceptance cases, zero failures.
+- `./dev.ps1 format` — passed.
+
+The existing Stage 6 migration/drift tests passed as part of the 163-test Data suite in the full run. Documentation was
+updated in `docs/data-model.md` and `docs/trading-bot.md`. No deviations, follow-up tasks, or ADR changes.

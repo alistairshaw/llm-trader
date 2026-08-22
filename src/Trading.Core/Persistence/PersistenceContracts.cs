@@ -311,6 +311,50 @@ public interface IAtomicCapitalReservationRepository
         AtomicCapitalReservationRequest request, CancellationToken token);
 }
 
+public sealed record AtomicOrderConversionRequest(
+    TradeProposalId ProposalId,
+    CapitalReservationId ReservationId,
+    OrderId OrderId,
+    OrderWorkItemId WorkItemId,
+    CorrelationIdentity CorrelationId,
+    ClientOrderIdentity ClientOrderId,
+    DateTimeOffset At);
+
+public abstract record AtomicOrderConversionWriteResult
+{
+    private AtomicOrderConversionWriteResult() { }
+    public sealed record Created(Order Order) : AtomicOrderConversionWriteResult;
+    public sealed record AlreadyCreated(Order Order) : AtomicOrderConversionWriteResult;
+    public sealed record Rejected(string Code) : AtomicOrderConversionWriteResult;
+    public sealed record NotFound : AtomicOrderConversionWriteResult;
+    public sealed record Contention : AtomicOrderConversionWriteResult;
+}
+
+public interface IAtomicOrderConversionRepository
+{
+    Task<AtomicOrderConversionWriteResult> TryConvertAsync(
+        AtomicOrderConversionRequest request, CancellationToken token);
+}
+
+public static class AtomicOrderConversionCodes
+{
+    public const string ProposalNotApproved = "order_conversion.proposal_not_approved";
+    public const string ProposalExpired = "order_conversion.proposal_expired";
+    public const string ResearchOnly = "order_conversion.research_only";
+    public const string EnvironmentMismatch = "order_conversion.environment_mismatch";
+    public const string ApprovalMismatch = "order_conversion.approval_mismatch";
+    public const string EvaluationMismatch = "order_conversion.evaluation_mismatch";
+    public const string SnapshotMismatch = "order_conversion.snapshot_mismatch";
+    public const string ReservationMismatch = "order_conversion.reservation_mismatch";
+    public const string PortfolioMismatch = "order_conversion.portfolio_mismatch";
+    public const string AccountRestricted = "order_conversion.account_restricted";
+    public const string AccountUnreconciled = "order_conversion.account_unreconciled";
+    public const string InstrumentUnavailable = "order_conversion.instrument_unavailable";
+    public const string InstrumentMappingUnavailable = "order_conversion.instrument_mapping_unavailable";
+    public const string CurrencyMismatch = "order_conversion.currency_mismatch";
+    public const string UnsupportedAction = "order_conversion.unsupported_action";
+}
+
 public sealed record OrderPersistenceEnvelope(Order Order, CapitalReservationId? ReservationId, CorrelationIdentity CorrelationId);
 public interface IOrderRepository
 {

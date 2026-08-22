@@ -2,6 +2,7 @@ using Trading.Core.Brokers;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
 using Trading.Core.Orders;
+using Trading.Core.Persistence;
 
 namespace Trading.Core.Tests.Orders;
 
@@ -59,6 +60,25 @@ public sealed class OrderExecutionContractTests
             Assert.That(context.Environment, Is.SameAs(paper));
             Assert.That(typeof(PaperBrokerOperationContext).GetConstructors().Single().GetParameters()[2].ParameterType,
                 Is.EqualTo(typeof(BrokerOperationEnvironment.Paper)));
+        });
+    }
+
+    [Test]
+    public void AtomicConversionRequestPinsEveryMaterialIdentityAndUsesCanonicalCodes()
+    {
+        var proposal = TradeProposalId.New();
+        var reservation = CapitalReservationId.New();
+        var request = new AtomicOrderConversionRequest(proposal, reservation, OrderId.New(),
+            OrderWorkItemId.New(), new CorrelationIdentity("conversion-1"),
+            new ClientOrderIdentity("paper-stable-1"), Now);
+        Assert.Multiple(() =>
+        {
+            Assert.That(request.ProposalId, Is.EqualTo(proposal));
+            Assert.That(request.ReservationId, Is.EqualTo(reservation));
+            Assert.That(request.At, Is.EqualTo(Now));
+            Assert.That(AtomicOrderConversionCodes.ProposalExpired, Is.EqualTo("order_conversion.proposal_expired"));
+            Assert.That(AtomicOrderConversionCodes.EnvironmentMismatch,
+                Is.EqualTo("order_conversion.environment_mismatch"));
         });
     }
 
