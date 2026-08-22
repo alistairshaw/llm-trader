@@ -8,6 +8,7 @@ using Trading.Core.Bots;
 using Trading.Core.Brokers;
 using Trading.Core.FinancialValues;
 using Trading.Core.Identifiers;
+using Trading.Core.Orders;
 using Trading.Core.Persistence;
 using Trading.Core.Policies;
 using Trading.Core.Portfolios;
@@ -166,6 +167,7 @@ public static class HostBootstrap
         builder.Services.AddScoped<ICapitalReservationRepository, CapitalReservationRepository>();
         builder.Services.AddScoped<IAtomicCapitalReservationRepository, AtomicCapitalReservationRepository>();
         builder.Services.AddScoped<IProposalQueries, ProposalQueries>();
+        builder.Services.AddScoped<IOrderExecutionQueries, OrderExecutionQueries>();
         builder.Services.AddSingleton<ProposalSmokeState>();
         builder.Services.AddSingleton<IProposalGovernanceClock>(x => x.GetRequiredService<ProposalSmokeState>());
         builder.Services.AddSingleton<IProposalGovernanceIdentifierSource>(x => x.GetRequiredService<ProposalSmokeState>());

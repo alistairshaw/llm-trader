@@ -977,6 +977,12 @@ WPF dashboards, report catalogs, and operational listings should not load aggreg
 
 These projections may query the same SQLite database for the MVP. Separate CQRS infrastructure or a separate read database is not yet justified.
 
+The execution query service returns immutable Core order, fill, and chronological audit projections. Its authorization
+join proves the actor's exact Bot, Portfolio, broker account, and structurally typed broker environment before filters
+and bounded pagination are applied. Detail reads correlate proposal governance, evidence reports, reservations,
+submission work and attempts, reconciliation, fills, positions, and ledger effects without returning raw provider
+payloads, EF entities, or `IQueryable`.
+
 The proposal query service returns immutable Core projection records rather than EF entities or `IQueryable`.
 Queue rows are ordered by expiry, creation time, and proposal identity, then paged only after report-evidence
 visibility has been evaluated. Every non-administrator read requires the intersection of explicit Trading Bot,
