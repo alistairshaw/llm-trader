@@ -1,5 +1,15 @@
 # Data Model
 
+## Stage 7 Operational Kill Switches
+
+`kill_switches` stores the current optimistic-concurrency state for each platform, Broker Account, Portfolio, or
+Trading Bot scope. The composite scope key has one monotonically increasing version. `kill_switch_history` is an
+immutable append-only audit stream with a unique idempotency key and records the exact prior and resulting state,
+reason, actor, confirmation, UTC change time, and resulting version. Effective evaluation is restrictive in
+`Platform -> BrokerAccount -> Portfolio -> TradingBot` order; the first active ancestor blocks run admission,
+proposal decisions and reservation, order conversion, and broker submission with
+`operations.kill_switch.active`. Clearing a child never overrides an active ancestor.
+
 ## 1. Purpose
 
 This document maps the domain model in [Domain Model](domain.md) to SQLite and Entity Framework Core for the minimum viable product. It defines persistence conventions, tables, keys, relationships, indexes, repository contracts, transaction boundaries, concurrency, retention, and migration order.

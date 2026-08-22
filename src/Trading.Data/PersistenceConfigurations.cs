@@ -1,8 +1,55 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Trading.Core.Operations;
 using Trading.Core.Orders;
 
 namespace Trading.Data;
+
+internal sealed class KillSwitchConfiguration : IEntityTypeConfiguration<KillSwitchEntity>
+{
+    public void Configure(EntityTypeBuilder<KillSwitchEntity> b)
+    {
+        b.ToTable("kill_switches", t =>
+        {
+            t.HasCheckConstraint("ck_kill_switch_scope", "scope_kind IN ('Platform','BrokerAccount','Portfolio','TradingBot')");
+            t.HasCheckConstraint("ck_kill_switch_state", "state IN ('Clear','Active')");
+            t.HasCheckConstraint("ck_kill_switch_version", "version > 0");
+        });
+        b.HasKey(x => new { x.ScopeKind, x.ScopeId });
+        b.Property(x => x.ScopeKind).HasColumnName("scope_kind").HasMaxLength(32);
+        b.Property(x => x.ScopeId).HasColumnName("scope_id").HasMaxLength(200);
+        b.Property(x => x.State).HasColumnName("state").HasMaxLength(16);
+        b.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(1000);
+        b.Property(x => x.ActorId).HasColumnName("actor_id").HasMaxLength(200);
+        b.Property(x => x.Confirmation).HasColumnName("confirmation").HasMaxLength(500);
+        b.Property(x => x.ChangedAt).HasColumnName("changed_at");
+        b.Property(x => x.Version).HasColumnName("version").IsConcurrencyToken();
+    }
+}
+
+internal sealed class KillSwitchHistoryConfiguration : EntityConfiguration<KillSwitchHistoryEntity>
+{
+    public KillSwitchHistoryConfiguration() : base("kill_switch_history") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<KillSwitchHistoryEntity> b)
+    {
+        b.Property(x => x.IdempotencyKey).HasMaxLength(200).IsRequired();
+        b.Property(x => x.ScopeKind).HasMaxLength(32).IsRequired();
+        b.Property(x => x.ScopeId).HasMaxLength(200).IsRequired();
+        b.Property(x => x.PriorState).HasMaxLength(16).IsRequired();
+        b.Property(x => x.ResultingState).HasMaxLength(16).IsRequired();
+        b.Property(x => x.Reason).HasMaxLength(1000).IsRequired();
+        b.Property(x => x.ActorId).HasMaxLength(200).IsRequired();
+        b.Property(x => x.Confirmation).HasMaxLength(500).IsRequired();
+        b.HasIndex(x => x.IdempotencyKey).IsUnique();
+        b.HasIndex(x => new { x.ScopeKind, x.ScopeId, x.Version }).IsUnique();
+        b.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_kill_switch_history_scope", "scope_kind IN ('Platform','BrokerAccount','Portfolio','TradingBot')");
+            t.HasCheckConstraint("ck_kill_switch_history_state", "prior_state IN ('Clear','Active') AND resulting_state IN ('Clear','Active')");
+            t.HasCheckConstraint("ck_kill_switch_history_version", "version > 0");
+        });
+    }
+}
 
 internal abstract class EntityConfiguration<TEntity>(string tableName) : IEntityTypeConfiguration<TEntity>
     where TEntity : PersistenceEntity
@@ -474,6 +521,6 @@ internal sealed class SchemaMetadataConfiguration : IEntityTypeConfiguration<Sch
         builder.ToTable("schema_metadata"); builder.HasKey(x => x.Key);
         builder.Property(x => x.Key).HasColumnName("key"); builder.Property(x => x.Value).HasColumnName("value").IsRequired();
         builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
-        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "6", UpdatedAt = 0 });
+        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "7", UpdatedAt = 0 });
     }
 }

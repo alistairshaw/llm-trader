@@ -27,7 +27,7 @@ internal sealed class Stage6MigrationTests
         {
             Assert.That(await SchemaAsync(upgraded.Context), Is.EqualTo(expected));
             Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT value FROM schema_metadata WHERE key='upgrade-proof'"), Is.EqualTo("retained"));
-            Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("6"));
+            Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("7"));
             Assert.That(upgraded.Context.Database.HasPendingModelChanges(), Is.False);
         });
     }

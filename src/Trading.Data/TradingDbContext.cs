@@ -4,6 +4,8 @@ namespace Trading.Data;
 
 public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options) : DbContext(options)
 {
+    internal DbSet<KillSwitchEntity> KillSwitches => Set<KillSwitchEntity>();
+    internal DbSet<KillSwitchHistoryEntity> KillSwitchHistory => Set<KillSwitchHistoryEntity>();
     internal DbSet<BrokerConnectionEntity> BrokerConnections => Set<BrokerConnectionEntity>();
     internal DbSet<BrokerAccountEntity> BrokerAccounts => Set<BrokerAccountEntity>();
     internal DbSet<InstrumentEntity> Instruments => Set<InstrumentEntity>();
@@ -71,5 +73,7 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
             ChangeTracker.Entries<BrokerSubmissionAttemptEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
             ChangeTracker.Entries<BrokerReconciliationEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted))
             throw new InvalidOperationException("Order execution audit facts are immutable.");
+        if (ChangeTracker.Entries<KillSwitchHistoryEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("Kill-switch history is immutable.");
     }
 }

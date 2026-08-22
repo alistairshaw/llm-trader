@@ -6,7 +6,7 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-003`](stage-7/S7-003-operational-kill-switches.md) is ready. `S7-005` is also ready and may run in parallel.
+[`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) is ready.
 
 ## Ordered Backlog
 
@@ -14,7 +14,7 @@ Task workflow: [Task Management](../task-management.md).
 | --- | --- | --- | ---: | --- |
 | [`S7-001`](stage-7/S7-001-write-stage-7-gherkin.md) | Write executable Gherkin specifications | Done | 1000 | — |
 | [`S7-002`](stage-7/S7-002-operator-application-contracts.md) | Define authorized operator application contracts | Done | 960 | `S7-001` |
-| [`S7-003`](stage-7/S7-003-operational-kill-switches.md) | Implement durable hierarchical kill switches | Ready | 940 | `S7-002` |
+| [`S7-003`](stage-7/S7-003-operational-kill-switches.md) | Implement durable hierarchical kill switches | Done | 940 | `S7-002` |
 | [`S7-004`](stage-7/S7-004-wpf-host-lifecycle.md) | Compose WPF with the Generic Host | Done | 920 | `S7-002` |
 | [`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) | Build shell, navigation, and accessibility foundations | Ready | 900 | `S7-004` |
 | [`S7-006`](stage-7/S7-006-bot-management.md) | Build Trading Bot management | Planned | 860 | `S7-002`, `S7-005` |

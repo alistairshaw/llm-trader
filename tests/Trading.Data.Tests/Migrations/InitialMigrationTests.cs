@@ -12,6 +12,8 @@ internal sealed class InitialMigrationTests
     private static readonly IReadOnlyDictionary<string, string[]> ExpectedColumns =
         new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
+            ["kill_switches"] = ["scope_kind", "scope_id", "state", "reason", "actor_id", "confirmation", "changed_at", "version"],
+            ["kill_switch_history"] = ["id", "idempotency_key", "scope_kind", "scope_id", "prior_state", "resulting_state", "reason", "actor_id", "confirmation", "changed_at", "version"],
             ["broker_connections"] = ["id", "broker_type", "display_name", "environment", "credential_reference", "status", "capabilities_json", "created_at", "updated_at", "version"],
             ["broker_accounts"] = ["id", "broker_connection_id", "external_account_id", "display_name", "account_type", "base_currency", "status", "last_reconciled_at", "capabilities_json", "created_at", "updated_at", "version"],
             ["instruments"] = ["id", "instrument_type", "primary_symbol", "display_name", "currency", "exchange", "price_precision", "quantity_precision", "status", "created_at", "updated_at", "version"],
@@ -60,8 +62,8 @@ internal sealed class InitialMigrationTests
         await initializer.InitializeAsync();
         await initializer.InitializeAsync();
 
-        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(16));
-        Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("6"));
+        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(17));
+        Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("7"));
     }
 
     [Test]
@@ -81,7 +83,7 @@ internal sealed class InitialMigrationTests
             await new DatabaseInitializer(context).InitializeAsync();
 
             Assert.That(await TableNamesAsync(context.Database.GetDbConnection()), Does.Contain("portfolios"));
-            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(16));
+            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(17));
         }
         finally
         {
@@ -139,8 +141,8 @@ internal sealed class InitialMigrationTests
         Assert.That(foreignKeys, Has.Count.EqualTo(65));
         Assert.That(foreignKeys.Select(key => key.DeleteAction), Is.All.EqualTo("RESTRICT"));
         Assert.That(foreignKeys, Does.Contain(("portfolio_ledger_entries", "portfolio_ledger_entries", "RESTRICT")));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_AddBrokerSubmissionAudit"));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("6"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_AddStage7KillSwitches"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("7"));
     }
 
     private static async Task<string[]> TableNamesAsync(DbConnection connection) =>

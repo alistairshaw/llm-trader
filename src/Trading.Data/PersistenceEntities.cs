@@ -3,6 +3,30 @@ using Trading.Core.Orders;
 namespace Trading.Data;
 
 internal abstract class PersistenceEntity { public string Id { get; set; } = string.Empty; }
+internal sealed class KillSwitchEntity
+{
+    public string ScopeKind { get; set; } = string.Empty;
+    public string ScopeId { get; set; } = string.Empty;
+    public string State { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+    public string ActorId { get; set; } = string.Empty;
+    public string Confirmation { get; set; } = string.Empty;
+    public long ChangedAt { get; set; }
+    public long Version { get; set; }
+}
+internal sealed class KillSwitchHistoryEntity : PersistenceEntity
+{
+    public string IdempotencyKey { get; set; } = string.Empty;
+    public string ScopeKind { get; set; } = string.Empty;
+    public string ScopeId { get; set; } = string.Empty;
+    public string PriorState { get; set; } = string.Empty;
+    public string ResultingState { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+    public string ActorId { get; set; } = string.Empty;
+    public string Confirmation { get; set; } = string.Empty;
+    public long ChangedAt { get; set; }
+    public long Version { get; set; }
+}
 internal sealed class BrokerConnectionEntity : PersistenceEntity
 {
     public string BrokerType { get; set; } = string.Empty; public string DisplayName { get; set; } = string.Empty;
