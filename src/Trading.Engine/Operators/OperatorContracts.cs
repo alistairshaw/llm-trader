@@ -148,6 +148,10 @@ public sealed record ExecutionSummary(OrderId Id, PortfolioId PortfolioId, Order
 public sealed record AuditSummary(string Id, string Kind, string Code, DateTimeOffset At, string CorrelationId);
 public sealed record KillSwitchSummary(OperatorResource Scope, bool IsActive, string Reason, string ActorId,
     DateTimeOffset ChangedAt, long Version);
+public sealed record OperatorKillSwitchHistory(bool IsActive, string Reason, string ActorId, string Confirmation,
+    DateTimeOffset ChangedAt, long Version);
+public sealed record KillSwitchDetail(KillSwitchSummary Direct, KillSwitchSummary? Effective,
+    ImmutableArray<OperatorKillSwitchHistory> History);
 
 public sealed record BotConfigurationInput(string Mandate, string RiskPolicyVersion, string ToolPolicyVersion,
     string SchedulingPolicyVersion, ExecutionMode ExecutionMode, string Model, string PromptVersion);
@@ -207,7 +211,7 @@ public interface IProposalOperatorService
 public interface IKillSwitchOperatorService
 {
     Task<OperatorCommandResult> ActivateAsync(OperatorPrincipal principal, OperatorResource scope,
-        long expectedVersion, string reason, CancellationToken cancellationToken);
+        long expectedVersion, string reason, string confirmation, CancellationToken cancellationToken);
     Task<OperatorCommandResult> ClearAsync(OperatorPrincipal principal, OperatorResource scope,
-        long expectedVersion, string reason, CancellationToken cancellationToken);
+        long expectedVersion, string reason, string confirmation, CancellationToken cancellationToken);
 }

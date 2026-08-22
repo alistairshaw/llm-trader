@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-013
 title: Deliver live operator updates through the UI dispatcher
 stage: 7
-status: planned
+status: ready
 priority: 820
 type: feature
 depends_on: [S7-006, S7-007, S7-008, S7-009, S7-010, S7-011, S7-012]
@@ -38,4 +38,3 @@ Build; LiveUpdates WPF tests; OperatorUpdates integration tests; full tests; for
 
 ## Completion Notes
 Pending implementation.
-

@@ -7,7 +7,8 @@ public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> create
     Func<BotRunsViewModel> createRuns,
     Func<ResearchCatalogViewModel>? createResearch = null,
     Func<ExecutionRiskAuditViewModel>? createExecution = null,
-    Func<ProposalReviewViewModel>? createProposals = null) : INavigationPageFactory
+    Func<ProposalReviewViewModel>? createProposals = null,
+    Func<KillSwitchViewModel>? createKillSwitches = null) : INavigationPageFactory
 {
     public INavigationPage Create(ShellRoute route)
     {
@@ -35,6 +36,11 @@ public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> create
         {
             var proposals = createProposals();
             return new Page(new ProposalReviewView { DataContext = proposals }, token => proposals.RefreshAsync(token), proposals);
+        }
+        if (route.Key == "settings" && createKillSwitches is not null)
+        {
+            var killSwitches = createKillSwitches();
+            return new Page(new KillSwitchView { DataContext = killSwitches }, token => killSwitches.RefreshAsync(token), killSwitches);
         }
         return new Placeholder(route.Title);
     }

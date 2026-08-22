@@ -6,7 +6,7 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-012`](stage-7/S7-012-kill-switch-ui.md) is ready.
+[`S7-013`](stage-7/S7-013-live-ui-updates.md) is ready.
 
 ## Ordered Backlog
 
@@ -23,8 +23,8 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-009`](stage-7/S7-009-research-catalog.md) | Build Research catalog and Report viewer | Done | 850 | `S7-002`, `S7-005` |
 | [`S7-011`](stage-7/S7-011-execution-risk-audit.md) | Build execution, Fill, and risk audit views | Done | 840 | `S7-002`, `S7-005` |
 | [`S7-010`](stage-7/S7-010-proposal-review.md) | Build Proposal review and human decisions | Done | 840 | `S7-002`, `S7-005` |
-| [`S7-012`](stage-7/S7-012-kill-switch-ui.md) | Build authorized kill-switch controls | Ready | 830 | `S7-003`, `S7-005`, `S7-007` |
-| [`S7-013`](stage-7/S7-013-live-ui-updates.md) | Deliver live operator updates through the UI dispatcher | Planned | 820 | `S7-006`–`S7-012` |
+| [`S7-012`](stage-7/S7-012-kill-switch-ui.md) | Build authorized kill-switch controls | Done | 830 | `S7-003`, `S7-005`, `S7-007` |
+| [`S7-013`](stage-7/S7-013-live-ui-updates.md) | Deliver live operator updates through the UI dispatcher | Ready | 820 | `S7-006`–`S7-012` |
 | [`S7-014`](stage-7/S7-014-wpf-test-profile.md) | Publish deterministic WPF test profile | Planned | 800 | `S7-013` |
 | [`S7-015`](stage-7/S7-015-flaui-harness.md) | Build Windows FlaUI automation harness | Planned | 780 | `S7-014` |
 | [`S7-016`](stage-7/S7-016-production-acceptance-bindings.md) | Complete production-backed non-UI acceptance | Planned | 760 | `S7-003`, `S7-013` |

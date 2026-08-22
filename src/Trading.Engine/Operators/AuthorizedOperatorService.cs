@@ -57,12 +57,12 @@ public sealed class AuthorizedOperatorService(IOperatorAuthorization authorizati
         OperatorCommandKind.RejectProposal, Required(reason, nameof(reason)), cancellationToken);
 
     public Task<OperatorCommandResult> ActivateAsync(OperatorPrincipal principal, OperatorResource scope,
-        long expectedVersion, string reason, CancellationToken cancellationToken) => Switch(principal, scope,
-        expectedVersion, OperatorCommandKind.ActivateKillSwitch, reason, cancellationToken);
+        long expectedVersion, string reason, string confirmation, CancellationToken cancellationToken) => Switch(principal, scope,
+        expectedVersion, OperatorCommandKind.ActivateKillSwitch, reason, confirmation, cancellationToken);
 
     public Task<OperatorCommandResult> ClearAsync(OperatorPrincipal principal, OperatorResource scope,
-        long expectedVersion, string reason, CancellationToken cancellationToken) => Switch(principal, scope,
-        expectedVersion, OperatorCommandKind.ClearKillSwitch, reason, cancellationToken);
+        long expectedVersion, string reason, string confirmation, CancellationToken cancellationToken) => Switch(principal, scope,
+        expectedVersion, OperatorCommandKind.ClearKillSwitch, reason, confirmation, cancellationToken);
 
     private async Task<OperatorQueryResult<T>> QueryAsync<T>(OperatorPrincipal principal, OperatorPageKind page,
         OperatorResource resource, OperatorFilter filter, OperatorPageRequest pageRequest, CancellationToken cancellationToken)
@@ -98,9 +98,10 @@ public sealed class AuthorizedOperatorService(IOperatorAuthorization authorizati
                 reason is null ? null : [new("reason", reason)]), cancellationToken);
 
     private Task<OperatorCommandResult> Switch(OperatorPrincipal principal, OperatorResource scope,
-        long expectedVersion, OperatorCommandKind kind, string reason, CancellationToken cancellationToken) =>
+        long expectedVersion, OperatorCommandKind kind, string reason, string confirmation, CancellationToken cancellationToken) =>
         ExecuteAsync(principal, OperatorAuthority.ManageKillSwitches,
-            OperatorCommand.Create(kind, scope, expectedVersion, [new("reason", Required(reason, nameof(reason)))]),
+            OperatorCommand.Create(kind, scope, expectedVersion, [new("reason", Required(reason, nameof(reason))),
+                new("confirmation", Required(confirmation, nameof(confirmation)))]),
             cancellationToken);
 
     private static OperatorResource Bot(TradingBotId id) =>

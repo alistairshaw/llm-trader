@@ -15,6 +15,7 @@
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ResearchCatalogViewModel.cs" Link="Production\ViewModels\ResearchCatalogViewModel.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ExecutionRiskAuditViewModel.cs" Link="Production\ViewModels\ExecutionRiskAuditViewModel.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ProposalReviewViewModel.cs" Link="Production\ViewModels\ProposalReviewViewModel.cs" />
+    <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\KillSwitchViewModel.cs" Link="Production\ViewModels\KillSwitchViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\Trading.UI.Wpf\MainWindow.xaml" Link="MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
@@ -24,6 +25,7 @@
     <None Include="..\..\src\Trading.UI.Wpf\Views\ResearchCatalogView.xaml" Link="ResearchCatalogView.xaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\Trading.UI.Wpf\Views\ExecutionRiskAuditView.xaml" Link="ExecutionRiskAuditView.xaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\Trading.UI.Wpf\Views\ProposalReviewView.xaml" Link="ProposalReviewView.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\Trading.UI.Wpf\Views\KillSwitchView.xaml" Link="KillSwitchView.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trading.Core\Trading.Core.csproj" />
