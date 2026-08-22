@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-016
 title: Complete production-backed non-UI acceptance
 stage: 7
-status: planned
+status: ready
 priority: 760
 type: test
 depends_on: [S7-003, S7-013]
@@ -38,4 +38,3 @@ Build; Stage7 cross-platform acceptance twice; full tests; format.
 
 ## Completion Notes
 Pending implementation.
-

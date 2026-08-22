@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trading.Research.Tests", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trading.UI.Wpf.Tests", "tests\Trading.UI.Wpf.Tests\Trading.UI.Wpf.Tests.csproj", "{A0000016-0000-4000-8000-000000000016}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trading.UI.Wpf.AcceptanceTests", "tests\Trading.UI.Wpf.AcceptanceTests\Trading.UI.Wpf.AcceptanceTests.csproj", "{A0000017-0000-4000-8000-000000000017}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,5 +106,9 @@ Global
 		{A0000016-0000-4000-8000-000000000016}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0000016-0000-4000-8000-000000000016}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0000016-0000-4000-8000-000000000016}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0000017-0000-4000-8000-000000000017}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0000017-0000-4000-8000-000000000017}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0000017-0000-4000-8000-000000000017}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0000017-0000-4000-8000-000000000017}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

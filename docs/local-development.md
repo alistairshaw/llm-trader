@@ -150,6 +150,12 @@ The initial policy is therefore:
 
 Running a WPF artifact produced elsewhere is not a substitute for local WPF debugging. If desktop work becomes frequent, the team should revisit whether a small, documented Windows UI toolchain is justified.
 
+`Trading.UI.Wpf.AcceptanceTests` is compiled on every platform but is an explicitly selected test project. Its tests run
+only when `RunWpfAcceptance=true` is supplied on an interactive Windows host together with the absolute
+`LLM_TRADER_WPF_EXECUTABLE` path to the published deterministic artifact. Commit CI selects `HarnessSmoke`; Linux and
+the ordinary full-suite target never launch WPF. Failures are written below `artifacts/wpf-test-results` as a bounded,
+redacted UIA tree and application log plus a screenshot containing only deterministic fixture data.
+
 ## What Is Installed Where
 
 ### Required on the Windows host

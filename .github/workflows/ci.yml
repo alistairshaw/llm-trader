@@ -68,6 +68,29 @@ jobs:
           --configuration Release
           --no-restore
 
+      - name: Publish deterministic WPF acceptance artifact
+        if: ${{ !cancelled() && matrix.os == 'windows-latest' && steps.build.outcome == 'success' }}
+        run: >-
+          dotnet publish src/Trading.UI.Wpf/Trading.UI.Wpf.csproj
+          --configuration Release
+          --no-restore
+          --output artifacts/wpf/win-x64
+
+      - name: Run interactive WPF harness smoke
+        if: ${{ !cancelled() && matrix.os == 'windows-latest' && steps.build.outcome == 'success' }}
+        shell: pwsh
+        env:
+          LLM_TRADER_WPF_EXECUTABLE: ${{ github.workspace }}\artifacts\wpf\win-x64\Trading.UI.Wpf.exe
+          LLM_TRADER_WPF_ARTIFACT_DIRECTORY: ${{ github.workspace }}\artifacts\wpf-test-results
+        run: >-
+          dotnet test tests/Trading.UI.Wpf.AcceptanceTests/Trading.UI.Wpf.AcceptanceTests.csproj
+          --configuration Release
+          --no-build
+          -p:RunWpfAcceptance=true
+          --filter TestCategory=HarnessSmoke
+          --logger "trx;LogFileName=wpf-harness-smoke.trx"
+          --results-directory artifacts/wpf-test-results
+
       - name: Publish test results and diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -75,6 +98,7 @@ jobs:
           name: test-results-${{ matrix.name }}
           path: |
             artifacts/test-results/**/*.trx
+            artifacts/wpf-test-results/**
             **/TestResults/**
           if-no-files-found: warn
           retention-days: 14
