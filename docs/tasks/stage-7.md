@@ -6,14 +6,14 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-001`](stage-7/S7-001-write-stage-7-gherkin.md) is ready.
+[`S7-002`](stage-7/S7-002-operator-application-contracts.md) is ready.
 
 ## Ordered Backlog
 
 | ID | Task | Status | Priority | Depends on |
 | --- | --- | --- | ---: | --- |
-| [`S7-001`](stage-7/S7-001-write-stage-7-gherkin.md) | Write executable Gherkin specifications | Ready | 1000 | — |
-| [`S7-002`](stage-7/S7-002-operator-application-contracts.md) | Define authorized operator application contracts | Planned | 960 | `S7-001` |
+| [`S7-001`](stage-7/S7-001-write-stage-7-gherkin.md) | Write executable Gherkin specifications | Done | 1000 | — |
+| [`S7-002`](stage-7/S7-002-operator-application-contracts.md) | Define authorized operator application contracts | Ready | 960 | `S7-001` |
 | [`S7-003`](stage-7/S7-003-operational-kill-switches.md) | Implement durable hierarchical kill switches | Planned | 940 | `S7-002` |
 | [`S7-004`](stage-7/S7-004-wpf-host-lifecycle.md) | Compose WPF with the Generic Host | Planned | 920 | `S7-002` |
 | [`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) | Build shell, navigation, and accessibility foundations | Planned | 900 | `S7-004` |
@@ -39,4 +39,3 @@ Task workflow: [Task Management](../task-management.md).
 - Operator actions remain authorized, audited, asynchronous, cancellable, and Engine-mediated.
 - Live UI updates, bounded host shutdown, WPF publish, migrations, full tests, and security gates pass.
 - The Stage 7 Review Record approves Stage 8.
-

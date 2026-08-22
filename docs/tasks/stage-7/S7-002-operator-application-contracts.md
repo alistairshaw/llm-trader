@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-002
 title: Define authorized operator application contracts
 stage: 7
-status: planned
+status: ready
 priority: 960
 type: feature
 depends_on: [S7-001]
@@ -38,4 +38,3 @@ Build; OperatorContracts Engine/integration tests; architecture tests; full test
 
 ## Completion Notes
 Pending implementation.
-
