@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-014
 title: Publish deterministic WPF test profile
 stage: 7
-status: planned
+status: ready
 priority: 800
 type: infrastructure
 depends_on: [S7-013]
@@ -38,4 +38,3 @@ Restore; build; publish-wpf; WpfTestProfile tests; format.
 
 ## Completion Notes
 Pending implementation.
-

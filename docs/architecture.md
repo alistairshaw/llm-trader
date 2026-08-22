@@ -293,6 +293,11 @@ Responsibilities:
 
 View models must not call broker SDKs or `DbContext` directly. Long-running operations must be asynchronous, cancellable, and surfaced to users with progress and error state.
 
+Active operator workspaces consume bounded update hints containing only a state kind, bounded identity, sequence, and
+terminal marker. The hint never carries authoritative state: it schedules a cancellable query-service refresh through
+an injected UI dispatcher. Redundant identity updates are coalesced, terminal transitions win over later non-terminal
+hints in the same burst, and navigation disposal stops the workspace subscription before disposing its view model.
+
 Critical WPF journeys are automated through FlaUI UIA3 page/component objects. UI tests must not depend on screen coordinates, color alone, animation timing, or fragile display-text selectors when a stable automation identifier can be provided.
 
 ## 7. Dependency Direction

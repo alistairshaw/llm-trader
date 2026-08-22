@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Trading.Engine.Operators;
 using Trading.Host;
 using Trading.UI.Wpf.Navigation;
+using Trading.UI.Wpf.Services;
 using Trading.UI.Wpf.ViewModels;
 
 namespace Trading.UI.Wpf;
@@ -38,13 +39,17 @@ public partial class App : Application, IAsyncDisposable
             var proposalService = lifecycle.Services.GetService<IProposalOperatorService>();
             var killSwitchService = lifecycle.Services.GetService<IKillSwitchOperatorService>();
             var principal = lifecycle.Services.GetService<OperatorPrincipal>();
+            var updates = new PollingOperatorUpdateSource(TimeSpan.FromSeconds(2));
+            var dispatcher = new WpfUiDispatcher(Dispatcher);
             var window = queries is not null && botService is not null && runService is not null && researchService is not null && proposalService is not null && killSwitchService is not null && principal is not null
                 ? new MainWindow(new WpfNavigationPageFactory(
                     () => new BotManagementViewModel(queries, botService, principal),
                     () => new BotRunsViewModel(queries, runService, principal),
                     () => new ResearchCatalogViewModel(queries, researchService, principal),
                     createProposals: () => new ProposalReviewViewModel(queries, proposalService, principal),
-                    createKillSwitches: () => new KillSwitchViewModel(queries, killSwitchService, principal)))
+                    createKillSwitches: () => new KillSwitchViewModel(queries, killSwitchService, principal),
+                    updates: updates,
+                    dispatcher: dispatcher))
                 : new MainWindow();
             window.Closing += OnMainWindowClosing;
             MainWindow = window;

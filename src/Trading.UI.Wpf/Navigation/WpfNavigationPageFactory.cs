@@ -1,3 +1,4 @@
+using Trading.UI.Wpf.Services;
 using Trading.UI.Wpf.ViewModels;
 using Trading.UI.Wpf.Views;
 
@@ -8,41 +9,58 @@ public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> create
     Func<ResearchCatalogViewModel>? createResearch = null,
     Func<ExecutionRiskAuditViewModel>? createExecution = null,
     Func<ProposalReviewViewModel>? createProposals = null,
-    Func<KillSwitchViewModel>? createKillSwitches = null) : INavigationPageFactory
+    Func<KillSwitchViewModel>? createKillSwitches = null,
+    IOperatorUpdateSource? updates = null,
+    IUiDispatcher? dispatcher = null) : INavigationPageFactory
 {
     public INavigationPage Create(ShellRoute route)
     {
         if (route.Key == "bots")
         {
             var bots = createBots();
-            return new Page(new BotManagementView { DataContext = bots }, token => bots.RefreshAsync(token), bots);
+            return CreateLive(new BotManagementView { DataContext = bots }, bots.RefreshAsync, bots,
+                OperatorUpdateKind.Bots);
         }
         if (route.Key == "runs")
         {
             var runs = createRuns();
-            return new Page(new BotRunsView { DataContext = runs }, token => runs.RefreshAsync(token), runs);
+            return CreateLive(new BotRunsView { DataContext = runs }, runs.RefreshAsync, runs,
+                OperatorUpdateKind.Runs, OperatorUpdateKind.Warnings);
         }
         if (route.Key == "research" && createResearch is not null)
         {
             var research = createResearch();
-            return new Page(new ResearchCatalogView { DataContext = research }, token => research.RefreshAsync(token), research);
+            return CreateLive(new ResearchCatalogView { DataContext = research }, research.RefreshAsync, research,
+                OperatorUpdateKind.Research);
         }
         if ((route.Key == "execution" || route.Key == "risk") && createExecution is not null)
         {
             var execution = createExecution();
-            return new Page(new ExecutionRiskAuditView { DataContext = execution }, token => execution.RefreshAsync(token), execution);
+            return CreateLive(new ExecutionRiskAuditView { DataContext = execution }, execution.RefreshAsync, execution,
+                OperatorUpdateKind.Orders, OperatorUpdateKind.Fills, OperatorUpdateKind.Positions,
+                OperatorUpdateKind.Reconciliation, OperatorUpdateKind.Warnings);
         }
         if (route.Key == "proposals" && createProposals is not null)
         {
             var proposals = createProposals();
-            return new Page(new ProposalReviewView { DataContext = proposals }, token => proposals.RefreshAsync(token), proposals);
+            return CreateLive(new ProposalReviewView { DataContext = proposals }, proposals.RefreshAsync, proposals,
+                OperatorUpdateKind.Proposals);
         }
         if (route.Key == "settings" && createKillSwitches is not null)
         {
             var killSwitches = createKillSwitches();
-            return new Page(new KillSwitchView { DataContext = killSwitches }, token => killSwitches.RefreshAsync(token), killSwitches);
+            return CreateLive(new KillSwitchView { DataContext = killSwitches }, killSwitches.RefreshAsync, killSwitches,
+                OperatorUpdateKind.Switches, OperatorUpdateKind.Warnings);
         }
         return new Placeholder(route.Title);
+    }
+
+    private INavigationPage CreateLive(object content, Func<CancellationToken, Task> load,
+        IAsyncDisposable lifetime, params OperatorUpdateKind[] kinds)
+    {
+        if (updates is null || dispatcher is null) return new Page(content, load, lifetime);
+        return new LivePage(content, load, lifetime,
+            new LiveWorkspaceUpdater(updates, dispatcher, kinds.ToHashSet(), load));
     }
 
     private sealed class Page(object content, Func<CancellationToken, Task> load, IAsyncDisposable lifetime) : INavigationPage
@@ -50,6 +68,22 @@ public sealed class WpfNavigationPageFactory(Func<BotManagementViewModel> create
         public object Content { get; } = content;
         public async ValueTask LoadAsync(CancellationToken cancellationToken) => await load(cancellationToken);
         public ValueTask DisposeAsync() => lifetime.DisposeAsync();
+    }
+
+    private sealed class LivePage(object content, Func<CancellationToken, Task> load,
+        IAsyncDisposable lifetime, LiveWorkspaceUpdater updater) : INavigationPage
+    {
+        public object Content { get; } = content;
+        public async ValueTask LoadAsync(CancellationToken cancellationToken)
+        {
+            await load(cancellationToken);
+            updater.Start();
+        }
+        public async ValueTask DisposeAsync()
+        {
+            await updater.DisposeAsync();
+            await lifetime.DisposeAsync();
+        }
     }
 
     private sealed class Placeholder(string title) : INavigationPage

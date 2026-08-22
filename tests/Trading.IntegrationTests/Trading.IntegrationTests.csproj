@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\TestInfrastructure\SqliteTestDatabaseCleanup.cs" Link="TestInfrastructure\SqliteTestDatabaseCleanup.cs" />
+    <Compile Include="..\..\src\Trading.UI.Wpf\Services\OperatorUpdates.cs" Link="OperatorUpdates.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trading.Brokers\Trading.Brokers.csproj" />
