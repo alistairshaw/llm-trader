@@ -1,3 +1,5 @@
+using Trading.Core.Orders;
+
 namespace Trading.Data;
 
 internal abstract class PersistenceEntity { public string Id { get; set; } = string.Empty; }
@@ -243,8 +245,10 @@ internal sealed class OrderEntity : PersistenceEntity
     public string? CapitalReservationId { get; set; }
     public string InstrumentId { get; set; } = string.Empty;
     public string Side { get; set; } = string.Empty; public string Quantity { get; set; } = string.Empty;
+    public string QuantityUnit { get; set; } = string.Empty; public string Currency { get; set; } = string.Empty;
     public string OrderType { get; set; } = string.Empty; public string? LimitPrice { get; set; }
-    public string TimeInForce { get; set; } = string.Empty; public string Status { get; set; } = string.Empty;
+    public TimeInForce TimeInForce { get; set; }
+    public OrderStatus Status { get; set; }
     public string? BrokerOrderId { get; set; }
     public string CorrelationId { get; set; } = string.Empty;
     public long CreatedAt { get; set; }
@@ -255,7 +259,8 @@ internal sealed class OrderEntity : PersistenceEntity
 internal sealed class OrderTransitionEntity : PersistenceEntity
 {
     public string OrderId { get; set; } = string.Empty; public int SequenceNumber { get; set; }
-    public string PreviousStatus { get; set; } = string.Empty; public string NewStatus { get; set; } = string.Empty;
+    public OrderStatus PreviousStatus { get; set; }
+    public OrderStatus NewStatus { get; set; }
     public string ReasonCode { get; set; } = string.Empty; public string? ReasonDetail { get; set; }
     public string Source { get; set; } = string.Empty; public long OccurredAt { get; set; }
     public long ReceivedAt { get; set; }

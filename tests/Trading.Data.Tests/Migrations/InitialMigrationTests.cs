@@ -41,8 +41,8 @@ internal sealed class InitialMigrationTests
             ["guardrail_evaluations"] = ["id", "content_hash", "evaluated_at", "evaluation_sequence", "evaluation_stage", "outcome", "policy_version", "rule_results_json", "state_snapshot_id", "trade_proposal_id"],
             ["proposal_approvals"] = ["id", "trade_proposal_id", "decision", "actor_type", "actor_id", "reason", "decided_at", "proposal_version", "state_snapshot_id"],
             ["capital_reservations"] = ["id", "amount", "consumed_at", "created_at", "currency", "expires_at", "order_id", "portfolio_id", "released_at", "status", "trade_proposal_id", "version"],
-            ["orders"] = ["id", "client_order_id", "portfolio_id", "broker_account_id", "trade_proposal_id", "capital_reservation_id", "instrument_id", "side", "quantity", "order_type", "limit_price", "time_in_force", "status", "broker_order_id", "correlation_id", "created_at", "submitted_at", "completed_at", "version"],
-            ["order_transitions"] = ["id", "order_id", "sequence_number", "previous_status", "new_status", "reason_code", "reason_detail", "source", "occurred_at", "received_at", "correlation_id"],
+            ["orders"] = ["id", "broker_account_id", "broker_order_id", "capital_reservation_id", "client_order_id", "completed_at", "correlation_id", "created_at", "currency", "instrument_id", "limit_price", "order_type", "portfolio_id", "quantity", "quantity_unit", "side", "status", "submitted_at", "time_in_force", "trade_proposal_id", "version"],
+            ["order_transitions"] = ["id", "correlation_id", "new_status", "occurred_at", "order_id", "previous_status", "reason_code", "reason_detail", "received_at", "sequence_number", "source"],
             ["fills"] = ["id", "order_id", "broker_account_id", "broker_execution_id", "quantity", "price", "currency", "fee_amount", "fee_currency", "executed_at", "received_at", "raw_payload_reference"],
             ["broker_reconciliations"] = ["id", "broker_account_id", "status", "started_at", "completed_at", "broker_snapshot_json", "differences_json", "resolution_json", "correlation_id", "content_hash"],
             ["inbox_messages"] = ["id", "source", "external_message_id", "message_type", "received_at", "processed_at", "status", "payload_json", "payload_hash", "last_error", "version"],
@@ -59,7 +59,7 @@ internal sealed class InitialMigrationTests
         await initializer.InitializeAsync();
         await initializer.InitializeAsync();
 
-        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(9));
+        Assert.That(await ScalarAsync<long>(database.Context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(11));
         Assert.That(await ScalarAsync<string>(database.Context.Database.GetDbConnection(), "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("6"));
     }
 
@@ -80,7 +80,7 @@ internal sealed class InitialMigrationTests
             await new DatabaseInitializer(context).InitializeAsync();
 
             Assert.That(await TableNamesAsync(context.Database.GetDbConnection()), Does.Contain("portfolios"));
-            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(9));
+            Assert.That(await ScalarAsync<long>(context.Database.GetDbConnection(), "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(11));
         }
         finally
         {
@@ -138,7 +138,7 @@ internal sealed class InitialMigrationTests
         Assert.That(foreignKeys, Has.Count.EqualTo(62));
         Assert.That(foreignKeys.Select(key => key.DeleteAction), Is.All.EqualTo("RESTRICT"));
         Assert.That(foreignKeys, Does.Contain(("portfolio_ledger_entries", "portfolio_ledger_entries", "RESTRICT")));
-        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_AddStage6ExecutionIntegrityTriggers"));
+        Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_RestoreAlignedOrderIntegrityTriggers"));
         Assert.That(await ScalarAsync<string>(connection, "SELECT value FROM schema_metadata WHERE key = 'application_data_format_version'"), Is.EqualTo("6"));
     }
 

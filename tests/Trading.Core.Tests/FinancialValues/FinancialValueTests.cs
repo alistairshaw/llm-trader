@@ -66,6 +66,7 @@ public sealed class FinancialValueTests
             Assert.That(() => new Quantity(-1m, "shares"), Throws.TypeOf<ArgumentOutOfRangeException>());
             Assert.That(() => new Quantity(1m, string.Empty), Throws.ArgumentException);
             Assert.That(() => new Quantity(1m, "Shares"), Throws.ArgumentException);
+            Assert.That(() => new Quantity(1m, new string('a', 33)), Throws.ArgumentException);
             Assert.That(() => new Percentage(-0.01m), Throws.TypeOf<ArgumentOutOfRangeException>());
             Assert.That(() => new Percentage(100.01m), Throws.TypeOf<ArgumentOutOfRangeException>());
         });

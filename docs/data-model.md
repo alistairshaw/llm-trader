@@ -561,10 +561,12 @@ The Stage 5 schema stores `order_id` without a foreign key because the `orders` 
 | `instrument_id` | Required FK |
 | `side` | Buy or sell |
 | `quantity` | Required positive exact decimal |
+| `quantity_unit` | Required lowercase ASCII unit, 1–32 characters; exact `Quantity.Unit` |
+| `currency` | Required three-letter uppercase ISO code; exact `Order.Currency` |
 | `order_type` | Market or limit initially |
 | `limit_price` | Nullable exact decimal |
-| `time_in_force` | Day or GTC initially |
-| `status` | Required order state |
+| `time_in_force` | Required canonical Core token: `Day`, `GoodTillCancelled`, `ImmediateOrCancel`, or `FillOrKill` |
+| `status` | Required canonical Core token: `Created`, `Submitting`, `Submitted`, `Acknowledged`, `PartiallyFilled`, `Filled`, `CancelPending`, `Cancelled`, `Rejected`, `Expired`, or `Unknown` |
 | `broker_order_id` | Nullable external ID |
 | `created_at` | Required UTC |
 | `submitted_at` | Nullable UTC |
@@ -585,6 +587,13 @@ the Proposal belongs to the same Portfolio and Instrument, and any linked Reserv
 Portfolio. Execution identity and order instructions are immutable after insert; only lifecycle, broker identity, and
 timestamps may advance under optimistic concurrency.
 
+The forward alignment migrations `20260822040649_AlignOrderPersistenceContract` and
+`20260822041123_RestoreAlignedOrderIntegrityTriggers` add the two missing financial dimensions without placeholder
+defaults, replace the provisional lifecycle constraints with exact Core tokens, constrain transition status tokens,
+and restore every affected audit and ownership trigger after SQLite rebuilds the Order tables. A database containing an
+Order written through the incomplete provisional schema cannot be upgraded by inventing currency or quantity-unit
+facts; migration must stop for explicit repair.
+
 Target-allocation proposals may create multiple orders, so the durable relationship is one proposal to many orders; do not impose an unconditional unique index on `trade_proposal_id`.
 
 ### 10.2 `order_transitions`
@@ -595,6 +604,7 @@ Unique `(order_id, sequence_number)`.
 
 Rows are append-only at both the EF change-tracker and SQLite-trigger boundaries. `correlation_id` is indexed for audit
 reconstruction without making distinct transitions in one correlated workflow mutually exclusive.
+Both status columns use the same exhaustive canonical `OrderStatus` token set as `orders.status`.
 
 ### 10.3 `fills`
 
@@ -894,6 +904,11 @@ same empty result as a missing proposal so the read boundary does not disclose p
 10. Inbox, outbox, schema metadata, and operational indexes.
 
 Every migration must be tested against a fresh database and an upgrade fixture representing the preceding released schema. Back up the database before destructive production migrations.
+
+SQLite table rebuilds discard application-created triggers and can temporarily invalidate triggers on other tables
+that refer to the rebuilt table. A corrective migration therefore drops all attached and referring triggers before
+the rebuild and restores them in a separate immediately following migration, with generated SQL and final trigger
+presence covered by tests. Required financial columns are never introduced with semantic placeholder defaults.
 
 ## 20. Required Data-Layer Tests
 

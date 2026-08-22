@@ -3,13 +3,14 @@ schema_version: 1
 id: S6-017
 title: Align order persistence with the execution contract
 stage: 6
-status: ready
+status: done
 priority: 950
 type: defect
 depends_on: [S6-004]
 labels: [ef-core, sqlite, orders, financial-integrity]
 created: 2026-08-22
 updated: 2026-08-22
+owner: s6_017
 ---
 
 # S6-017: Align Order Persistence with the Execution Contract
@@ -55,4 +56,21 @@ Also run the repository EF migration drift check documented in [Local Developmen
 
 ## Completion Notes
 
-Pending.
+- Added required `currency` and `quantity_unit` Order columns, bounded them to the exact Core value contracts, and
+  mapped `OrderStatus`, transition statuses, and `TimeInForce` through canonical enum converters with exhaustive
+  SQLite token constraints.
+- Added forward migrations `20260822040649_AlignOrderPersistenceContract` and
+  `20260822041123_RestoreAlignedOrderIntegrityTriggers`. The schema migration introduces no semantic defaults, so an
+  incomplete-schema Order cannot acquire invented financial facts; the immediately following migration restores every
+  trigger attached to or referring to the SQLite-rebuilt tables, including immutability of the new fields.
+- Extended fresh and completed-Stage-5 upgrade, schema equivalence, exact field/token round-trip, exhaustive Core token,
+  invalid constraint, trigger, migration-count, and model-drift coverage. Bounded Core quantity units at 32 lowercase
+  ASCII characters so every valid aggregate has a lossless schema representation.
+- Updated `AGENTS.md` and `docs/data-model.md` with the exact durable fields/tokens and the SQLite rebuild/trigger
+  migration rule.
+- Validation: `./dev.ps1 restore`; repeated `./dev.ps1 build` (final 0 warnings/errors); focused
+  `Category=Stage6Migrations` (5/5), `Category=PersistenceMappings` (5/5), Core `Category=OrderExecution` (9/9), and
+  Core financial-value tests (10/10); all Data tests (154/154); full suite (1,035 passed, 34 expected temporarily
+  pending Stage 6 acceptance cases, 0 failed); `./dev.ps1 format`; and EF pending-model-change verification all passed.
+- Deviations: trigger restoration is a second ordered migration because EF's SQLite provider defers table rebuilds
+  until after raw SQL in the same migration. Follow-up tasks: none. ADRs: none.

@@ -91,6 +91,10 @@ Before reporting a task complete:
 3. Distinguish clearly between tests run locally, platform checks delegated to CI, and checks not run.
 4. Ensure Release builds have zero warnings and no formatter, analyzer, or architecture violations.
    Generated EF migrations and persistence entity additions are not exempt from formatting; apply the repository formatter to generated output before running the verification-only `format` target.
+   When a SQLite migration rebuilds a table, explicitly drop every application-created trigger attached to or referring
+   to that table before the rebuild, then restore those triggers in a separate immediately following migration. Verify
+   generated SQL ordering; do not assume EF preserves triggers across a rebuild or interleaves raw SQL after it.
+   Required financial columns added after committed history must not use placeholder defaults that invent persisted facts.
 5. Update documentation that would otherwise be made false.
 6. Fill Completion Notes with changes, exact validation commands, results, deviations, follow-up task IDs, and ADRs.
 7. Set the task and stage index to `done` only when all acceptance criteria pass. Use `review` or `blocked` honestly when they do not.

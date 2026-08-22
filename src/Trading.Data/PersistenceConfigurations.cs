@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Trading.Core.Orders;
 
 namespace Trading.Data;
 
@@ -401,8 +402,10 @@ internal sealed class OrderConfiguration : EntityConfiguration<OrderEntity>
     {
         b.Property(x => x.ClientOrderId).IsRequired(); b.Property(x => x.PortfolioId).IsRequired(); b.Property(x => x.BrokerAccountId).IsRequired();
         b.Property(x => x.TradeProposalId).IsRequired(); b.Property(x => x.InstrumentId).IsRequired(); b.Property(x => x.Side).IsRequired();
-        b.Property(x => x.Quantity).IsRequired().HasColumnType("TEXT"); b.Property(x => x.LimitPrice).HasColumnType("TEXT");
-        b.Property(x => x.OrderType).IsRequired(); b.Property(x => x.TimeInForce).IsRequired(); b.Property(x => x.Status).IsRequired();
+        b.Property(x => x.Quantity).IsRequired().HasColumnType("TEXT"); b.Property(x => x.QuantityUnit).IsRequired().HasMaxLength(32);
+        b.Property(x => x.Currency).IsRequired().HasMaxLength(3); b.Property(x => x.LimitPrice).HasColumnType("TEXT");
+        b.Property(x => x.OrderType).IsRequired(); b.Property(x => x.TimeInForce).HasConversion(CanonicalPersistenceConverters.Enumeration<TimeInForce>()).IsRequired();
+        b.Property(x => x.Status).HasConversion(CanonicalPersistenceConverters.Enumeration<OrderStatus>()).IsRequired();
         b.Property(x => x.CorrelationId).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken();
         b.HasIndex(x => x.ClientOrderId).IsUnique(); b.HasIndex(x => new { x.BrokerAccountId, x.BrokerOrderId }).IsUnique().HasFilter("broker_order_id IS NOT NULL");
         b.HasIndex(x => new { x.PortfolioId, x.Status, x.CreatedAt }); b.HasIndex(x => x.TradeProposalId); b.HasIndex(x => x.CorrelationId).IsUnique();
@@ -410,13 +413,13 @@ internal sealed class OrderConfiguration : EntityConfiguration<OrderEntity>
         b.HasOne<BrokerAccountEntity>().WithMany().HasForeignKey(x => x.BrokerAccountId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne<TradeProposalEntity>().WithMany().HasForeignKey(x => x.TradeProposalId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne<InstrumentEntity>().WithMany().HasForeignKey(x => x.InstrumentId).OnDelete(DeleteBehavior.Restrict);
-        b.ToTable(t => { t.HasCheckConstraint("ck_orders_side", "side IN ('Buy','Sell')"); t.HasCheckConstraint("ck_orders_quantity", "CAST(quantity AS NUMERIC) > 0"); t.HasCheckConstraint("ck_orders_type", "order_type IN ('Market','Limit')"); t.HasCheckConstraint("ck_orders_limit", "(order_type='Market' AND limit_price IS NULL) OR (order_type='Limit' AND CAST(limit_price AS NUMERIC) > 0)"); t.HasCheckConstraint("ck_orders_time_in_force", "time_in_force IN ('Day','GoodTilCancelled')"); t.HasCheckConstraint("ck_orders_status", "status IN ('PendingSubmission','Submitting','SubmissionUnknown','Submitted','PartiallyFilled','Filled','Rejected','CancelPending','Cancelled','Expired','Failed')"); t.HasCheckConstraint("ck_orders_version", "version > 0"); });
+        b.ToTable(t => { t.HasCheckConstraint("ck_orders_side", "side IN ('Buy','Sell')"); t.HasCheckConstraint("ck_orders_quantity", "CAST(quantity AS NUMERIC) > 0"); t.HasCheckConstraint("ck_orders_quantity_unit", "length(quantity_unit) BETWEEN 1 AND 32 AND quantity_unit NOT GLOB '*[^a-z]*'"); t.HasCheckConstraint("ck_orders_currency", "length(currency)=3 AND currency NOT GLOB '*[^A-Z]*'"); t.HasCheckConstraint("ck_orders_type", "order_type IN ('Market','Limit')"); t.HasCheckConstraint("ck_orders_limit", "(order_type='Market' AND limit_price IS NULL) OR (order_type='Limit' AND CAST(limit_price AS NUMERIC) > 0)"); t.HasCheckConstraint("ck_orders_time_in_force", "time_in_force IN ('Day','GoodTillCancelled','ImmediateOrCancel','FillOrKill')"); t.HasCheckConstraint("ck_orders_status", "status IN ('Created','Submitting','Submitted','Acknowledged','PartiallyFilled','Filled','CancelPending','Cancelled','Rejected','Expired','Unknown')"); t.HasCheckConstraint("ck_orders_version", "version > 0"); });
     }
 }
 internal sealed class OrderTransitionConfiguration : EntityConfiguration<OrderTransitionEntity>
 {
     public OrderTransitionConfiguration() : base("order_transitions") { }
-    protected override void ConfigureEntity(EntityTypeBuilder<OrderTransitionEntity> b) { b.Property(x => x.OrderId).IsRequired(); b.Property(x => x.PreviousStatus).IsRequired(); b.Property(x => x.NewStatus).IsRequired(); b.Property(x => x.ReasonCode).IsRequired(); b.Property(x => x.Source).IsRequired(); b.Property(x => x.CorrelationId).IsRequired(); b.HasIndex(x => new { x.OrderId, x.SequenceNumber }).IsUnique(); b.HasIndex(x => x.CorrelationId); b.HasOne<OrderEntity>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => t.HasCheckConstraint("ck_order_transitions_sequence", "sequence_number > 0")); }
+    protected override void ConfigureEntity(EntityTypeBuilder<OrderTransitionEntity> b) { b.Property(x => x.OrderId).IsRequired(); b.Property(x => x.PreviousStatus).HasConversion(CanonicalPersistenceConverters.Enumeration<OrderStatus>()).IsRequired(); b.Property(x => x.NewStatus).HasConversion(CanonicalPersistenceConverters.Enumeration<OrderStatus>()).IsRequired(); b.Property(x => x.ReasonCode).IsRequired(); b.Property(x => x.Source).IsRequired(); b.Property(x => x.CorrelationId).IsRequired(); b.HasIndex(x => new { x.OrderId, x.SequenceNumber }).IsUnique(); b.HasIndex(x => x.CorrelationId); b.HasOne<OrderEntity>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_order_transitions_sequence", "sequence_number > 0"); t.HasCheckConstraint("ck_order_transitions_previous_status", "previous_status IN ('Created','Submitting','Submitted','Acknowledged','PartiallyFilled','Filled','CancelPending','Cancelled','Rejected','Expired','Unknown')"); t.HasCheckConstraint("ck_order_transitions_new_status", "new_status IN ('Created','Submitting','Submitted','Acknowledged','PartiallyFilled','Filled','CancelPending','Cancelled','Rejected','Expired','Unknown')"); }); }
 }
 internal sealed class FillConfiguration : EntityConfiguration<FillEntity>
 {

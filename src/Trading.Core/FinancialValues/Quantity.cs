@@ -10,6 +10,10 @@ public sealed record Quantity : IComparable<Quantity>
         }
 
         ArgumentException.ThrowIfNullOrWhiteSpace(unit);
+        if (unit.Length > 32)
+        {
+            throw new ArgumentException("A quantity unit cannot exceed 32 characters.", nameof(unit));
+        }
         if (!unit.All(static character => character is >= 'a' and <= 'z'))
         {
             throw new ArgumentException("A quantity unit must contain only lowercase ASCII letters.", nameof(unit));
