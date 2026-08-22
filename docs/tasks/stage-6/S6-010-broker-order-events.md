@@ -3,13 +3,13 @@ schema_version: 1
 id: S6-010
 title: Process broker acknowledgements and order outcomes
 stage: 6
-status: planned
+status: ready
 priority: 800
 type: feature
 depends_on: [S6-006, S6-008]
 labels: [broker-events, acknowledgement, rejection, cancellation]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
 # S6-010: Process Broker Acknowledgements and Order Outcomes

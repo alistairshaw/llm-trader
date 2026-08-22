@@ -3,13 +3,13 @@ schema_version: 1
 id: S6-009
 title: Reconcile unknown order submission outcomes
 stage: 6
-status: planned
+status: ready
 priority: 820
 type: feature
 depends_on: [S6-008]
 labels: [reconciliation, unknown-outcome, recovery, broker]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
 ---
 
 # S6-009: Reconcile Unknown Order Submission Outcomes

@@ -187,11 +187,4 @@ public sealed class AtomicOrderConversionRepository(TradingDbContext db) : IAtom
             Version = order.Version
         };
 
-    private sealed record SubmitOrderAuthorization(string OrderId, string ClientOrderId, string ProposalId,
-        int ProposalContentVersion, string ProposalContentHash, string ConfigurationVersionId,
-        string EvaluationId, string EvaluationHash, string SnapshotId, string SnapshotHash,
-        string ApprovalId, string ReservationId, string BrokerAccountId, string BrokerConnectionId,
-        string InstrumentMappingId, string InstrumentId, string Environment, string Side, string Quantity,
-        string QuantityUnit, string Currency, string OrderType, string? LimitPrice, string TimeInForce,
-        string CorrelationId);
 }

@@ -426,6 +426,31 @@ internal sealed class FillConfiguration : EntityConfiguration<FillEntity>
     public FillConfiguration() : base("fills") { }
     protected override void ConfigureEntity(EntityTypeBuilder<FillEntity> b) { b.Property(x => x.OrderId).IsRequired(); b.Property(x => x.BrokerAccountId).IsRequired(); b.Property(x => x.BrokerExecutionId).IsRequired(); b.Property(x => x.Quantity).IsRequired().HasColumnType("TEXT"); b.Property(x => x.Price).IsRequired().HasColumnType("TEXT"); b.Property(x => x.Currency).IsRequired(); b.Property(x => x.FeeAmount).IsRequired().HasColumnType("TEXT"); b.Property(x => x.FeeCurrency).IsRequired(); b.HasIndex(x => new { x.BrokerAccountId, x.BrokerExecutionId }).IsUnique(); b.HasIndex(x => new { x.OrderId, x.ExecutedAt }); b.HasOne<OrderEntity>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); b.HasOne<BrokerAccountEntity>().WithMany().HasForeignKey(x => x.BrokerAccountId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_fills_quantity", "CAST(quantity AS NUMERIC) > 0"); t.HasCheckConstraint("ck_fills_price", "CAST(price AS NUMERIC) > 0"); t.HasCheckConstraint("ck_fills_fee", "CAST(fee_amount AS NUMERIC) >= 0"); }); }
 }
+internal sealed class BrokerSubmissionAttemptConfiguration : EntityConfiguration<BrokerSubmissionAttemptEntity>
+{
+    public BrokerSubmissionAttemptConfiguration() : base("broker_submission_attempts") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<BrokerSubmissionAttemptEntity> b)
+    {
+        b.Property(x => x.OrderId).HasMaxLength(26).IsRequired(); b.Property(x => x.WorkItemId).HasMaxLength(26).IsRequired();
+        b.Property(x => x.ClientOrderId).HasMaxLength(200).IsRequired(); b.Property(x => x.CommandHash).HasMaxLength(64).IsRequired();
+        b.Property(x => x.AdapterIdentity).HasMaxLength(200).IsRequired(); b.Property(x => x.Environment).HasMaxLength(100).IsRequired();
+        b.Property(x => x.Outcome).HasMaxLength(32).IsRequired(); b.Property(x => x.ResultCode).HasMaxLength(100).IsRequired();
+        b.Property(x => x.BrokerOrderId).HasMaxLength(200); b.Property(x => x.DiagnosticCode).HasMaxLength(100).IsRequired();
+        b.Property(x => x.CorrelationId).HasMaxLength(100).IsRequired();
+        b.HasIndex(x => new { x.WorkItemId, x.AttemptNumber }).IsUnique(); b.HasIndex(x => new { x.OrderId, x.StartedAt });
+        b.HasOne<OrderEntity>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne<OutboxMessageEntity>().WithMany().HasForeignKey(x => x.WorkItemId).OnDelete(DeleteBehavior.Restrict);
+        b.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_broker_submission_attempt_number", "attempt_number > 0");
+            t.HasCheckConstraint("ck_broker_submission_attempt_hash", "length(command_hash)=64 AND command_hash=lower(command_hash) AND command_hash NOT GLOB '*[^0-9a-f]*'");
+            t.HasCheckConstraint("ck_broker_submission_attempt_time", "completed_at >= started_at");
+            t.HasCheckConstraint("ck_broker_submission_attempt_outcome", "outcome IN ('Accepted','Rejected','Unknown','TerminalFailure','Duplicate')");
+            t.HasCheckConstraint("ck_broker_submission_attempt_broker_id", "(outcome IN ('Accepted','Duplicate') AND broker_order_id IS NOT NULL) OR (outcome NOT IN ('Accepted','Duplicate'))");
+        });
+    }
+}
+
 internal sealed class BrokerReconciliationConfiguration : EntityConfiguration<BrokerReconciliationEntity>
 {
     public BrokerReconciliationConfiguration() : base("broker_reconciliations") { }

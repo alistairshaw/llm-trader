@@ -276,6 +276,19 @@ internal sealed class FillEntity : PersistenceEntity
     public long ReceivedAt { get; set; }
     public string? RawPayloadReference { get; set; }
 }
+internal sealed class BrokerSubmissionAttemptEntity : PersistenceEntity
+{
+    public string OrderId { get; set; } = string.Empty; public string WorkItemId { get; set; } = string.Empty;
+    public int AttemptNumber { get; set; }
+    public string ClientOrderId { get; set; } = string.Empty;
+    public string CommandHash { get; set; } = string.Empty; public string AdapterIdentity { get; set; } = string.Empty;
+    public string Environment { get; set; } = string.Empty; public long StartedAt { get; set; }
+    public long CompletedAt { get; set; }
+    public string Outcome { get; set; } = string.Empty; public string ResultCode { get; set; } = string.Empty;
+    public string? BrokerOrderId { get; set; }
+    public string DiagnosticCode { get; set; } = string.Empty;
+    public string CorrelationId { get; set; } = string.Empty;
+}
 internal sealed class BrokerReconciliationEntity : PersistenceEntity
 {
     public string BrokerAccountId { get; set; } = string.Empty; public string Status { get; set; } = string.Empty;

@@ -214,6 +214,11 @@ The engine coordinates domain and infrastructure abstractions but must not depen
 
 Application services in the engine load and persist aggregate roots through repository abstractions, coordinate domain behavior, and define transaction boundaries. They must not use EF Core directly.
 
+Paper submission is an outbox-driven Engine application service. Its persistence port prepares an immutable broker
+command from durable authorization facts and atomically finalizes the Order and claimed work item after normalized
+broker I/O. The adapter call is bounded and occurs outside every database transaction. Accepted and duplicate-known
+results bind one broker identity; unknown results require reconciliation before any further submit attempt.
+
 ### 6.5 Trading.Research
 
 `Trading.Research` provides the shared Research Bot and research artifact service.

@@ -45,7 +45,7 @@ internal sealed class Stage3MigrationTests
 
         Assert.Multiple(async () =>
         {
-            Assert.That(await ScalarAsync<long>(database.Context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(15));
+            Assert.That(await ScalarAsync<long>(database.Context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(16));
             Assert.That(await ScalarAsync<string>(database.Context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("6"));
             Assert.That(await TableNamesAsync(database.Context), Does.Contain("bot_run_triggers"));
             Assert.That(await TableNamesAsync(database.Context), Does.Contain("bot_runs"));
@@ -79,7 +79,7 @@ internal sealed class Stage3MigrationTests
                     Assert.That(after[table], Is.EqualTo(before[table]), table);
                 }
             });
-            Assert.That(await ScalarAsync<long>(context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(15));
+            Assert.That(await ScalarAsync<long>(context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(16));
             Assert.That(await ScalarAsync<string>(context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("6"));
         }
         finally

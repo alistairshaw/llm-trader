@@ -185,7 +185,9 @@ public sealed record OrderWorkEnvelope(
     CorrelationIdentity CorrelationId,
     int Attempt,
     DateTimeOffset AvailableAt,
-    DateTimeOffset CreatedAt)
+    DateTimeOffset CreatedAt,
+    string? LeaseOwner = null,
+    DateTimeOffset? LeaseExpiresAt = null)
 {
     public string IdempotencyKey { get; } = BrokerContractValidation.Required(IdempotencyKey, nameof(IdempotencyKey), 200);
     public string CanonicalPayload { get; } = BrokerContractValidation.Required(CanonicalPayload, nameof(CanonicalPayload), 16_384);

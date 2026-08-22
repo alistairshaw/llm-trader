@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S6-008`](stage-6/S6-008-idempotent-order-submission.md) is the next ready task.
+[`S6-009`](stage-6/S6-009-submission-reconciliation.md) is the next ready task.
 
 ## Ordered Backlog
 
@@ -22,9 +22,9 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S6-005`](stage-6/S6-005-order-repositories.md) | Implement order execution repositories | Done | 900 | `S6-004`, `S6-017`, `S6-018`, `S6-019` |
 | [`S6-006`](stage-6/S6-006-durable-inbox-outbox.md) | Implement durable broker inbox and outbox processing | Done | 880 | `S6-003`, `S6-005` |
 | [`S6-007`](stage-6/S6-007-proposal-order-conversion.md) | Convert approved proposals to order intents atomically | Done | 860 | `S6-005` |
-| [`S6-008`](stage-6/S6-008-idempotent-order-submission.md) | Submit paper orders with stable client identities | Ready | 840 | `S6-006`, `S6-007` |
-| [`S6-009`](stage-6/S6-009-submission-reconciliation.md) | Reconcile unknown order submission outcomes | Planned | 820 | `S6-008` |
-| [`S6-010`](stage-6/S6-010-broker-order-events.md) | Process broker acknowledgements and order outcomes | Planned | 800 | `S6-006`, `S6-008` |
+| [`S6-008`](stage-6/S6-008-idempotent-order-submission.md) | Submit paper orders with stable client identities | Done | 840 | `S6-006`, `S6-007` |
+| [`S6-009`](stage-6/S6-009-submission-reconciliation.md) | Reconcile unknown order submission outcomes | Ready | 820 | `S6-008` |
+| [`S6-010`](stage-6/S6-010-broker-order-events.md) | Process broker acknowledgements and order outcomes | Ready | 800 | `S6-006`, `S6-008` |
 | [`S6-011`](stage-6/S6-011-atomic-fill-accounting.md) | Apply partial and final fills atomically | Planned | 780 | `S6-009`, `S6-010` |
 | [`S6-012`](stage-6/S6-012-execution-recovery.md) | Recover durable paper execution after restart | Planned | 760 | `S6-011` |
 | [`S6-013`](stage-6/S6-013-order-projections.md) | Build order, fill, and execution audit projections | Planned | 740 | `S6-011` |
@@ -49,4 +49,4 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Completion Summary
 
-Stage 6 implementation is in progress. The executable acceptance contract is complete and 34 temporarily pending Stage 6 test cases are discoverable. Order and durable broker-work persistence exactly represent the Core contracts, durable broker work is processed with bounded leases and retries, and approved paper Proposals convert atomically into one Order intent and one submission work item. `S6-008` is ready.
+Stage 6 implementation is in progress. The executable acceptance contract is complete and 34 temporarily pending Stage 6 test cases are discoverable. Order and durable broker-work persistence exactly represent the Core contracts, durable broker work is processed with bounded leases and retries, approved paper Proposals convert atomically into one Order intent and one submission work item, and stable paper client identities make durable submission idempotent with immutable attempt audit and unknown-outcome safety. `S6-009` and `S6-010` are ready.

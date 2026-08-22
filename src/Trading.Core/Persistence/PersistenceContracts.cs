@@ -383,6 +383,57 @@ public interface IOrderWorkRepository
     Task<PersistenceWriteResult> RenewAsync(OrderWorkItemId id, string owner, DateTimeOffset expiresAt, CancellationToken token);
     Task<PersistenceWriteResult> FailAsync(OrderWorkItemId id, string owner, string errorCode, DateTimeOffset failedAt, CancellationToken token);
 }
+
+public sealed record SubmitOrderAuthorization(
+    string OrderId, string ClientOrderId, string ProposalId, int ProposalContentVersion,
+    string ProposalContentHash, string ConfigurationVersionId, string EvaluationId, string EvaluationHash,
+    string SnapshotId, string SnapshotHash, string ApprovalId, string ReservationId,
+    string BrokerAccountId, string BrokerConnectionId, string InstrumentMappingId, string InstrumentId,
+    string Environment, string Side, string Quantity, string QuantityUnit, string Currency,
+    string OrderType, string? LimitPrice, string TimeInForce, string CorrelationId);
+
+public static class OrderSubmissionCodes
+{
+    public const string Ready = "order_submission.ready";
+    public const string AlreadyCompleted = "order_submission.already_completed";
+    public const string InvalidWork = "order_submission.invalid_work";
+    public const string OrderState = "order_submission.order_state";
+    public const string AccountRestricted = "order_submission.account_restricted";
+    public const string AccountUnreconciled = "order_submission.account_unreconciled";
+    public const string ConnectionDisabled = "order_submission.connection_disabled";
+    public const string EnvironmentMismatch = "order_submission.environment_mismatch";
+    public const string InstrumentMappingUnavailable = "order_submission.instrument_mapping_unavailable";
+    public const string CapabilityUnavailable = "order_submission.capability_unavailable";
+    public const string AuthorizationMismatch = "order_submission.authorization_mismatch";
+    public const string Persisted = "order_submission.persisted";
+    public const string Contention = "order_submission.contention";
+}
+
+public sealed record PreparedOrderSubmission(
+    OrderWorkItemId WorkItemId, OrderId OrderId, BrokerAccountId BrokerAccountId,
+    BrokerConnectionId BrokerConnectionId, string EnvironmentName, CorrelationIdentity CorrelationId,
+    BrokerOrderRequest Request, string CommandHash, string AdapterIdentity, string LeaseOwner,
+    long ExpectedOrderVersion);
+
+public abstract record PrepareOrderSubmissionResult
+{
+    private PrepareOrderSubmissionResult() { }
+    public sealed record Ready(PreparedOrderSubmission Value) : PrepareOrderSubmissionResult;
+    public sealed record AlreadyCompleted(string Code) : PrepareOrderSubmissionResult;
+    public sealed record Rejected(string Code) : PrepareOrderSubmissionResult;
+    public sealed record Contention : PrepareOrderSubmissionResult;
+}
+
+public sealed record CompleteOrderSubmissionCommand(
+    PreparedOrderSubmission Submission, BrokerSubmissionResult Result, DateTimeOffset StartedAt,
+    DateTimeOffset CompletedAt, string DiagnosticCode, IReadOnlyList<OrderTransitionId> TransitionIds);
+
+public interface IOrderSubmissionRepository
+{
+    Task<PrepareOrderSubmissionResult> PrepareAsync(OrderWorkEnvelope work, DateTimeOffset at,
+        BrokerCapabilities gatewayCapabilities, CancellationToken token);
+    Task<PersistenceWriteResult> CompleteAsync(CompleteOrderSubmissionCommand command, CancellationToken token);
+}
 public interface IBrokerInboxRepository
 {
     Task<PersistenceWriteResult> ReceiveAsync(BrokerInboxEnvelope value, CancellationToken token);

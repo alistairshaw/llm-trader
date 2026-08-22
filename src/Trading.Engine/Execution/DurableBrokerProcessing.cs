@@ -16,7 +16,7 @@ public static class DurableBrokerProcessingCodes
     public const string LeaseLost = "broker_work.lease_lost";
 }
 
-public enum DurableBrokerDispatchDisposition { Completed, Retryable, Terminal }
+public enum DurableBrokerDispatchDisposition { Completed, Finalized, Retryable, Terminal }
 public sealed record DurableBrokerDispatchResult(DurableBrokerDispatchDisposition Disposition, string Code);
 public sealed record DurableBrokerDrainResult(int Claimed, int Completed, int Retried, int Failed, int LeaseLost)
 {
@@ -90,7 +90,8 @@ public sealed class OrderOutboxProcessor(IOrderWorkRepository repository, IOrder
             catch (Exception) { result = new(DurableBrokerDispatchDisposition.Terminal, DurableBrokerProcessingCodes.TerminalFailure); }
 
             var code = DurableBrokerPayload.Code(result.Code, result.Disposition == DurableBrokerDispatchDisposition.Completed ? DurableBrokerProcessingCodes.Completed : DurableBrokerProcessingCodes.TerminalFailure);
-            if (result.Disposition == DurableBrokerDispatchDisposition.Completed)
+            if (result.Disposition == DurableBrokerDispatchDisposition.Finalized) completed++;
+            else if (result.Disposition == DurableBrokerDispatchDisposition.Completed)
             { if (await IsSuccess(repository.CompleteAsync(item.Id, owner, code, clock.UtcNow, cancellationToken)).ConfigureAwait(false)) completed++; else leaseLost++; }
             else if (result.Disposition == DurableBrokerDispatchDisposition.Retryable && item.Attempt < options.MaximumAttempts)
             { if (await RetryAsync(item, code, cancellationToken).ConfigureAwait(false)) retried++; else leaseLost++; }

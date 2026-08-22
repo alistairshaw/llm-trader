@@ -112,6 +112,7 @@ Execution
     orders
     order_transitions
     fills
+    broker_submission_attempts
 
 Infrastructure
     outbox_messages
@@ -632,7 +633,15 @@ Unique `(broker_account_id, broker_execution_id)`. The denormalized account ID i
 Fill quantity, price, and fee use canonical exact-decimal `TEXT`; quantity and price must be positive and fee must be
 non-negative. Insert triggers enforce parent-account consistency, and update/delete triggers make every Fill immutable.
 
-### 10.4 `broker_reconciliations`
+### 10.4 `broker_submission_attempts`
+
+Append-only submission audit rows contain the Order and outbox work identities, durable attempt number, stable client
+order ID, canonical command hash, adapter and paper-environment identities, UTC start/completion times, normalized
+outcome and result code, nullable broker order ID, bounded redacted diagnostic code, and correlation ID. Unique
+`(work_item_id, attempt_number)` prevents duplicate attempt facts. Accepted and duplicate-known outcomes require a
+broker identity. EF guards and restrictive relationships make every row immutable.
+
+### 10.5 `broker_reconciliations`
 
 Stage 6 persists append-only reconciliation attempts with `broker_account_id`, constrained `status`, UTC start/completion
 times, bounded canonical `broker_snapshot_json`, `differences_json`, and `resolution_json`, a unique `correlation_id`, and
@@ -795,6 +804,14 @@ effective broker mapping, currency, quantity, order type, and time in force. The
 derived from the durable Proposal identity. The canonical `Submit` payload records every authorization identity and
 normalized order term; therefore the Order, Reservation attachment, Proposal disposition, and submission work item are
 reconstructable and appear together or not at all.
+
+Submission drains that durable work in two explicit phases. A short read phase verifies the claimed canonical payload
+against the unchanged Order, active reconciled account, enabled paper connection, effective instrument mapping, and
+the paper gateway's required market- or limit-order capability. The broker call runs with no database transaction
+open and always uses the payload's original client order identity. A short serializable completion phase appends the
+Order transitions, binds the broker identity when known, records the stable normalized outcome on the claimed outbox,
+and completes the outbox atomically. Unknown outcomes terminate submission work in `Unknown` for reconciliation;
+retryable transport failures leave the Order unchanged and return the same work and client identity to bounded retry.
 
 ### 13.4 Apply a Fill
 

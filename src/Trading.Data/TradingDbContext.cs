@@ -36,6 +36,7 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
     internal DbSet<OrderEntity> Orders => Set<OrderEntity>();
     internal DbSet<OrderTransitionEntity> OrderTransitions => Set<OrderTransitionEntity>();
     internal DbSet<FillEntity> Fills => Set<FillEntity>();
+    internal DbSet<BrokerSubmissionAttemptEntity> BrokerSubmissionAttempts => Set<BrokerSubmissionAttemptEntity>();
     internal DbSet<BrokerReconciliationEntity> BrokerReconciliations => Set<BrokerReconciliationEntity>();
     internal DbSet<OutboxMessageEntity> OutboxMessages => Set<OutboxMessageEntity>();
     internal DbSet<InboxMessageEntity> InboxMessages => Set<InboxMessageEntity>();
@@ -67,6 +68,7 @@ public sealed class TradingDbContext(DbContextOptions<TradingDbContext> options)
             throw new InvalidOperationException("Proposal governance audit facts are immutable.");
         if (ChangeTracker.Entries<OrderTransitionEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
             ChangeTracker.Entries<FillEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
+            ChangeTracker.Entries<BrokerSubmissionAttemptEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted) ||
             ChangeTracker.Entries<BrokerReconciliationEntity>().Any(x => x.State is EntityState.Modified or EntityState.Deleted))
             throw new InvalidOperationException("Order execution audit facts are immutable.");
     }

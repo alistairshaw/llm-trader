@@ -91,6 +91,92 @@ public sealed class AtomicOrderConversionRepositoryTests
         });
     }
 
+    [Test, Category("OrderSubmission")]
+    public async Task SubmissionPreparationAndAcceptedCompletionAtomicallyFinalizeOrderAndClaimedOutbox()
+    {
+        await using var fixture = await CreateAsync();
+        var request = Request(fixture.Proposal, fixture.Reservation.Id);
+        await new AtomicOrderConversionRepository(fixture.Database.Context).TryConvertAsync(request, default);
+        fixture.Database.Context.ChangeTracker.Clear();
+        var workRepository = new OrderWorkRepository(fixture.Database.Context);
+        var work = (await workRepository.ClaimAsync(1, Now.AddMinutes(6),
+            new("submission-worker", Now.AddMinutes(7)), default)).Single();
+        fixture.Database.Context.ChangeTracker.Clear();
+        var repository = new OrderSubmissionRepository(fixture.Database.Context);
+
+        var preparedResult = await repository.PrepareAsync(work, Now.AddMinutes(6),
+            BrokerCapabilities.SubmitLimitOrders, default);
+        var prepared = ((PrepareOrderSubmissionResult.Ready)preparedResult).Value;
+        var completed = await repository.CompleteAsync(new(prepared,
+            new(BrokerSubmissionOutcome.Accepted, BrokerExecutionCodes.Accepted, "broker-order-alpha", Now.AddMinutes(7)),
+            Now.AddMinutes(6), Now.AddMinutes(7), BrokerExecutionCodes.Accepted,
+            [OrderTransitionId.New(), OrderTransitionId.New(), OrderTransitionId.New()]), default);
+
+        fixture.Database.Context.ChangeTracker.Clear();
+        var order = fixture.Database.Context.Orders.Single();
+        var outbox = fixture.Database.Context.OutboxMessages.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(completed, Is.TypeOf<PersistenceWriteResult.Succeeded>());
+            Assert.That(order.Status, Is.EqualTo(Trading.Core.Orders.OrderStatus.Acknowledged));
+            Assert.That(order.BrokerOrderId, Is.EqualTo("broker-order-alpha"));
+            Assert.That(fixture.Database.Context.OrderTransitions.Count(), Is.EqualTo(3));
+            Assert.That(fixture.Database.Context.BrokerSubmissionAttempts.Count(), Is.EqualTo(1));
+            Assert.That(outbox.Status, Is.EqualTo("Completed"));
+            Assert.That(outbox.LastError, Is.EqualTo(BrokerExecutionCodes.Accepted));
+            Assert.That(outbox.LeaseOwner, Is.Null);
+        });
+        var attempt = fixture.Database.Context.BrokerSubmissionAttempts.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(attempt.ClientOrderId, Is.EqualTo(request.ClientOrderId.Value));
+            Assert.That(attempt.CommandHash, Is.EqualTo(outbox.PayloadHash));
+            Assert.That(attempt.AdapterIdentity, Is.EqualTo("Simulated"));
+            Assert.That(attempt.Environment, Is.EqualTo("Paper"));
+            Assert.That(attempt.Outcome, Is.EqualTo("Accepted"));
+            Assert.That(attempt.ResultCode, Is.EqualTo(BrokerExecutionCodes.Accepted));
+        });
+    }
+
+    [Test, Category("OrderSubmission")]
+    public async Task CompletionFailpointRollsBackOrderAuditAndOutboxTogether()
+    {
+        await using var fixture = await CreateAsync();
+        var request = Request(fixture.Proposal, fixture.Reservation.Id);
+        await new AtomicOrderConversionRepository(fixture.Database.Context).TryConvertAsync(request, default);
+        fixture.Database.Context.ChangeTracker.Clear();
+        var work = (await new OrderWorkRepository(fixture.Database.Context).ClaimAsync(1, Now.AddMinutes(6),
+            new("submission-worker", Now.AddMinutes(7)), default)).Single();
+        fixture.Database.Context.ChangeTracker.Clear();
+        var repository = new OrderSubmissionRepository(fixture.Database.Context);
+        var prepared = ((PrepareOrderSubmissionResult.Ready)await repository.PrepareAsync(work,
+            Now.AddMinutes(6), BrokerCapabilities.SubmitLimitOrders, default)).Value;
+        fixture.Database.Context.BrokerSubmissionAttempts.Add(new BrokerSubmissionAttemptEntity
+        {
+            Id = OrderTransitionId.New().ToString(), OrderId = request.OrderId.ToString(), WorkItemId = work.Id.ToString(),
+            AttemptNumber = work.Attempt, ClientOrderId = request.ClientOrderId.Value, CommandHash = prepared.CommandHash,
+            AdapterIdentity = "failpoint", Environment = "Paper", StartedAt = Now.AddMinutes(6).ToUnixTimeMilliseconds(),
+            CompletedAt = Now.AddMinutes(6).ToUnixTimeMilliseconds(), Outcome = "Unknown",
+            ResultCode = BrokerExecutionCodes.Unknown, DiagnosticCode = BrokerExecutionCodes.Unknown,
+            CorrelationId = work.CorrelationId.Value
+        });
+        await fixture.Database.Context.SaveChangesAsync(); fixture.Database.Context.ChangeTracker.Clear();
+
+        Assert.That(async () => await repository.CompleteAsync(new(prepared,
+            new(BrokerSubmissionOutcome.Accepted, BrokerExecutionCodes.Accepted, "broker-order", Now.AddMinutes(7)),
+            Now.AddMinutes(6), Now.AddMinutes(7), BrokerExecutionCodes.Accepted,
+            [OrderTransitionId.New(), OrderTransitionId.New(), OrderTransitionId.New()]), default),
+            Throws.TypeOf<DbUpdateException>());
+        fixture.Database.Context.ChangeTracker.Clear();
+        Assert.Multiple(() =>
+        {
+            Assert.That(fixture.Database.Context.Orders.Single().Status, Is.EqualTo(Trading.Core.Orders.OrderStatus.Created));
+            Assert.That(fixture.Database.Context.OrderTransitions.Count(), Is.Zero);
+            Assert.That(fixture.Database.Context.OutboxMessages.Single().Status, Is.EqualTo("Claimed"));
+            Assert.That(fixture.Database.Context.BrokerSubmissionAttempts.Count(), Is.EqualTo(1));
+        });
+    }
+
     private static AtomicOrderConversionRequest Request(TradeProposal proposal, CapitalReservationId reservationId) =>
         new(proposal.Id, reservationId, OrderId.New(), OrderWorkItemId.New(), new("conversion-correlation"),
             new ClientOrderIdentity("paper-conversion-stable"), Now.AddMinutes(6));

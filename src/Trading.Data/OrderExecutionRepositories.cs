@@ -61,6 +61,7 @@ public sealed class OrderRepository(TradingDbContext db) : IOrderRepository
             fills.Select(y => ToDomain(y, x.QuantityUnit)).ToArray());
     }
     private static OrderEntity ToEntity(OrderPersistenceEnvelope x) { var entity = new OrderEntity(); Copy(x, entity); return entity; }
+    internal static OrderTransitionEntity TransitionForSubmission(OrderPersistenceEnvelope value, OrderTransition transition) => ToEntity(value, transition);
     private static void Copy(OrderPersistenceEnvelope value, OrderEntity e)
     {
         var x = value.Order; e.Id = x.Id.ToString(); e.ClientOrderId = x.ClientOrderId; e.PortfolioId = x.PortfolioId.ToString(); e.BrokerAccountId = x.BrokerAccountId.ToString();
@@ -133,7 +134,7 @@ public sealed class OrderWorkRepository(TradingDbContext db) : IOrderWorkReposit
     { var expiry = UtcUnixMilliseconds.ToProvider(expiresAt); var changed = await db.OutboxMessages.Where(x => x.Id == id.ToString() && x.Status == "Claimed" && x.LeaseOwner == owner).ExecuteUpdateAsync(s => s.SetProperty(x => x.LeaseExpiresAt, expiry).SetProperty(x => x.Version, x => x.Version + 1), token).ConfigureAwait(false); return changed == 1 ? new PersistenceWriteResult.Succeeded() : new PersistenceWriteResult.ConcurrencyConflict(0, null); }
     private async Task<PersistenceWriteResult> UpdateTerminal(OrderWorkItemId id, string owner, string detail, DateTimeOffset at, CancellationToken token)
     { var timestamp = UtcUnixMilliseconds.ToProvider(at); var changed = await db.OutboxMessages.Where(x => x.Id == id.ToString() && x.Status == "Claimed" && x.LeaseOwner == owner).ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, "Failed").SetProperty(x => x.LastError, detail).SetProperty(x => x.CompletedAt, timestamp).SetProperty(x => x.LeaseOwner, (string?)null).SetProperty(x => x.LeaseExpiresAt, (long?)null).SetProperty(x => x.Version, x => x.Version + 1), token).ConfigureAwait(false); return changed == 1 ? new PersistenceWriteResult.Succeeded() : new PersistenceWriteResult.ConcurrencyConflict(0, null); }
-    private static OrderWorkEnvelope ToDomain(OutboxMessageEntity x) => new(OrderWorkItemId.Parse(x.Id), OrderId.Parse(x.OrderId), CanonicalEnumeration.Parse<OrderWorkKind>(x.WorkKind), x.IdempotencyKey, x.PayloadJson, new CorrelationIdentity(x.CorrelationId), x.AttemptCount, UtcUnixMilliseconds.FromProvider(x.AvailableAt), UtcUnixMilliseconds.FromProvider(x.CreatedAt));
+    private static OrderWorkEnvelope ToDomain(OutboxMessageEntity x) => new(OrderWorkItemId.Parse(x.Id), OrderId.Parse(x.OrderId), CanonicalEnumeration.Parse<OrderWorkKind>(x.WorkKind), x.IdempotencyKey, x.PayloadJson, new CorrelationIdentity(x.CorrelationId), x.AttemptCount, UtcUnixMilliseconds.FromProvider(x.AvailableAt), UtcUnixMilliseconds.FromProvider(x.CreatedAt), x.LeaseOwner, x.LeaseExpiresAt is null ? null : UtcUnixMilliseconds.FromProvider(x.LeaseExpiresAt.Value));
 }
 
 public sealed class BrokerInboxRepository(TradingDbContext db) : IBrokerInboxRepository
