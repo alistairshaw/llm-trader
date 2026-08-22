@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-003
 title: Implement the deterministic simulated paper broker
 stage: 6
-status: ready
+status: done
 priority: 940
 type: feature
 depends_on: [S6-002]
@@ -51,4 +51,18 @@ Use [Implementation Plan — Stage 6](../../implementation-plan.md#8-stage-6-pap
 
 ## Completion Notes
 
-Pending.
+- Added the deterministic, network-free `SimulatedPaperBroker` with an explicit capability profile, exact paper
+  connection/account/environment binding, stable client-ID deduplication, client-ID lookup and reconciliation, and
+  injected UTC clock, identity, latency, and cancellation seams.
+- Added bounded per-order scripts for acceptance, rejection, unknown submission, timeout after acceptance,
+  cancellation outcomes, expiration, partial/final fills, duplicate messages, and out-of-order delivery. Duplicate
+  events retain their source and execution identities, and exact duplicate submissions retain one broker Order.
+- Moved the provider-neutral paper gateway port from Engine to Core so `Trading.Brokers` can implement it without a
+  dependency cycle; documented this durable boundary and the simulator fixture contract in architecture and local
+  development guidance.
+- Validation: `./dev.ps1 build` passed with 0 warnings/errors; focused simulated-broker contract tests passed 15/15;
+  focused Engine broker-contract tests passed 3/3; architecture tests passed 22/22; the full suite passed 1,030 tests
+  with 34 expected temporarily pending Stage 6 acceptance cases and 0 failures; `./dev.ps1 format` passed.
+- The first isolated-worktree build required `./dev.ps1 restore` because that worktree had no assets; locked restore
+  passed. Windows and Linux hosted validation remains delegated to the Stage 6 review task.
+- Deviations: none. Follow-up tasks: none. ADRs: none.

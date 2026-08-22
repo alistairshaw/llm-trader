@@ -6,6 +6,7 @@
     <Compile Include="..\TestInfrastructure\SqliteTestDatabaseCleanup.cs" Link="TestInfrastructure\SqliteTestDatabaseCleanup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Trading.Brokers\Trading.Brokers.csproj" />
     <ProjectReference Include="..\..\src\Trading.Data\Trading.Data.csproj" />
     <ProjectReference Include="..\..\src\Trading.Engine\Trading.Engine.csproj" />
     <ProjectReference Include="..\..\src\Trading.Host\Trading.Host.csproj" />

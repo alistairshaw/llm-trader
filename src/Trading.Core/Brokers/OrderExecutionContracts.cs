@@ -162,6 +162,19 @@ public sealed record BrokerOrderEvent(
     public DateTimeOffset ReceivedAt { get; } = BrokerContractValidation.Utc(ReceivedAt, nameof(ReceivedAt));
 }
 
+public interface IPaperBrokerGateway
+{
+    BrokerCapabilities Capabilities { get; }
+    Task<BrokerSubmissionResult> SubmitAsync(PaperBrokerOperationContext context, BrokerOrderRequest request,
+        CancellationToken cancellationToken);
+    Task<BrokerReconciliationResult> FindByClientOrderIdAsync(PaperBrokerOperationContext context,
+        BrokerOrderLookup lookup, CancellationToken cancellationToken);
+    Task<BrokerReconciliationResult> ReconcileAsync(PaperBrokerOperationContext context,
+        BrokerOrderLookup lookup, CancellationToken cancellationToken);
+    Task<BrokerCancellationResult> CancelAsync(PaperBrokerOperationContext context,
+        BrokerCancellationRequest request, CancellationToken cancellationToken);
+}
+
 public enum OrderWorkKind { Submit, Reconcile, Cancel, ApplyBrokerEvent }
 public sealed record OrderWorkEnvelope(
     OrderWorkItemId Id,

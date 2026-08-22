@@ -190,6 +190,10 @@ Responsibilities:
 
 The engine must program against broker-neutral interfaces. Broker exceptions and DTOs must be translated before crossing the project boundary.
 
+The provider-neutral `IPaperBrokerGateway` port belongs to Core so Engine can consume it and `Trading.Brokers` can
+implement it without reversing the dependency graph. Paper adapters require `PaperBrokerOperationContext`; live
+adapter ports remain structurally separate.
+
 ### 6.4 Trading.Engine
 
 `Trading.Engine` is the application orchestration layer shared by both hosts.

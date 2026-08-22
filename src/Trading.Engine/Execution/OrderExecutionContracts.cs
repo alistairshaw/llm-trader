@@ -4,19 +4,6 @@ using Trading.Core.Orders;
 
 namespace Trading.Engine.Execution;
 
-public interface IPaperBrokerGateway
-{
-    BrokerCapabilities Capabilities { get; }
-    Task<BrokerSubmissionResult> SubmitAsync(PaperBrokerOperationContext context, BrokerOrderRequest request,
-        CancellationToken cancellationToken);
-    Task<BrokerReconciliationResult> FindByClientOrderIdAsync(PaperBrokerOperationContext context,
-        BrokerOrderLookup lookup, CancellationToken cancellationToken);
-    Task<BrokerReconciliationResult> ReconcileAsync(PaperBrokerOperationContext context,
-        BrokerOrderLookup lookup, CancellationToken cancellationToken);
-    Task<BrokerCancellationResult> CancelAsync(PaperBrokerOperationContext context,
-        BrokerCancellationRequest request, CancellationToken cancellationToken);
-}
-
 public sealed record OrderConversionCommand(TradeProposalId ProposalId, CapitalReservationId ReservationId,
     ClientOrderIdentity ClientOrderId, DateTimeOffset RequestedAt);
 public enum OrderConversionOutcome { Created, AlreadyCreated, Rejected, NotFound, Contention }

@@ -37,6 +37,21 @@ Local infrastructure is intentionally small:
 
 The SQLite database must not be kept in the bind-mounted OneDrive working tree while the application is running. File synchronization can interfere with SQLite locking and durability semantics. Local runtime data should be stored in a Docker named volume mounted at a stable path such as `/data`. Tests use isolated temporary databases inside the container and remove them after the test run.
 
+#### Deterministic paper broker fixtures
+
+`SimulatedPaperBroker` is the network-free broker adapter used by commit-gating workflows. A fixture binds one exact
+paper connection, account, and named environment, then configures a bounded script per stable client order ID. Scripts
+select acceptance, rejection, an unknown result, or timeout after broker acceptance and may emit acknowledgements,
+rejections, cancellation, expiration, partial fills, final fills, duplicate messages, and deliberately out-of-order
+messages. Cancellation outcomes are independently scriptable.
+
+Tests supply the UTC clock, broker order IDs, source message IDs, execution IDs, and latency seam. Exact duplicate
+submissions return the original broker identity; a timeout after acceptance is discoverable by client-ID lookup and
+must be reconciled before retry. Duplicate scripted events retain their original source and execution identities so
+inbox and fill idempotency can be exercised. Every operation validates the configured paper identity before latency
+or state mutation. The simulator has no configuration surface for URLs, network clients, credentials, or a live
+environment.
+
 ### 3. Build workflow
 
 The repository-root `dev.ps1` wrapper will expose short, documented commands for these operations:
