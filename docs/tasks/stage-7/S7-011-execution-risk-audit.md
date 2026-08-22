@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-011
 title: Build execution Fill and risk audit views
 stage: 7
-status: planned
+status: ready
 priority: 840
 type: feature
 depends_on: [S7-002, S7-005]

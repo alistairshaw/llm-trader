@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-008
 title: Build Bot Run operations and status
 stage: 7
-status: planned
+status: ready
 priority: 850
 type: feature
 depends_on: [S7-002, S7-005]
@@ -37,4 +37,3 @@ Build; BotRuns WPF tests; OperatorBotRuns integration tests; full tests; format.
 
 ## Completion Notes
 Pending implementation.
-

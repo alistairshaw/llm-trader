@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-005
 title: Build shell navigation and accessibility foundations
 stage: 7
-status: review
+status: done
 priority: 900
 type: feature
 depends_on: [S7-004]
@@ -43,11 +43,17 @@ tests for active-route selection, cancellation, disposal, and deterministic fail
 inspection for stable automation identifiers, accessible names, headings, live status, commands, and keyboard
 navigation.
 
-Validation attempted on 2026-08-22:
+Validation completed on 2026-08-22:
 
+- `./dev.ps1 restore -RefreshLocks` generated the new test-project lock; `./dev.ps1 restore` then passed in locked mode.
+- `./dev.ps1 build` passed with zero warnings and zero errors.
+- `./dev.ps1 test -Project tests/Trading.UI.Wpf.Tests` passed 5/5 tests.
+- `./dev.ps1 test` passed 1,164 tests with four expected pending Stage 7 acceptance scenarios skipped.
+- `./dev.ps1 format` passed.
 - `git diff --check` passed.
-- `./dev.ps1 restore -RefreshLocks` encountered a Docker bind-mount I/O error and its retries stalled because the
-  Docker daemon pipe became unresponsive. Container build, focused tests, full tests, and formatting remain required
-  before this task can move from `review` to `done`.
+
+The first restore attempt encountered crash-corrupted disposable NuGet cache data after Docker Desktop became
+unresponsive. The isolated worktree cache and generated `obj` directories were cleared, Docker Desktop was restarted,
+and the complete validation sequence then passed without retrying any test.
 
 No scope deviations, follow-up tasks, or ADRs.

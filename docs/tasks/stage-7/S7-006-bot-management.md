@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-006
 title: Build Trading Bot management
 stage: 7
-status: planned
+status: ready
 priority: 860
 type: feature
 depends_on: [S7-002, S7-005]
@@ -38,4 +38,3 @@ Build; BotManagement WPF tests; OperatorBotManagement integration tests; full te
 
 ## Completion Notes
 Pending implementation.
-

@@ -7,6 +7,7 @@ namespace Trading.UI.Wpf.ViewModels;
 public sealed class ShellViewModel : ObservableViewModel, IAsyncDisposable
 {
     private readonly INavigationPageFactory pageFactory;
+    private readonly IReadOnlyList<ShellRoute> routes = ShellRoute.All;
     private readonly SemaphoreSlim navigationLock = new(1, 1);
     private CancellationTokenSource? navigationCancellation;
     private INavigationPage? activePage;
@@ -21,11 +22,11 @@ public sealed class ShellViewModel : ObservableViewModel, IAsyncDisposable
     {
         this.pageFactory = pageFactory;
         NavigateCommand = new AsyncCommand<ShellRoute>(
-            (route, _) => NavigateAsync(route),
+            (route, cancellationToken) => NavigateAsync(route, cancellationToken),
             allowConcurrentExecutions: true);
     }
 
-    public IReadOnlyList<ShellRoute> Routes => ShellRoute.All;
+    public IReadOnlyList<ShellRoute> Routes => routes;
     public ICommand NavigateCommand { get; }
     public ShellRoute? ActiveRoute { get => activeRoute; private set => SetProperty(ref activeRoute, value); }
     public object? Content { get => content; private set => SetProperty(ref content, value); }

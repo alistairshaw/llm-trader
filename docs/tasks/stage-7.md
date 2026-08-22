@@ -6,7 +6,7 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) is ready.
+[`S7-006`](stage-7/S7-006-bot-management.md) and [`S7-007`](stage-7/S7-007-portfolio-broker-status.md) are ready and may run in parallel.
 
 ## Ordered Backlog
 
@@ -16,13 +16,13 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-002`](stage-7/S7-002-operator-application-contracts.md) | Define authorized operator application contracts | Done | 960 | `S7-001` |
 | [`S7-003`](stage-7/S7-003-operational-kill-switches.md) | Implement durable hierarchical kill switches | Done | 940 | `S7-002` |
 | [`S7-004`](stage-7/S7-004-wpf-host-lifecycle.md) | Compose WPF with the Generic Host | Done | 920 | `S7-002` |
-| [`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) | Build shell, navigation, and accessibility foundations | Review | 900 | `S7-004` |
-| [`S7-006`](stage-7/S7-006-bot-management.md) | Build Trading Bot management | Planned | 860 | `S7-002`, `S7-005` |
-| [`S7-007`](stage-7/S7-007-portfolio-broker-status.md) | Build Portfolio and broker status | Planned | 860 | `S7-002`, `S7-005` |
-| [`S7-008`](stage-7/S7-008-bot-run-operations.md) | Build Bot Run operations and status | Planned | 850 | `S7-002`, `S7-005` |
-| [`S7-009`](stage-7/S7-009-research-catalog.md) | Build Research catalog and Report viewer | Planned | 850 | `S7-002`, `S7-005` |
-| [`S7-010`](stage-7/S7-010-proposal-review.md) | Build Proposal review and human decisions | Planned | 840 | `S7-002`, `S7-005` |
-| [`S7-011`](stage-7/S7-011-execution-risk-audit.md) | Build execution, Fill, and risk audit views | Planned | 840 | `S7-002`, `S7-005` |
+| [`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) | Build shell, navigation, and accessibility foundations | Done | 900 | `S7-004` |
+| [`S7-006`](stage-7/S7-006-bot-management.md) | Build Trading Bot management | Ready | 860 | `S7-002`, `S7-005` |
+| [`S7-007`](stage-7/S7-007-portfolio-broker-status.md) | Build Portfolio and broker status | Ready | 860 | `S7-002`, `S7-005` |
+| [`S7-008`](stage-7/S7-008-bot-run-operations.md) | Build Bot Run operations and status | Ready | 850 | `S7-002`, `S7-005` |
+| [`S7-009`](stage-7/S7-009-research-catalog.md) | Build Research catalog and Report viewer | Ready | 850 | `S7-002`, `S7-005` |
+| [`S7-010`](stage-7/S7-010-proposal-review.md) | Build Proposal review and human decisions | Ready | 840 | `S7-002`, `S7-005` |
+| [`S7-011`](stage-7/S7-011-execution-risk-audit.md) | Build execution, Fill, and risk audit views | Ready | 840 | `S7-002`, `S7-005` |
 | [`S7-012`](stage-7/S7-012-kill-switch-ui.md) | Build authorized kill-switch controls | Planned | 830 | `S7-003`, `S7-005`, `S7-007` |
 | [`S7-013`](stage-7/S7-013-live-ui-updates.md) | Deliver live operator updates through the UI dispatcher | Planned | 820 | `S7-006`–`S7-012` |
 | [`S7-014`](stage-7/S7-014-wpf-test-profile.md) | Publish deterministic WPF test profile | Planned | 800 | `S7-013` |

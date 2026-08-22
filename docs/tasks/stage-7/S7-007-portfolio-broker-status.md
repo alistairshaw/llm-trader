@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-007
 title: Build Portfolio and broker status views
 stage: 7
-status: planned
+status: ready
 priority: 860
 type: feature
 depends_on: [S7-002, S7-005]
@@ -38,4 +38,3 @@ Build; PortfolioBroker WPF tests; OperatorPortfolioBroker Data tests; full tests
 
 ## Completion Notes
 Pending implementation.
-

@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-010
 title: Build Proposal review and human decisions
 stage: 7
-status: planned
+status: ready
 priority: 840
 type: feature
 depends_on: [S7-002, S7-005]
@@ -38,4 +38,3 @@ Build; ProposalReview WPF tests; OperatorProposalDecision integration tests; ful
 
 ## Completion Notes
 Pending implementation.
-

@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-009
 title: Build Research catalog and Report viewer
 stage: 7
-status: planned
+status: ready
 priority: 850
 type: feature
 depends_on: [S7-002, S7-005]
@@ -38,4 +38,3 @@ Build; ResearchCatalog WPF tests; OperatorResearch integration tests; full tests
 
 ## Completion Notes
 Pending implementation.
-
