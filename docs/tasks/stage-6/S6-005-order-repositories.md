@@ -3,14 +3,15 @@ schema_version: 1
 id: S6-005
 title: Implement order execution repositories
 stage: 6
-status: ready
+status: blocked
 priority: 900
 type: data
-depends_on: [S6-004, S6-017]
+depends_on: [S6-004, S6-017, S6-018]
 labels: [repositories, orders, fills, reconciliation]
 created: 2026-08-21
 updated: 2026-08-22
 owner: s6_005
+blocked_reason: The Stage 6 schema rejects the authoritative initial Order concurrency version; S6-018 must align it first.
 ---
 
 # S6-005: Implement Order Execution Repositories
@@ -51,9 +52,14 @@ Use [Architecture — Persistence Design](../../architecture.md#13-persistence-d
 
 ## Completion Notes
 
-Blocked on 2026-08-22 before implementation. Inspection of the S6-004 EF model and migration found that
+Initially blocked on 2026-08-22 before implementation. Inspection of the S6-004 EF model and migration found that
 `orders` omits the aggregate's currency and quantity unit, persists lifecycle tokens that do not match
 `OrderStatus`, and constrains `TimeInForce` to a differently spelled, incomplete token set. An exact repository
 round trip would therefore require inventing financial facts or ambiguous token translation. S6-017 records the
 required schema correction. No production or test files were changed and no .NET validation was applicable to
 this documentation-only blocker record.
+
+Blocked again after S6-017 validation established that a newly constructed Core `Order` has authoritative
+`Version == 0`, while the corrected database still enforces `orders.version > 0`. The atomic proposal-to-order
+workflow must persist that initial aggregate without fabricating a transition or concurrency increment. S6-018
+records the required version-contract correction. No production or test implementation from this attempt was retained.
