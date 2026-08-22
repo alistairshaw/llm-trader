@@ -3,13 +3,15 @@ schema_version: 1
 id: S7-017
 title: Automate critical WPF operator journeys
 stage: 7
-status: planned
+status: blocked
 priority: 740
 type: test
-depends_on: [S7-015, S7-016]
+depends_on: [S7-015, S7-016, S7-019]
 labels: [wpf, flaui, acceptance]
 created: 2026-08-22
 updated: 2026-08-22
+owner: Codex/s7_017
+blocked_reason: Published WPF composition has no authorized operator workflow or authorization registrations and does not wire Portfolio or Execution workspaces.
 ---
 # S7-017: Automate Critical WPF Operator Journeys
 
@@ -37,5 +39,13 @@ None.
 Build; publish-wpf; Stage7 WPF acceptance twice; full tests; format.
 
 ## Completion Notes
-Pending implementation.
+Implementation did not begin because inspection of the published application composition established that
+`HostBootstrap` does not register `IOperatorAuthorization`, `IOperatorWorkflowPort`, `AuthorizedOperatorService`,
+or `OperatorPrincipal`. `App.xaml.cs` therefore cannot resolve its required operator query and command services and
+falls back to placeholder navigation. The same composition also omits Portfolio and Execution workspace factories.
 
+`S7-019` records the required production composition and deterministic-profile repair. S7-017 remains blocked until
+that task is done; no WPF scenario was activated, skipped, or represented as passing.
+
+Validation performed: repository inspection with `rg` and `Get-Content`; no build or test command was applicable to
+this documentation-only blocker record. Deviations: journey bindings were not implemented. Follow-up: `S7-019`.

@@ -6,7 +6,7 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-017`](stage-7/S7-017-wpf-critical-journeys.md) is ready.
+[`S7-019`](stage-7/S7-019-compose-operator-wpf-workspaces.md) is ready.
 
 ## Ordered Backlog
 
@@ -28,7 +28,8 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-014`](stage-7/S7-014-wpf-test-profile.md) | Publish deterministic WPF test profile | Done | 800 | `S7-013` |
 | [`S7-015`](stage-7/S7-015-flaui-harness.md) | Build Windows FlaUI automation harness | Done | 780 | `S7-014` |
 | [`S7-016`](stage-7/S7-016-production-acceptance-bindings.md) | Complete production-backed non-UI acceptance | Done | 760 | `S7-003`, `S7-013` |
-| [`S7-017`](stage-7/S7-017-wpf-critical-journeys.md) | Automate critical WPF operator journeys | Ready | 740 | `S7-015`, `S7-016` |
+| [`S7-019`](stage-7/S7-019-compose-operator-wpf-workspaces.md) | Compose authorized operator workflows and every WPF workspace | Ready | 970 | `S7-015`, `S7-016` |
+| [`S7-017`](stage-7/S7-017-wpf-critical-journeys.md) | Automate critical WPF operator journeys | Blocked | 740 | `S7-015`, `S7-016`, `S7-019` |
 | [`S7-018`](stage-7/S7-018-stage-7-review.md) | Complete Stage 7 acceptance and review | Planned | 1000 | All implementation tasks |
 
 ## Stage Exit Gate
