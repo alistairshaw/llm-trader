@@ -31,9 +31,14 @@ public sealed record FillProjection(FillId Id, string BrokerExecutionId, decimal
     string Currency, decimal Fee, DateTimeOffset ExecutedAt, DateTimeOffset ReceivedAt);
 public sealed record ExecutionAuditEvent(string Kind, string Id, DateTimeOffset At, string Status,
     string CorrelationId, string? ReasonCode, string? Summary);
+public sealed record PositionEffectProjection(PositionId Id, decimal Quantity, string QuantityUnit,
+    decimal AverageCost, decimal RealizedProfitLoss, string Currency, DateTimeOffset UpdatedAt);
+public sealed record LedgerEffectProjection(PortfolioLedgerEntryId Id, string EntryType, decimal? Amount,
+    string? Currency, decimal? Quantity, string SourceType, string SourceId, DateTimeOffset EffectiveAt);
 public sealed record OrderExecutionDetail(OrderListItem Order, string? BrokerOrderId, decimal FilledQuantity,
     decimal GrossAmount, decimal Fees, string? ReservationStatus, decimal? RemainingReservation,
-    IReadOnlyList<FillProjection> Fills, IReadOnlyList<ExecutionAuditEvent> Audit);
+    IReadOnlyList<FillProjection> Fills, IReadOnlyList<PositionEffectProjection> PositionEffects,
+    IReadOnlyList<LedgerEffectProjection> LedgerEffects, IReadOnlyList<ExecutionAuditEvent> Audit);
 
 public interface IOrderExecutionQueries
 {

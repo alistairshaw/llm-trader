@@ -6,7 +6,7 @@ using Trading.Core.Persistence;
 
 namespace Trading.Data.Tests.Queries;
 
-[TestFixture, Category("OrderProjections"), Category("ExecutionAudit")]
+[TestFixture, Category("OrderProjections"), Category("ExecutionAudit"), Category("OperatorExecutionAudit")]
 public sealed class OrderExecutionQueryTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 22, 18, 0, 0, TimeSpan.Zero);
@@ -69,6 +69,7 @@ public sealed class OrderExecutionQueryTests
         {
             Assert.That(detail!.FilledQuantity, Is.EqualTo(2)); Assert.That(detail.GrossAmount, Is.EqualTo(25));
             Assert.That(detail.Fees, Is.EqualTo(.25m)); Assert.That(detail.Fills.Single().BrokerExecutionId, Is.EqualTo("execution-1"));
+            Assert.That(detail.PositionEffects, Is.Empty); Assert.That(detail.LedgerEffects, Is.Empty);
             Assert.That(detail.Audit.Select(x => x.At), Is.Ordered); Assert.That(detail.Audit.Any(x => x.Kind == "fill"), Is.True);
             Assert.That(fixture.Context.ChangeTracker.Entries(), Is.Empty);
         });

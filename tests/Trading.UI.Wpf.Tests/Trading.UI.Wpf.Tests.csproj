@@ -13,6 +13,7 @@
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\PortfolioBrokerViewModel.cs" Link="Production\ViewModels\PortfolioBrokerViewModel.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\BotRunsViewModel.cs" Link="Production\ViewModels\BotRunsViewModel.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ResearchCatalogViewModel.cs" Link="Production\ViewModels\ResearchCatalogViewModel.cs" />
+    <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ExecutionRiskAuditViewModel.cs" Link="Production\ViewModels\ExecutionRiskAuditViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\Trading.UI.Wpf\MainWindow.xaml" Link="MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
@@ -20,6 +21,7 @@
     <None Include="..\..\src\Trading.UI.Wpf\Views\PortfolioBrokerView.xaml" Link="PortfolioBrokerView.xaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\Trading.UI.Wpf\Views\BotRunsView.xaml" Link="BotRunsView.xaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\Trading.UI.Wpf\Views\ResearchCatalogView.xaml" Link="ResearchCatalogView.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\Trading.UI.Wpf\Views\ExecutionRiskAuditView.xaml" Link="ExecutionRiskAuditView.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trading.Core\Trading.Core.csproj" />

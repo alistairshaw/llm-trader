@@ -75,9 +75,16 @@ public sealed class OrderExecutionQueries(TradingDbContext db) : IOrderExecution
             Decimal(x.Price), x.Currency, Decimal(x.FeeAmount), Time(x.ExecutedAt), Time(x.ReceivedAt))).ToArray();
         decimal? reserved = reservation is null ? null : Decimal(reservation.Amount);
         var spent = projectedFills.Sum(x => x.Quantity * x.Price + x.Fee);
+        var positionEffects = positions.Select(x => new PositionEffectProjection(PositionId.Parse(x.Id), Decimal(x.Quantity),
+            x.QuantityUnit, Decimal(x.AverageCostAmount), Decimal(x.RealizedPnlAmount), x.AverageCostCurrency,
+            Time(x.UpdatedAt))).ToArray();
+        var ledgerEffects = ledger.Select(x => new LedgerEffectProjection(PortfolioLedgerEntryId.Parse(x.Id),
+            x.EntryType, x.Amount is null ? null : Decimal(x.Amount), x.Currency,
+            x.Quantity is null ? null : Decimal(x.Quantity), x.SourceType, x.SourceId, Time(x.EffectiveAt))).ToArray();
         return new(Item(root.Order, root.Proposal.TradingBotId), root.Order.BrokerOrderId,
             projectedFills.Sum(x => x.Quantity), projectedFills.Sum(x => x.Quantity * x.Price), projectedFills.Sum(x => x.Fee),
-            reservation?.Status, reserved is null ? null : Math.Max(0, reserved.Value - spent), projectedFills, audit);
+            reservation?.Status, reserved is null ? null : Math.Max(0, reserved.Value - spent), projectedFills,
+            positionEffects, ledgerEffects, audit);
     }
 
     private IQueryable<AuthorizedOrder> Authorized(ExecutionQueryPrincipal principal)

@@ -1,0 +1,61 @@
+<UserControl x:Class="Trading.UI.Wpf.Views.ExecutionRiskAuditView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.AutomationId="ExecutionRisk.Workspace"
+             AutomationProperties.Name="Authorized execution Fill and risk audit workspace">
+    <DockPanel KeyboardNavigation.TabNavigation="Cycle">
+        <TextBlock DockPanel.Dock="Top" Text="Execution, Fills, and risk audit" FontSize="22" FontWeight="Bold"
+                   AutomationProperties.HeadingLevel="Level1" />
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,12">
+            <Label Content="Order, client, or correlation" Target="{Binding ElementName=SearchBox}" />
+            <TextBox x:Name="SearchBox" Width="230" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.AutomationId="ExecutionRisk.Search" />
+            <Label Content="Risk state" Target="{Binding ElementName=RiskBox}" />
+            <ComboBox x:Name="RiskBox" Width="150" Text="{Binding RiskFilter}" IsEditable="True"
+                      AutomationProperties.AutomationId="ExecutionRisk.RiskFilter">
+                <ComboBoxItem Content="All" /><ComboBoxItem Content="Rejected" />
+                <ComboBoxItem Content="Unknown" /><ComboBoxItem Content="Recovery" />
+            </ComboBox>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" AutomationProperties.AutomationId="ExecutionRisk.Refresh" />
+            <Button Content="Load detail" Command="{Binding LoadDetailCommand}" AutomationProperties.AutomationId="ExecutionRisk.LoadDetail" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" AutomationProperties.LiveSetting="Assertive">
+            <TextBlock Text="{Binding RiskAnnouncement}" Foreground="DarkRed" FontWeight="SemiBold"
+                       AutomationProperties.AutomationId="ExecutionRisk.RiskState" />
+            <TextBlock Text="{Binding StateText}" AutomationProperties.AutomationId="ExecutionRisk.LoadState" />
+            <TextBlock Text="{Binding OrderFinancials}" AutomationProperties.AutomationId="ExecutionRisk.Financials" />
+            <TextBlock Text="{Binding Reservation}" AutomationProperties.AutomationId="ExecutionRisk.Reservation" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+            <Button Content="Previous" Command="{Binding PreviousPageCommand}" AutomationProperties.AutomationId="ExecutionRisk.Previous" />
+            <TextBlock Margin="12,4" Text="{Binding PageNumber, StringFormat=Page {0}}" />
+            <Button Content="Next" Command="{Binding NextPageCommand}" AutomationProperties.AutomationId="ExecutionRisk.Next" />
+        </StackPanel>
+        <TabControl AutomationProperties.AutomationId="ExecutionRisk.Tabs">
+            <TabItem Header="Orders">
+                <DataGrid ItemsSource="{Binding Orders}" SelectedItem="{Binding SelectedOrder}" AutoGenerateColumns="False" IsReadOnly="True"
+                          AutomationProperties.AutomationId="ExecutionRisk.Orders" AutomationProperties.Name="Authorized Order queue">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Order" Binding="{Binding Id}" /><DataGridTextColumn Header="Client" Binding="{Binding ClientOrderId}" />
+                        <DataGridTextColumn Header="Bot" Binding="{Binding TradingBotId}" /><DataGridTextColumn Header="Portfolio" Binding="{Binding PortfolioId}" />
+                        <DataGridTextColumn Header="Account" Binding="{Binding BrokerAccountId}" /><DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+                        <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}" /><DataGridTextColumn Header="Unit" Binding="{Binding QuantityUnit}" />
+                        <DataGridTextColumn Header="Correlation" Binding="{Binding CorrelationId}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem Header="Fills">
+                <DataGrid ItemsSource="{Binding Fills}" AutoGenerateColumns="True" IsReadOnly="True"
+                          AutomationProperties.AutomationId="ExecutionRisk.Fills" AutomationProperties.Name="Exact deduplicated Fill facts" />
+            </TabItem>
+            <TabItem Header="Position and ledger effects">
+                <DataGrid ItemsSource="{Binding Effects}" AutoGenerateColumns="True" IsReadOnly="True"
+                          AutomationProperties.AutomationId="ExecutionRisk.Effects" AutomationProperties.Name="Exact Position and ledger effects" />
+            </TabItem>
+            <TabItem Header="Chronology">
+                <DataGrid ItemsSource="{Binding Audit}" AutoGenerateColumns="True" IsReadOnly="True"
+                          AutomationProperties.AutomationId="ExecutionRisk.Audit" AutomationProperties.Name="Correlated execution and risk chronology" />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

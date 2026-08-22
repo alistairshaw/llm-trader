@@ -7,7 +7,7 @@ Task workflow: [Task Management](../task-management.md).
 ## Current Next Task
 
 [`S7-010`](stage-7/S7-010-proposal-review.md) and
-[`S7-011`](stage-7/S7-011-execution-risk-audit.md) are ready and may run in parallel.
+[`S7-012`](stage-7/S7-012-kill-switch-ui.md) are ready and may run in parallel.
 
 ## Ordered Backlog
 
@@ -23,7 +23,7 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-008`](stage-7/S7-008-bot-run-operations.md) | Build Bot Run operations and status | Done | 850 | `S7-002`, `S7-005` |
 | [`S7-009`](stage-7/S7-009-research-catalog.md) | Build Research catalog and Report viewer | Done | 850 | `S7-002`, `S7-005` |
 | [`S7-010`](stage-7/S7-010-proposal-review.md) | Build Proposal review and human decisions | Ready | 840 | `S7-002`, `S7-005` |
-| [`S7-011`](stage-7/S7-011-execution-risk-audit.md) | Build execution, Fill, and risk audit views | Ready | 840 | `S7-002`, `S7-005` |
+| [`S7-011`](stage-7/S7-011-execution-risk-audit.md) | Build execution, Fill, and risk audit views | Done | 840 | `S7-002`, `S7-005` |
 | [`S7-012`](stage-7/S7-012-kill-switch-ui.md) | Build authorized kill-switch controls | Ready | 830 | `S7-003`, `S7-005`, `S7-007` |
 | [`S7-013`](stage-7/S7-013-live-ui-updates.md) | Deliver live operator updates through the UI dispatcher | Planned | 820 | `S7-006`–`S7-012` |
 | [`S7-014`](stage-7/S7-014-wpf-test-profile.md) | Publish deterministic WPF test profile | Planned | 800 | `S7-013` |
