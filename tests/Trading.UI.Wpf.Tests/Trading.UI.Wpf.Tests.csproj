@@ -9,8 +9,14 @@
     <Compile Include="..\..\src\Trading.UI.Wpf\Navigation\ShellRoute.cs" Link="Production\Navigation\ShellRoute.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ObservableViewModel.cs" Link="Production\ViewModels\ObservableViewModel.cs" />
     <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\ShellViewModel.cs" Link="Production\ViewModels\ShellViewModel.cs" />
+    <Compile Include="..\..\src\Trading.UI.Wpf\ViewModels\BotManagementViewModel.cs" Link="Production\ViewModels\BotManagementViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\Trading.UI.Wpf\MainWindow.xaml" Link="MainWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\Trading.UI.Wpf\Views\BotManagementView.xaml" Link="BotManagementView.xaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Trading.Core\Trading.Core.csproj" />
+    <ProjectReference Include="..\..\src\Trading.Engine\Trading.Engine.csproj" />
   </ItemGroup>
 </Project>

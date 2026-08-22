@@ -1,0 +1,64 @@
+<UserControl x:Class="Trading.UI.Wpf.Views.BotManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.AutomationId="Bots.Workspace"
+             AutomationProperties.Name="Trading Bot management">
+    <Grid KeyboardNavigation.TabNavigation="Cycle">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /></Grid.ColumnDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <TextBlock Grid.ColumnSpan="2" Text="Trading Bots" FontSize="22" FontWeight="Bold"
+                   AutomationProperties.AutomationId="Bots.Heading" AutomationProperties.HeadingLevel="Level1" />
+        <ListBox Grid.Row="1" Margin="0,12,16,0" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedBot}"
+                 DisplayMemberPath="Name" AutomationProperties.AutomationId="Bots.List"
+                 AutomationProperties.Name="Trading Bots" />
+        <ScrollViewer Grid.Row="1" Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="Bot configuration" FontSize="18" FontWeight="SemiBold"
+                           AutomationProperties.HeadingLevel="Level2" />
+                <TextBlock Text="Name" /><TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                    AutomationProperties.AutomationId="Bots.Name" AutomationProperties.Name="Bot name" />
+                <TextBlock Text="Mandate" /><TextBox Text="{Binding Mandate, UpdateSourceTrigger=PropertyChanged}"
+                    AutomationProperties.AutomationId="Bots.Mandate" AutomationProperties.Name="Investment mandate" />
+                <TextBlock Text="Risk policy version" /><TextBox Text="{Binding RiskPolicyVersion}"
+                    AutomationProperties.AutomationId="Bots.RiskPolicy" AutomationProperties.Name="Risk policy version" />
+                <TextBlock Text="Tool policy version" /><TextBox Text="{Binding ToolPolicyVersion}"
+                    AutomationProperties.AutomationId="Bots.ToolPolicy" AutomationProperties.Name="Tool policy version" />
+                <TextBlock Text="Scheduling policy version" /><TextBox Text="{Binding SchedulingPolicyVersion}"
+                    AutomationProperties.AutomationId="Bots.Schedule" AutomationProperties.Name="Scheduling policy version" />
+                <TextBlock Text="Execution mode" /><ComboBox ItemsSource="{Binding ExecutionModes}" SelectedItem="{Binding ExecutionMode}"
+                    AutomationProperties.AutomationId="Bots.ExecutionMode" AutomationProperties.Name="Execution mode" />
+                <TextBlock Text="Model" /><TextBox Text="{Binding Model}"
+                    AutomationProperties.AutomationId="Bots.Model" AutomationProperties.Name="Model" />
+                <TextBlock Text="Prompt version" /><TextBox Text="{Binding PromptVersion}"
+                    AutomationProperties.AutomationId="Bots.PromptVersion" AutomationProperties.Name="Prompt version" />
+                <TextBlock Text="Portfolio identity" /><TextBox Text="{Binding PortfolioId}"
+                    AutomationProperties.AutomationId="Bots.PortfolioId" AutomationProperties.Name="Portfolio identity" />
+                <TextBlock Text="Type RETIRE to retire, or the target mode name to promote execution mode" />
+                <TextBox Text="{Binding Confirmation}" AutomationProperties.AutomationId="Bots.Confirmation"
+                         AutomationProperties.Name="Confirmation" />
+                <WrapPanel Margin="0,12,0,0">
+                    <Button Content="Create" Command="{Binding CreateCommand}" CommandParameter="create"
+                            AutomationProperties.AutomationId="Bots.Create" AutomationProperties.Name="Create Bot" />
+                    <Button Content="Save configuration" Command="{Binding SaveConfigurationCommand}" CommandParameter="save"
+                            AutomationProperties.AutomationId="Bots.SaveConfiguration" AutomationProperties.Name="Save Bot configuration" />
+                    <Button Content="Assign" Command="{Binding AssignPortfolioCommand}" CommandParameter="assign"
+                            AutomationProperties.AutomationId="Bots.Assign" AutomationProperties.Name="Assign Portfolio" />
+                    <Button Content="Pause" Command="{Binding PauseCommand}" CommandParameter="pause"
+                            AutomationProperties.AutomationId="Bots.Pause" AutomationProperties.Name="Pause Bot" />
+                    <Button Content="Resume" Command="{Binding ResumeCommand}" CommandParameter="resume"
+                            AutomationProperties.AutomationId="Bots.Resume" AutomationProperties.Name="Resume Bot" />
+                    <Button Content="Retire" Command="{Binding RetireCommand}" CommandParameter="retire"
+                            AutomationProperties.AutomationId="Bots.Retire" AutomationProperties.Name="Retire Bot" />
+                </WrapPanel>
+                <TextBlock Text="{Binding SelectedBot.ConfigurationId}" AutomationProperties.AutomationId="Bots.ConfigurationIdentity"
+                           AutomationProperties.Name="Immutable configuration identity" />
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" AutomationProperties.LiveSetting="Polite">
+            <TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Bots.Busy" AutomationProperties.Name="Busy state" />
+            <TextBlock Text="{Binding ErrorCode}" AutomationProperties.AutomationId="Bots.Error" AutomationProperties.Name="Bot management error" />
+            <TextBlock Text="ResearchOnly means proposals cannot execute. HumanApproval requires a decision. PaperTrading uses only the simulated broker."
+                       AutomationProperties.AutomationId="Bots.ModeExplanation" AutomationProperties.Name="Execution mode explanation" />
+        </StackPanel>
+    </Grid>
+</UserControl>

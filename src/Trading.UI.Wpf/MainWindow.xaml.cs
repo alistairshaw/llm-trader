@@ -7,9 +7,14 @@ namespace Trading.UI.Wpf;
 public partial class MainWindow : Window
 {
     public MainWindow()
+        : this(new PlaceholderNavigationPageFactory())
+    {
+    }
+
+    public MainWindow(INavigationPageFactory pageFactory)
     {
         InitializeComponent();
-        DataContext = new ShellViewModel(new PlaceholderNavigationPageFactory());
+        DataContext = new ShellViewModel(pageFactory);
         Loaded += OnLoaded;
         Closed += OnClosed;
     }

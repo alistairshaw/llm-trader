@@ -1,7 +1,11 @@
 using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Trading.Engine.Operators;
 using Trading.Host;
+using Trading.UI.Wpf.Navigation;
+using Trading.UI.Wpf.ViewModels;
 
 namespace Trading.UI.Wpf;
 
@@ -27,7 +31,12 @@ public partial class App : Application, IAsyncDisposable
         try
         {
             await lifecycle.StartAsync(CancellationToken.None);
-            var window = new MainWindow();
+            var queries = lifecycle.Services.GetService<IOperatorQueries>();
+            var botService = lifecycle.Services.GetService<IBotOperatorService>();
+            var principal = lifecycle.Services.GetService<OperatorPrincipal>();
+            var window = queries is not null && botService is not null && principal is not null
+                ? new MainWindow(new WpfNavigationPageFactory(() => new BotManagementViewModel(queries, botService, principal)))
+                : new MainWindow();
             window.Closing += OnMainWindowClosing;
             MainWindow = window;
             ShutdownMode = ShutdownMode.OnMainWindowClose;

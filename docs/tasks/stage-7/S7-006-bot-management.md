@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-006
 title: Build Trading Bot management
 stage: 7
-status: ready
+status: done
 priority: 860
 type: feature
 depends_on: [S7-002, S7-005]
@@ -37,4 +37,20 @@ None.
 Build; BotManagement WPF tests; OperatorBotManagement integration tests; full tests; format.
 
 ## Completion Notes
-Pending implementation.
+Implemented an authorized Bot-management view model and accessible WPF workspace for Bot listing, creation,
+configuration history identity display, Portfolio assignment, lifecycle commands, and explicit retirement or execution-
+mode promotion confirmations. Commands retain form input on validation, authorization, and concurrency failures, expose
+stable result codes, honor cancellation, and refresh summaries only after successful durable operator results. The WPF
+navigation factory creates and disposes a fresh Bot workspace per visit and uses only explicitly registered operator
+services and principal; production-backed application bindings remain assigned to `S7-016`.
+
+Validation completed on 2026-08-22:
+
+- `.\dev.ps1 restore -RefreshLocks` and `.\dev.ps1 restore` — passed; the WPF test lock records its Core and Engine references.
+- `.\dev.ps1 build` — passed with 0 warnings and 0 errors.
+- `.\dev.ps1 test -Project tests/Trading.UI.Wpf.Tests -Filter "Category=BotManagement"` — 7 passed, 0 failed, 0 skipped.
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=OperatorBotManagement"` — 2 passed, 0 failed, 0 skipped.
+- `.\dev.ps1 test` — 1,180 passed, 0 failed, 4 expected pending Stage 7 scenarios skipped.
+- `.\dev.ps1 format` — passed.
+
+No deviations, follow-up tasks, or ADRs.
