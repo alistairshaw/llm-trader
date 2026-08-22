@@ -2,7 +2,7 @@
 
 ## Decision
 
-Stage 6 has passed its complete local review gate. Hosted Windows, Linux, and security validation of the exact review revision is the sole remaining gate. Stage 7 commencement is not yet approved.
+Stage 6 is complete. Exact reviewed revision `7348aa18600bf461fa0a3c8ef5cbdf04c65f2c5f` passed the complete local gate and hosted Windows, Linux, and security validation. Stage 7 commencement is approved.
 
 ## Reviewed Scope
 
@@ -12,7 +12,7 @@ The 34 Stage 6 Reqnroll examples route through the scenario-scoped `Stage6Execut
 
 ## Local Revision and Validation
 
-The implementation revision audited locally was `55fcf3a84f1228c81e84078838a84a334bd339c5`. The review commit changes documentation only and is the exact candidate that must pass hosted validation.
+The implementation revision audited locally was `55fcf3a84f1228c81e84078838a84a334bd339c5`. The docs-only review candidate and exact hosted revision was `7348aa18600bf461fa0a3c8ef5cbdf04c65f2c5f`.
 
 All commands ran through the repository Docker workflow on 2026-08-22:
 
@@ -58,4 +58,13 @@ No ADR, exception, or local follow-up task was created.
 
 ## Hosted Exact-Revision Gate
 
-Pending. The exact review commit must pass the repository Windows/Linux CI and security workflows before S6-016 can move to `done`, Stage 6 can close, or Stage 7 can begin. Direct workflow links, job results, and the final exact revision will be recorded here after validation.
+Exact reviewed revision `7348aa18600bf461fa0a3c8ef5cbdf04c65f2c5f` passed:
+
+- [CI run 32586537034](https://github.com/alistairshaw/llm-trader/actions/runs/32586537034): successful.
+- Linux job `97063632271`: successful; `test-results-Linux` artifact `9479220200`, 333640 bytes, not expired.
+- Windows job `97063632404`: successful; `test-results-Windows` artifact `9479260002`, 333485 bytes, not expired.
+- [Security run 32586537020](https://github.com/alistairshaw/llm-trader/actions/runs/32586537020): successful.
+- Secret scan job `97063632396`: successful; `gitleaks-results.sarif` artifact `9479182257`, 6772 bytes, not expired.
+- Dependency review job `97063632911`: skipped as expected for a direct push because it applies only to pull requests.
+
+All Stage 6 exit criteria are satisfied with zero unresolved critical or high-severity defects. No exception, ADR, or deferred Stage 6 follow-up remains. Stage 7 commencement is approved.

@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-016
 title: Complete Stage 6 acceptance and review
 stage: 6
-status: review
+status: done
 priority: 1000
 type: test
 depends_on: [S6-001, S6-002, S6-003, S6-004, S6-005, S6-006, S6-007, S6-008, S6-009, S6-010, S6-011, S6-012, S6-013, S6-014, S6-015, S6-017, S6-018, S6-019, S6-020]
@@ -65,4 +65,4 @@ Audited every Stage 6 task and exit criterion against production code, productio
 
 Local validation on implementation revision `55fcf3a84f1228c81e84078838a84a334bd339c5` passed: locked restore; Release build with 0 warnings and 0 errors; format; Architecture 23/23, Core 501/501, Data 180/180, Research 56/56, Engine 142/142, Integration 47/47; Stage 6 acceptance twice at 34/34 with zero failed, pending, or skipped; full suite 1,148/1,148 with zero failed or skipped; Stage 6 fresh/Stage-5-upgrade migrations 5/5; clean EF drift; and two deterministic headless smoke runs. The complete command and evidence record is in `docs/stage-6-review.md`.
 
-The audit corrected one stale README task pointer. No production defect, deviation, follow-up task, or ADR was identified locally. Hosted Windows, Linux, and security validation of the exact review revision remains the sole completion gate; therefore this task is in `review`, Stage 6 is not yet closed, and Stage 7 commencement is not yet approved.
+The audit corrected one stale README task pointer. No production defect, deviation, follow-up task, or ADR was identified locally. Exact reviewed revision `7348aa18600bf461fa0a3c8ef5cbdf04c65f2c5f` passed hosted CI run `32586537034` on Linux and Windows and security run `32586537020`, including the secret scan. Dependency review was skipped as expected for a direct push. Every Stage 6 acceptance criterion is satisfied, Stage 6 is closed, and Stage 7 commencement is approved.
