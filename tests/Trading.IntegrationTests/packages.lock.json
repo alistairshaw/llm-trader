@@ -461,6 +461,17 @@
           "Trading.Core": "[1.0.0, )"
         }
       },
+      "trading.composition": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Hosting": "[10.0.1, )",
+          "Trading.Brokers": "[1.0.0, )",
+          "Trading.Core": "[1.0.0, )",
+          "Trading.Data": "[1.0.0, )",
+          "Trading.Engine": "[1.0.0, )",
+          "Trading.Research": "[1.0.0, )"
+        }
+      },
       "trading.core": {
         "type": "Project"
       },
@@ -483,11 +494,7 @@
       "trading.host": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.Hosting": "[10.0.1, )",
-          "Trading.Brokers": "[1.0.0, )",
-          "Trading.Data": "[1.0.0, )",
-          "Trading.Engine": "[1.0.0, )",
-          "Trading.Research": "[1.0.0, )"
+          "Trading.Composition": "[1.0.0, )"
         }
       },
       "trading.research": {

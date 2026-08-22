@@ -14,11 +14,14 @@ public sealed class ProductionProjectArchitectureTests
             ["Trading.Engine"] = new HashSet<string>(
                 ["Trading.Core", "Trading.Data", "Trading.Brokers", "Trading.Research"],
                 StringComparer.Ordinal),
+            ["Trading.Composition"] = new HashSet<string>(
+                ["Trading.Core", "Trading.Data", "Trading.Brokers", "Trading.Engine", "Trading.Research"],
+                StringComparer.Ordinal),
             ["Trading.Host"] = new HashSet<string>(
-                ["Trading.Engine", "Trading.Data", "Trading.Brokers", "Trading.Research"],
+                ["Trading.Composition"],
                 StringComparer.Ordinal),
             ["Trading.UI.Wpf"] = new HashSet<string>(
-                ["Trading.Engine", "Trading.Data", "Trading.Brokers", "Trading.Research"],
+                ["Trading.Composition"],
                 StringComparer.Ordinal),
         };
 
@@ -29,6 +32,7 @@ public sealed class ProductionProjectArchitectureTests
         "Trading.Brokers",
         "Trading.Engine",
         "Trading.Research",
+        "Trading.Composition",
         "Trading.Host",
     ];
 

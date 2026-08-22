@@ -7,6 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Trading.Engine\Trading.Engine.csproj" />
+    <ProjectReference Include="..\Trading.Composition\Trading.Composition.csproj" />
   </ItemGroup>
 </Project>

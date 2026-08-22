@@ -81,6 +81,10 @@ src/
         Sources/
         Tools/
 
+    Trading.Composition/
+        HostBootstrap.cs
+        TradingApplicationLifecycle.cs
+
     Trading.Host/
         Configuration/
         Program.cs
@@ -125,6 +129,7 @@ Trading.Data       net10.0
 Trading.Brokers    net10.0
 Trading.Engine     net10.0
 Trading.Research   net10.0
+Trading.Composition net10.0
 Trading.Host       net10.0
 Trading.UI.Wpf     net10.0-windows
 Trading.AcceptanceTests            net10.0
@@ -251,21 +256,29 @@ Responsibilities:
 
 The Research Bot cannot propose or place trades. Detailed behavior is defined in [Research Bot](research-bot.md).
 
-### 6.6 Trading.Host
+### 6.6 Trading.Composition
 
-`Trading.Host` is the cross-platform console/headless composition root.
+`Trading.Composition` is the cross-platform Generic Host composition and lifecycle boundary shared by every entry point.
 
 Responsibilities:
 
-- Build and run the .NET Generic Host.
-- Load configuration and environment-specific settings.
-- Register engine, data, broker, logging, and health services.
+- Register Engine, Data, Research, paper-broker, logging, migration, recovery, and hosted runtime services once.
+- Publish awaitable readiness only after migrations and recovery complete.
+- Own bounded, idempotent host shutdown and disposal.
+
+### 6.7 Trading.Host
+
+`Trading.Host` is the cross-platform console/headless entry point.
+
+Responsibilities:
+
+- Build and run the shared .NET Generic Host composition.
 - Handle process signals and graceful shutdown.
 - Select configured bots and run them without a desktop UI.
 
 It should contain little business logic. Operational commands should call engine use cases.
 
-### 6.7 Trading.UI.Wpf
+### 6.8 Trading.UI.Wpf
 
 `Trading.UI.Wpf` is the Windows-only composition root and presentation layer.
 
@@ -288,11 +301,11 @@ The intended high-level dependency direction is:
 
 ```text
 Trading.UI.Wpf ─┐
-                ├──> Trading.Engine ─────> Trading.Core
-Trading.Host ───┘          │
-                           ├──> Trading.Data ───────> Trading.Core
-                           ├──> Trading.Brokers ────> Trading.Core
-                           └──> Trading.Research ───> Trading.Core
+                ├──> Trading.Composition ───> Trading.Engine ─────> Trading.Core
+Trading.Host ───┘                 │                   │
+                                  ├──> Trading.Data ──┤
+                                  ├──> Trading.Brokers┤
+                                  └──> Trading.Research
 ```
 
 Allowed project references:
@@ -304,10 +317,11 @@ Allowed project references:
 | `Trading.Brokers` | `Trading.Core` |
 | `Trading.Research` | `Trading.Core`, plus application-owned LLM and source abstractions |
 | `Trading.Engine` | `Trading.Core`, `Trading.Data`, `Trading.Brokers`, `Trading.Research` |
-| `Trading.Host` | `Trading.Engine` and projects needed for composition/registration |
-| `Trading.UI.Wpf` | `Trading.Engine` and projects needed for composition/registration |
+| `Trading.Composition` | `Trading.Core`, `Trading.Data`, `Trading.Brokers`, `Trading.Engine`, `Trading.Research` |
+| `Trading.Host` | `Trading.Composition` |
+| `Trading.UI.Wpf` | `Trading.Composition` |
 
-`Trading.Core`, `Trading.Data`, `Trading.Brokers`, `Trading.Engine`, and `Trading.Host` must never reference `Trading.UI.Wpf`.
+`Trading.Core`, `Trading.Data`, `Trading.Brokers`, `Trading.Engine`, `Trading.Research`, `Trading.Composition`, and `Trading.Host` must never reference `Trading.UI.Wpf`.
 
 Where practical, dependency-injection registration can be exposed by each infrastructure project through methods such as `AddTradingData` and `AddTradingBrokers`. This keeps host startup code explicit without moving composition into the domain.
 
@@ -320,13 +334,16 @@ Trading.UI.Wpf
       │
       ├── starts/stops Generic Host
       ▼
-Trading.Engine
+Trading.Composition
       │
+      ├── Trading.Engine
       ├── Trading.Data
+      ├── Trading.Research
       └── Trading.Brokers
 ```
 
 WPF starts the Generic Host during application startup. Closing the application requests graceful engine shutdown, waits for in-flight state persistence within a bounded timeout, and then disposes the host.
+`Trading.Composition` is the platform-neutral composition root shared by the WPF and headless entry points; neither entry point duplicates service registrations or owns persistence beyond that boundary.
 
 ### 8.2 Headless Windows or Linux
 

@@ -30,6 +30,7 @@ public sealed class TradingHostOptions
     public string DataDirectory { get; init; } = "/data";
     public bool SmokeMode { get; init; }
     public bool ExecutePaperSmoke { get; init; } = true;
+    public bool OperatorMode { get; init; }
     public int GlobalRunConcurrency { get; init; } = 1;
     public int QueueCapacity { get; init; } = 16;
     public int LeaseSeconds { get; init; } = 300;
@@ -45,7 +46,7 @@ public sealed class TradingHostOptions
         if (LeaseSeconds is < 10 or > 3600) throw new InvalidOperationException("Trading:LeaseSeconds must be between 10 and 3600.");
         if (ShutdownSeconds is < 1 or > 300) throw new InvalidOperationException("Trading:ShutdownSeconds must be between 1 and 300.");
         foreach (var id in BotIds) _ = TradingBotId.Parse(id);
-        if (!SmokeMode && BotIds.Length == 0) throw new InvalidOperationException("Trading:BotIds must contain at least one configured Bot.");
+        if (!SmokeMode && !OperatorMode && BotIds.Length == 0) throw new InvalidOperationException("Trading:BotIds must contain at least one configured Bot.");
     }
 }
 
@@ -82,7 +83,41 @@ public sealed class ResearchHostOptions
     }
 }
 
-public sealed class RuntimeReadiness { public bool IsReady { get; internal set; } }
+public enum RuntimeStartupState { Starting, Ready, Failed, Stopped }
+
+public sealed class RuntimeReadiness
+{
+    private readonly TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private int state;
+
+    public bool IsReady => State == RuntimeStartupState.Ready;
+    public RuntimeStartupState State => (RuntimeStartupState)Volatile.Read(ref state);
+    public Exception? Failure { get; private set; }
+
+    public Task WaitForReadyAsync(CancellationToken cancellationToken) => completion.Task.WaitAsync(cancellationToken);
+
+    internal void MarkReady()
+    {
+        if (Interlocked.CompareExchange(ref state, (int)RuntimeStartupState.Ready, (int)RuntimeStartupState.Starting) == (int)RuntimeStartupState.Starting)
+            completion.TrySetResult();
+    }
+
+    internal void MarkFailed(Exception failure)
+    {
+        ArgumentNullException.ThrowIfNull(failure);
+        if (Interlocked.CompareExchange(ref state, (int)RuntimeStartupState.Failed, (int)RuntimeStartupState.Starting) == (int)RuntimeStartupState.Starting)
+        {
+            Failure = failure;
+            completion.TrySetException(failure);
+        }
+    }
+
+    internal void MarkStopped()
+    {
+        var prior = Interlocked.Exchange(ref state, (int)RuntimeStartupState.Stopped);
+        if (prior == (int)RuntimeStartupState.Starting) completion.TrySetCanceled();
+    }
+}
 
 public sealed record HostDatabaseOwner(string Name, string DisposalBoundary);
 
@@ -312,7 +347,7 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
             var ids = options.SmokeMode ? [SmokeFixture.BotId, SmokeFixture.BotTwoId] : options.BotIds.Select(TradingBotId.Parse).ToArray();
             foreach (var id in ids) await ValidateBotAsync(services, id, stoppingToken);
             supervisor = new MultiBotSupervisor(new MultiBotSupervisorOptions { GlobalRunConcurrency = options.GlobalRunConcurrency, QueueCapacity = options.QueueCapacity }, services.GetRequiredService<BotRunOrchestrationService>());
-            readiness.IsReady = true;
+            readiness.MarkReady();
             RuntimeLogs.Ready(logger, Environment.MachineName, recovery.RecoveredRuns, recovery.FaultedRuns, researchRecovery);
             var completions = new List<Task<BotRunExecutionResult>>();
             foreach (var id in ids)
@@ -343,12 +378,17 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
             }
             else await Task.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
         }
-        finally { readiness.IsReady = false; }
+        catch (Exception exception) when (exception is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
+        {
+            readiness.MarkFailed(exception);
+            throw;
+        }
+        finally { readiness.MarkStopped(); }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        readiness.IsReady = false;
+        readiness.MarkStopped();
         var activeSupervisor = Interlocked.Exchange(ref supervisor, null);
         if (activeSupervisor is not null)
         {
