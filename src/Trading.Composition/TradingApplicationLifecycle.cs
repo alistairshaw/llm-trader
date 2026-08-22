@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -8,6 +9,7 @@ public enum ApplicationLifecycleState { Created, Starting, Ready, Failed, Stoppi
 public sealed class TradingApplicationLifecycle(IHost host, TimeSpan shutdownTimeout) : IAsyncDisposable
 {
     private readonly SemaphoreSlim gate = new(1, 1);
+    private readonly HostDatabaseIdentity? databaseIdentity = host.Services.GetService<HostDatabaseIdentity>();
     private int disposed;
 
     public ApplicationLifecycleState State { get; private set; } = ApplicationLifecycleState.Created;
@@ -56,10 +58,27 @@ public sealed class TradingApplicationLifecycle(IHost host, TimeSpan shutdownTim
         catch (OperationCanceledException) when (deadline.IsCancellationRequested) { }
         finally
         {
-            if (host is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-            else host.Dispose();
-            State = ApplicationLifecycleState.Stopped;
+            try
+            {
+                if (host is IAsyncDisposable asyncDisposable) await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                else host.Dispose();
+            }
+            finally
+            {
+                ReleaseOwnedDatabasePool();
+                State = ApplicationLifecycleState.Stopped;
+            }
         }
+    }
+
+    private void ReleaseOwnedDatabasePool()
+    {
+        if (databaseIdentity is null) return;
+
+        // Host disposal closes every context and connection owned by the root provider. The
+        // provider pool is process-wide, so release only the canonical pool for this host.
+        using var poolIdentity = new SqliteConnection(databaseIdentity.ConnectionString);
+        SqliteConnection.ClearPool(poolIdentity);
     }
 
     public ValueTask DisposeAsync() => new(StopAsync());

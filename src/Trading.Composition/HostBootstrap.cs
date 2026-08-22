@@ -148,6 +148,7 @@ public sealed class HostDatabaseIdentity
     [
         new("TradingDbContext registration and scoped repositories", "scope disposal, then host/root-provider disposal"),
         new("TradingRuntimeHostedService smoke scope", "hosted-service completion and host disposal"),
+        new("TradingApplicationLifecycle exact SQLite pool", "host/root-provider disposal, then exact-pool release"),
         new("external smoke inspection", "inspection connection disposal before exact-pool cleanup"),
     ];
 }

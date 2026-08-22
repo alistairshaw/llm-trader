@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-020
 title: Release WPF SQLite ownership on lifecycle stop
 stage: 7
-status: ready
+status: review
 priority: 990
 type: defect
 depends_on: [S7-019]
@@ -46,4 +46,8 @@ Windows CI run `32605316561`, job `97109412699`, failed both `WpfHostLifecycleTe
 - Windows CI exact lifecycle selection
 
 ## Completion Notes
-Pending implementation.
+Implemented on 2026-08-22. `TradingApplicationLifecycle` now captures the canonical `HostDatabaseIdentity`, awaits host shutdown and asynchronous root-provider disposal, and then clears only the exact closed SQLite pool before publishing `Stopped`. The ordering remains idempotent across normal stop, repeated stop/disposal, cancellation, startup failure, and disposal failure. Bounded ownership diagnostics and local-development guidance now name the lifecycle pool boundary.
+
+The two original lifecycle tests now delete the complete owned directory immediately after awaited stop. A new regression keeps an unrelated pooled SQLite connection open and usable while the lifecycle releases and deletes only its owned database directory. No sleeps, retries, garbage collection, swallowed deletion failures, or process-wide pool clearing were added.
+
+Validation passed in Linux Docker: `./dev.ps1 restore`; `./dev.ps1 build` (zero warnings and errors); `./dev.ps1 test -Project tests/Trading.IntegrationTests/Trading.IntegrationTests.csproj -Filter "TestCategory=WpfHostLifecycle"` (5/5); `./dev.ps1 test` (1,230/1,230, zero skipped); `./dev.ps1 format`; and `docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null && dotnet ef migrations has-pending-model-changes --project src/Trading.Data"` (no pending model changes). The exact Windows lifecycle selection remains delegated to hosted CI, so the task is in review rather than done. No scope deviations, follow-up tasks, or ADR changes.

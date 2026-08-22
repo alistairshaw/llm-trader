@@ -20,6 +20,7 @@ public sealed class HeadlessHostTests
     [
         "TradingDbContext registration and scoped repositories",
         "TradingRuntimeHostedService smoke scope",
+        "TradingApplicationLifecycle exact SQLite pool",
         "external smoke inspection",
     ];
 

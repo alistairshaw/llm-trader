@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -43,8 +44,8 @@ public sealed class WpfHostLifecycleTests
             }
 
             await lifecycle.StopAsync();
-            File.Delete(database);
-            Assert.That(File.Exists(database), Is.False);
+            Directory.Delete(directory, recursive: true);
+            Assert.That(Directory.Exists(directory), Is.False);
         }
         finally
         {
@@ -82,12 +83,68 @@ public sealed class WpfHostLifecycleTests
 
             await lifecycle.StopAsync();
             await lifecycle.StopAsync();
-            File.Delete(database);
-            Assert.That(File.Exists(database), Is.False);
+            Directory.Delete(directory, recursive: true);
+            Assert.That(Directory.Exists(directory), Is.False);
         }
         finally
         {
             if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
+
+    [Test]
+    public async Task StopReleasesOnlyTheOwnedDatabasePool()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"trading-wpf-host-owned-{Guid.NewGuid():N}");
+        var unrelatedDirectory = Path.Combine(Path.GetTempPath(), $"trading-wpf-host-unrelated-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        Directory.CreateDirectory(unrelatedDirectory);
+        var unrelatedConnectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = Path.Combine(unrelatedDirectory, "unrelated.db"),
+            Mode = SqliteOpenMode.ReadWriteCreate,
+            Cache = SqliteCacheMode.Shared,
+            Pooling = true,
+        }.ToString();
+
+        await using var unrelatedConnection = new SqliteConnection(unrelatedConnectionString);
+        try
+        {
+            await unrelatedConnection.OpenAsync();
+            await using (var command = unrelatedConnection.CreateCommand())
+            {
+                command.CommandText = "CREATE TABLE retained(value INTEGER NOT NULL); INSERT INTO retained VALUES (7);";
+                await command.ExecuteNonQueryAsync();
+            }
+
+            var host = HostBootstrap.Build([], builder => builder.Configuration.AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["Trading:Mode"] = "Simulated",
+                    ["Trading:DataDirectory"] = directory,
+                    ["Trading:OperatorMode"] = "true",
+                    ["Research:Mode"] = "Fixture",
+                }));
+            await using var lifecycle = new TradingApplicationLifecycle(host, TimeSpan.FromSeconds(10));
+            await lifecycle.StartAsync(default);
+
+            await lifecycle.StopAsync();
+            Directory.Delete(directory, recursive: true);
+
+            await using var verification = unrelatedConnection.CreateCommand();
+            verification.CommandText = "SELECT value FROM retained";
+            Assert.Multiple(() =>
+            {
+                Assert.That(Directory.Exists(directory), Is.False);
+                Assert.That(verification.ExecuteScalar(), Is.EqualTo(7L));
+            });
+        }
+        finally
+        {
+            await unrelatedConnection.CloseAsync();
+            SqliteConnection.ClearPool(unrelatedConnection);
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(unrelatedDirectory)) Directory.Delete(unrelatedDirectory, true);
         }
     }
 

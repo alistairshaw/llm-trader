@@ -55,7 +55,7 @@ public sealed class SqliteFixtureDisposalTests
         {
             Assert.That(database.DatabasePath, Is.EqualTo(Path.GetFullPath(path)));
             Assert.That(database.ConnectionString, Is.EqualTo(connectionString));
-            Assert.That(database.Owners, Has.Count.EqualTo(3));
+            Assert.That(database.Owners, Has.Count.EqualTo(4));
         });
 
         await host.StartAsync().ConfigureAwait(false);
