@@ -3,13 +3,15 @@ schema_version: 1
 id: S6-015
 title: Complete production-backed Stage 6 acceptance bindings
 stage: 6
-status: planned
+status: blocked
 priority: 700
 type: acceptance
-depends_on: [S6-014]
+depends_on: [S6-014, S6-020]
 labels: [bdd, acceptance, production-composition, cross-platform]
 created: 2026-08-21
-updated: 2026-08-21
+updated: 2026-08-22
+owner: s6_015
+blocked_reason: Production Proposal-to-Order rejection codes conflict with the committed Stage 6 executable contract; S6-020 must align them first.
 ---
 
 # S6-015: Complete Production-Backed Stage 6 Acceptance Bindings
@@ -50,4 +52,8 @@ Use [Test Plan — Steps and Drivers](../../test-plan.md#103-steps-and-drivers),
 
 ## Completion Notes
 
-Pending.
+Blocked on 2026-08-22 after activating the production-backed bindings exposed a stable-contract mismatch. The committed
+scenarios require `order_execution.approval_required`, `order_execution.proposal_expired`, and
+`order_execution.fresh_validation_required`; production currently returns `order_conversion.proposal_not_approved`,
+`order_conversion.proposal_expired`, and `order_conversion.evaluation_mismatch`. The acceptance implementation was
+returned rather than weakening or translating the assertions. `S6-020` records the required production correction.
