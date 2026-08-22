@@ -218,6 +218,10 @@ Paper submission is an outbox-driven Engine application service. Its persistence
 command from durable authorization facts and atomically finalizes the Order and claimed work item after normalized
 broker I/O. The adapter call is bounded and occurs outside every database transaction. Accepted and duplicate-known
 results bind one broker identity; unknown results require reconciliation before any further submit attempt.
+Reconciliation claims durable work, commits the claim, and queries by the pinned paper account, environment, and stable
+client order ID outside the database transaction. Found state is applied atomically with an immutable audit artifact.
+Authoritative absence must survive a bounded grace period and repeated lookup before the original stable submit work is
+made pending again; ambiguity, outage, identity mismatch, cancellation, and attempt exhaustion never submit directly.
 
 ### 6.5 Trading.Research
 

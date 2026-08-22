@@ -136,7 +136,7 @@ internal sealed class InitialMigrationTests
             foreignKeys.AddRange(await ForeignKeysAsync(connection, table));
         }
 
-            Assert.That(foreignKeys, Has.Count.EqualTo(65));
+        Assert.That(foreignKeys, Has.Count.EqualTo(65));
         Assert.That(foreignKeys.Select(key => key.DeleteAction), Is.All.EqualTo("RESTRICT"));
         Assert.That(foreignKeys, Does.Contain(("portfolio_ledger_entries", "portfolio_ledger_entries", "RESTRICT")));
         Assert.That(await ScalarAsync<string>(connection, "SELECT MigrationId FROM __ef_migrations_history ORDER BY MigrationId DESC LIMIT 1"), Does.EndWith("_AddBrokerSubmissionAudit"));

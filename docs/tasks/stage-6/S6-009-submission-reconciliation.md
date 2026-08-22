@@ -3,7 +3,7 @@ schema_version: 1
 id: S6-009
 title: Reconcile unknown order submission outcomes
 stage: 6
-status: ready
+status: done
 priority: 820
 type: feature
 depends_on: [S6-008]
@@ -50,4 +50,22 @@ Use [Domain Model — Broker Account](../../domain.md#62-brokeraccount-aggregate
 
 ## Completion Notes
 
-Pending.
+Implemented durable unknown-submission reconciliation by stable paper account, environment, and client order identity.
+Unknown submission completion now atomically queues reconciliation; broker lookup occurs after the durable claim commits
+and outside database transactions. Found outcomes bind broker identity and normalized Order status atomically with
+append-only canonical audit. Absence requires a deterministic grace period and repeated authoritative lookup before the
+original uniquely keyed submission work is reactivated with its unchanged client identity. Ambiguity, outage, mismatch,
+attempt exhaustion, cancellation, contention, and restart retries retain stable safe outcomes without direct resubmission.
+
+Validation completed in the Linux development container:
+
+- `.\dev.ps1 build` — passed with zero warnings and errors.
+- `.\dev.ps1 test -Project tests/Trading.Engine.Tests -Filter "Category=SubmissionReconciliation"` — 5 passed.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=SubmissionReconciliation"` — 1 passed.
+- `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter "Category=UnknownSubmission"` — 1 passed.
+- `.\dev.ps1 test -Project tests/Trading.Data.Tests -Filter "Category=Stage6Migrations"` — 9 passed.
+- `.\dev.ps1 test` — 1,082 passed, 34 intentionally pending later Stage 6 acceptance cases, zero failures.
+- `.\dev.ps1 format` — passed after applying the repository formatter, including one pre-existing indentation defect in
+  `InitialMigrationTests` required for the formatting gate.
+
+No migrations, ADRs, deviations, or follow-up tasks were required. Hosted Windows validation remains delegated to CI.

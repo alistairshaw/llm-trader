@@ -352,6 +352,9 @@ Unique `(broker_connection_id, external_account_id)`.
 Append-only operational history with `id`, `broker_account_id`, `status`, `started_at`, `completed_at`, redacted `broker_snapshot_json`, `differences_json`, `resolution_json`, and `correlation_id`.
 
 The account aggregate retains current status; this table preserves each reconciliation attempt.
+Order-submission reconciliation stores the exact stable client identity and normalized lookup result in the bounded
+snapshot, and its stable resolution code in the resolution document. The claimed reconciliation work, immutable audit,
+Order transition, and any reactivation of the original stable submission work commit atomically.
 
 ### 7.4 `instruments`
 
@@ -646,6 +649,9 @@ broker identity. EF guards and restrictive relationships make every row immutabl
 Stage 6 persists append-only reconciliation attempts with `broker_account_id`, constrained `status`, UTC start/completion
 times, bounded canonical `broker_snapshot_json`, `differences_json`, and `resolution_json`, a unique `correlation_id`, and
 a lowercase SHA-256 `content_hash`. Every relationship uses `ON DELETE RESTRICT`.
+Attempt correlation identities are derived from the durable correlation plus reconciliation attempt number, so retries
+append facts instead of overwriting an earlier lookup. Confirmed absence reactivates the existing uniquely keyed submit
+work rather than creating a second client identity or duplicate outbox command.
 
 ## 11. Infrastructure Tables
 

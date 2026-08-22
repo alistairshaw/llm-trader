@@ -434,6 +434,45 @@ public interface IOrderSubmissionRepository
         BrokerCapabilities gatewayCapabilities, CancellationToken token);
     Task<PersistenceWriteResult> CompleteAsync(CompleteOrderSubmissionCommand command, CancellationToken token);
 }
+
+public static class OrderReconciliationCodes
+{
+    public const string Found = "order_reconciliation.found";
+    public const string AbsentPending = "order_reconciliation.absent_pending";
+    public const string AbsenceConfirmed = "order_reconciliation.absence_confirmed";
+    public const string Uncertain = "order_reconciliation.uncertain";
+    public const string Unavailable = "order_reconciliation.unavailable";
+    public const string IdentityMismatch = "order_reconciliation.identity_mismatch";
+    public const string AttemptsExhausted = "order_reconciliation.attempts_exhausted";
+    public const string InvalidWork = "order_reconciliation.invalid_work";
+    public const string Contention = "order_reconciliation.contention";
+}
+
+public sealed record PreparedOrderReconciliation(OrderWorkItemId WorkItemId, OrderId OrderId,
+    BrokerAccountId BrokerAccountId, BrokerConnectionId BrokerConnectionId, string EnvironmentName,
+    ClientOrderIdentity ClientOrderId, CorrelationIdentity CorrelationId, string LeaseOwner,
+    long ExpectedOrderVersion, int Attempt, DateTimeOffset UnknownSince);
+
+public abstract record PrepareOrderReconciliationResult
+{
+    private PrepareOrderReconciliationResult() { }
+    public sealed record Ready(PreparedOrderReconciliation Value) : PrepareOrderReconciliationResult;
+    public sealed record AlreadyCompleted(string Code) : PrepareOrderReconciliationResult;
+    public sealed record Rejected(string Code) : PrepareOrderReconciliationResult;
+    public sealed record Contention : PrepareOrderReconciliationResult;
+}
+
+public sealed record CompleteOrderReconciliationCommand(PreparedOrderReconciliation Reconciliation,
+    BrokerReconciliationResult Result, string ResolutionCode, DateTimeOffset StartedAt,
+    DateTimeOffset CompletedAt, OrderTransitionId TransitionId);
+
+public interface IOrderReconciliationRepository
+{
+    Task<PrepareOrderReconciliationResult> PrepareAsync(OrderWorkEnvelope work,
+        BrokerCapabilities gatewayCapabilities, CancellationToken token);
+    Task<PersistenceWriteResult> CompleteAsync(CompleteOrderReconciliationCommand command,
+        CancellationToken token);
+}
 public interface IBrokerInboxRepository
 {
     Task<PersistenceWriteResult> ReceiveAsync(BrokerInboxEnvelope value, CancellationToken token);

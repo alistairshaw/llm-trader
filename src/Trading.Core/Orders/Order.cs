@@ -84,6 +84,10 @@ public sealed class Order
     public void BeginSubmission(OrderTransitionId id, DateTimeOffset at) =>
         Transition(id, OrderStatus.Submitting, "Submission started.", OrderTransitionSource.Platform, at);
 
+    public void BeginResubmission(OrderTransitionId id, DateTimeOffset at) =>
+        Transition(id, OrderStatus.Submitting, "Authoritative absence confirmed; submission restarted.",
+            OrderTransitionSource.Reconciliation, at);
+
     public void MarkSubmitted(OrderTransitionId id, DateTimeOffset at) =>
         Transition(id, OrderStatus.Submitted, "Broker submission completed.", OrderTransitionSource.Platform, at);
 
@@ -190,8 +194,9 @@ public sealed class Order
             (OrderStatus.Acknowledged, OrderStatus.PartiallyFilled or OrderStatus.Filled or OrderStatus.CancelPending) => true,
             (OrderStatus.PartiallyFilled, OrderStatus.PartiallyFilled or OrderStatus.Filled or OrderStatus.CancelPending) => true,
             (OrderStatus.CancelPending, OrderStatus.PartiallyFilled or OrderStatus.Filled or OrderStatus.Cancelled) => true,
-            (OrderStatus.Unknown, OrderStatus.Submitted or OrderStatus.Acknowledged or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired)
+            (OrderStatus.Unknown, OrderStatus.Submitted or OrderStatus.Acknowledged or OrderStatus.PartiallyFilled or OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired)
                 when source == OrderTransitionSource.Reconciliation => true,
+            (OrderStatus.Unknown, OrderStatus.Submitting) when source == OrderTransitionSource.Reconciliation => true,
             _ => false,
         };
         if (!allowed) throw new InvalidOperationException($"Order cannot transition from {from} to {to}.");

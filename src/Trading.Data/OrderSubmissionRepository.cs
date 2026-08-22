@@ -34,7 +34,12 @@ public sealed class OrderSubmissionRepository(TradingDbContext db) : IOrderSubmi
             order.Currency != authorization.Currency || order.OrderType != authorization.OrderType || order.LimitPrice != authorization.LimitPrice ||
             order.TimeInForce.ToString() != authorization.TimeInForce || order.CorrelationId != authorization.CorrelationId)
             return Reject(OrderSubmissionCodes.AuthorizationMismatch);
-        if (order.Status != OrderStatus.Created) return Reject(OrderSubmissionCodes.OrderState);
+        if (order.Status is not (OrderStatus.Created or OrderStatus.Unknown)) return Reject(OrderSubmissionCodes.OrderState);
+        if (order.Status == OrderStatus.Unknown && !await db.BrokerReconciliations.AsNoTracking().AnyAsync(x =>
+            x.BrokerAccountId == order.BrokerAccountId && x.Status == "Matched" &&
+            x.BrokerSnapshotJson.Contains($"\"clientOrderId\":\"{order.ClientOrderId}\"") &&
+            x.ResolutionJson.Contains(OrderReconciliationCodes.AbsenceConfirmed), token).ConfigureAwait(false))
+            return Reject(OrderSubmissionCodes.OrderState);
 
         var account = await db.BrokerAccounts.AsNoTracking().SingleOrDefaultAsync(x => x.Id == order.BrokerAccountId, token).ConfigureAwait(false);
         if (account?.Status != "Active") return Reject(OrderSubmissionCodes.AccountRestricted);
@@ -67,7 +72,7 @@ public sealed class OrderSubmissionRepository(TradingDbContext db) : IOrderSubmi
             x.Status == "Claimed" && x.LeaseOwner == value.LeaseOwner && x.LeaseExpiresAt >= command.CompletedAt.ToUnixTimeMilliseconds(), token).ConfigureAwait(false);
         if (order is null || work is null) return new PersistenceWriteResult.ConcurrencyConflict(value.ExpectedOrderVersion, order?.Version);
         var domain = await new OrderRepository(db).GetAsync(value.OrderId, value.BrokerAccountId, PortfolioId.Parse(order.PortfolioId), token).ConfigureAwait(false);
-        if (domain is null || command.TransitionIds.Count < 2) return new PersistenceWriteResult.ConcurrencyConflict(value.ExpectedOrderVersion, order.Version);
+        if (domain is null || command.TransitionIds.Count < 3) return new PersistenceWriteResult.ConcurrencyConflict(value.ExpectedOrderVersion, order.Version);
         db.BrokerSubmissionAttempts.Add(new BrokerSubmissionAttemptEntity
         {
             Id = command.TransitionIds[0].ToString(),
@@ -86,7 +91,8 @@ public sealed class OrderSubmissionRepository(TradingDbContext db) : IOrderSubmi
             DiagnosticCode = command.DiagnosticCode,
             CorrelationId = value.CorrelationId.Value
         });
-        domain.BeginSubmission(command.TransitionIds[0], command.StartedAt);
+        if (domain.Status == OrderStatus.Unknown) domain.BeginResubmission(command.TransitionIds[0], command.StartedAt);
+        else domain.BeginSubmission(command.TransitionIds[0], command.StartedAt);
         switch (command.Result.Outcome)
         {
             case BrokerSubmissionOutcome.Accepted:
@@ -102,6 +108,34 @@ public sealed class OrderSubmissionRepository(TradingDbContext db) : IOrderSubmi
                 break;
             case BrokerSubmissionOutcome.Unknown:
                 domain.MarkUnknown(command.TransitionIds[1], command.Result.Code, command.CompletedAt);
+                var reconciliationPayload = work.PayloadJson;
+                var reconciliationKey = $"reconcile:{value.Request.ClientOrderId.Value}";
+                var existingReconciliation = await db.OutboxMessages.SingleOrDefaultAsync(x =>
+                    x.IdempotencyKey == reconciliationKey, token).ConfigureAwait(false);
+                if (existingReconciliation is null) db.OutboxMessages.Add(new OutboxMessageEntity
+                {
+                    Id = command.TransitionIds[2].ToString(),
+                    OrderId = order.Id,
+                    WorkKind = "Reconcile",
+                    IdempotencyKey = reconciliationKey,
+                    PayloadJson = reconciliationPayload,
+                    PayloadHash = CanonicalJsonSerializer.Sha256(reconciliationPayload),
+                    CorrelationId = value.CorrelationId.Value,
+                    Status = "Pending",
+                    AvailableAt = command.CompletedAt.ToUnixTimeMilliseconds(),
+                    CreatedAt = command.CompletedAt.ToUnixTimeMilliseconds(),
+                    Version = 1
+                });
+                else
+                {
+                    existingReconciliation.Status = "Pending";
+                    existingReconciliation.AvailableAt = command.CompletedAt.ToUnixTimeMilliseconds();
+                    existingReconciliation.CompletedAt = null;
+                    existingReconciliation.LastError = null;
+                    existingReconciliation.LeaseOwner = null;
+                    existingReconciliation.LeaseExpiresAt = null;
+                    existingReconciliation.Version++;
+                }
                 break;
             default:
                 return new PersistenceWriteResult.ConcurrencyConflict(value.ExpectedOrderVersion, order.Version);

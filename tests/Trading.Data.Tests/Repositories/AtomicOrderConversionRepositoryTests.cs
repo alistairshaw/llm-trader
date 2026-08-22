@@ -153,11 +153,19 @@ public sealed class AtomicOrderConversionRepositoryTests
             Now.AddMinutes(6), BrokerCapabilities.SubmitLimitOrders, default)).Value;
         fixture.Database.Context.BrokerSubmissionAttempts.Add(new BrokerSubmissionAttemptEntity
         {
-            Id = OrderTransitionId.New().ToString(), OrderId = request.OrderId.ToString(), WorkItemId = work.Id.ToString(),
-            AttemptNumber = work.Attempt, ClientOrderId = request.ClientOrderId.Value, CommandHash = prepared.CommandHash,
-            AdapterIdentity = "failpoint", Environment = "Paper", StartedAt = Now.AddMinutes(6).ToUnixTimeMilliseconds(),
-            CompletedAt = Now.AddMinutes(6).ToUnixTimeMilliseconds(), Outcome = "Unknown",
-            ResultCode = BrokerExecutionCodes.Unknown, DiagnosticCode = BrokerExecutionCodes.Unknown,
+            Id = OrderTransitionId.New().ToString(),
+            OrderId = request.OrderId.ToString(),
+            WorkItemId = work.Id.ToString(),
+            AttemptNumber = work.Attempt,
+            ClientOrderId = request.ClientOrderId.Value,
+            CommandHash = prepared.CommandHash,
+            AdapterIdentity = "failpoint",
+            Environment = "Paper",
+            StartedAt = Now.AddMinutes(6).ToUnixTimeMilliseconds(),
+            CompletedAt = Now.AddMinutes(6).ToUnixTimeMilliseconds(),
+            Outcome = "Unknown",
+            ResultCode = BrokerExecutionCodes.Unknown,
+            DiagnosticCode = BrokerExecutionCodes.Unknown,
             CorrelationId = work.CorrelationId.Value
         });
         await fixture.Database.Context.SaveChangesAsync(); fixture.Database.Context.ChangeTracker.Clear();
@@ -174,6 +182,51 @@ public sealed class AtomicOrderConversionRepositoryTests
             Assert.That(fixture.Database.Context.OrderTransitions.Count(), Is.Zero);
             Assert.That(fixture.Database.Context.OutboxMessages.Single().Status, Is.EqualTo("Claimed"));
             Assert.That(fixture.Database.Context.BrokerSubmissionAttempts.Count(), Is.EqualTo(1));
+        });
+    }
+
+    [Test, Category("SubmissionReconciliation")]
+    public async Task UnknownCompletionAtomicallyQueuesOneReconciliationAndConfirmedAbsenceQueuesStableRetry()
+    {
+        await using var fixture = await CreateAsync();
+        var request = Request(fixture.Proposal, fixture.Reservation.Id);
+        await new AtomicOrderConversionRepository(fixture.Database.Context).TryConvertAsync(request, default);
+        fixture.Database.Context.ChangeTracker.Clear();
+        var workRepository = new OrderWorkRepository(fixture.Database.Context);
+        var submit = (await workRepository.ClaimAsync(1, Now.AddMinutes(6),
+            new("submission-worker", Now.AddMinutes(7)), default)).Single();
+        fixture.Database.Context.ChangeTracker.Clear();
+        var submissions = new OrderSubmissionRepository(fixture.Database.Context);
+        var prepared = ((PrepareOrderSubmissionResult.Ready)await submissions.PrepareAsync(submit,
+            Now.AddMinutes(6), BrokerCapabilities.SubmitLimitOrders, default)).Value;
+        await submissions.CompleteAsync(new(prepared, new(BrokerSubmissionOutcome.Unknown,
+            BrokerExecutionCodes.Unknown, null, Now.AddMinutes(7)), Now.AddMinutes(6), Now.AddMinutes(7),
+            BrokerExecutionCodes.Unknown, [OrderTransitionId.New(), OrderTransitionId.New(), OrderTransitionId.New()]), default);
+        fixture.Database.Context.ChangeTracker.Clear();
+
+        var reconcile = (await workRepository.ClaimAsync(1, Now.AddMinutes(8),
+            new("reconciliation-worker", Now.AddMinutes(9)), default)).Single();
+        fixture.Database.Context.ChangeTracker.Clear();
+        var repository = new OrderReconciliationRepository(fixture.Database.Context);
+        var ready = ((PrepareOrderReconciliationResult.Ready)await repository.PrepareAsync(reconcile,
+            BrokerCapabilities.LookupByClientOrderId, default)).Value;
+        var result = await repository.CompleteAsync(new(ready, new(BrokerReconciliationOutcome.Absent,
+            BrokerExecutionCodes.ReconciledAbsent, null, null, Now.AddMinutes(8)),
+            OrderReconciliationCodes.AbsenceConfirmed, Now.AddMinutes(8), Now.AddMinutes(8),
+            OrderTransitionId.New()), default);
+        fixture.Database.Context.ChangeTracker.Clear();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.TypeOf<PersistenceWriteResult.Succeeded>());
+            Assert.That(fixture.Database.Context.Orders.Single().Status, Is.EqualTo(Trading.Core.Orders.OrderStatus.Unknown));
+            Assert.That(fixture.Database.Context.OutboxMessages.Count(x => x.WorkKind == "Reconcile"), Is.EqualTo(1));
+            Assert.That(fixture.Database.Context.OutboxMessages.Count(x => x.WorkKind == "Submit"), Is.EqualTo(1));
+            Assert.That(fixture.Database.Context.OutboxMessages.Single(x => x.WorkKind == "Submit").Status, Is.EqualTo("Pending"));
+            Assert.That(fixture.Database.Context.OutboxMessages.Where(x => x.WorkKind == "Submit")
+                .Select(x => x.IdempotencyKey).Distinct().Single(), Is.EqualTo($"submit:{request.ClientOrderId.Value}"));
+            Assert.That(fixture.Database.Context.BrokerReconciliations.Single().ResolutionJson,
+                Does.Contain(OrderReconciliationCodes.AbsenceConfirmed));
         });
     }
 
