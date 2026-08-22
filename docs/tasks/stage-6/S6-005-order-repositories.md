@@ -3,13 +3,15 @@ schema_version: 1
 id: S6-005
 title: Implement order execution repositories
 stage: 6
-status: ready
+status: blocked
 priority: 900
 type: data
-depends_on: [S6-004, S6-017, S6-018]
+depends_on: [S6-004, S6-017, S6-018, S6-019]
 labels: [repositories, orders, fills, reconciliation]
 created: 2026-08-21
 updated: 2026-08-22
+owner: s6_005
+blocked_reason: The Stage 6 inbox and outbox schema cannot persist the complete durable work envelopes or leases; S6-019 must align it first.
 ---
 
 # S6-005: Implement Order Execution Repositories
@@ -61,3 +63,8 @@ Blocked again after S6-017 validation established that a newly constructed Core 
 `Version == 0`, while the corrected database still enforces `orders.version > 0`. The atomic proposal-to-order
 workflow must persist that initial aggregate without fabricating a transition or concurrency increment. S6-018
 records the required version-contract correction. No production or test implementation from this attempt was retained.
+
+Blocked again after the S6-018 correction because the inbox/outbox tables omit required S6-002 durable-work facts,
+including correlation identity and lease ownership/expiry. The outbox also omits its explicit idempotency identity;
+the inbox omits retry availability and attempt state. Exact conditional claims, stale recovery, and envelope round trips
+cannot be implemented by overloading error, aggregate, or completion columns. S6-019 records the required schema alignment.
