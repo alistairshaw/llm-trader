@@ -20,7 +20,7 @@ internal sealed class Stage5MigrationTests
     {
         await using var fresh = await TemporarySqliteDatabase.CreateAsync(); await new DatabaseInitializer(fresh.Context).InitializeAsync(); var schema = await SchemaAsync(fresh.Context);
         await using var upgraded = await TemporarySqliteDatabase.CreateAsync(); await upgraded.Context.Database.MigrateAsync("20260820164929_AddStage4ResearchPersistence"); await SeedStageFourAsync(upgraded.Context); var before = await ScalarAsync<string>(upgraded.Context, "SELECT id||'|'||content_hash FROM research_reports"); await new DatabaseInitializer(upgraded.Context).InitializeAsync();
-        Assert.Multiple(async () => { Assert.That(await SchemaAsync(upgraded.Context), Is.EqualTo(schema)); Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT id||'|'||content_hash FROM research_reports"), Is.EqualTo(before)); Assert.That(await ScalarAsync<long>(upgraded.Context, "SELECT COUNT(*) FROM research_report_sources"), Is.EqualTo(1)); Assert.That(await ScalarAsync<long>(upgraded.Context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(7)); Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("5")); });
+        Assert.Multiple(async () => { Assert.That(await SchemaAsync(upgraded.Context), Is.EqualTo(schema)); Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT id||'|'||content_hash FROM research_reports"), Is.EqualTo(before)); Assert.That(await ScalarAsync<long>(upgraded.Context, "SELECT COUNT(*) FROM research_report_sources"), Is.EqualTo(1)); Assert.That(await ScalarAsync<long>(upgraded.Context, "SELECT COUNT(*) FROM __ef_migrations_history"), Is.EqualTo(9)); Assert.That(await ScalarAsync<string>(upgraded.Context, "SELECT value FROM schema_metadata WHERE key='application_data_format_version'"), Is.EqualTo("6")); });
     }
 
     [Test]
@@ -68,6 +68,7 @@ internal sealed class Stage5MigrationTests
     private static async Task ExecuteAsync(TradingDbContext c, string sql)
     {
         sql = sql.Replace("INSERT INTO trading_bots VALUES", "INSERT INTO trading_bots (id,name,status,active_configuration_version_id,requested_next_run_at,accepted_next_run_at,last_completed_run_id,created_at,updated_at,version) VALUES", StringComparison.Ordinal);
+        sql = sql.Replace("INSERT INTO capital_reservations VALUES", "INSERT INTO capital_reservations (id,portfolio_id,trade_proposal_id,order_id,amount,currency,status,created_at,expires_at,consumed_at,released_at,version) VALUES", StringComparison.Ordinal);
         await using var command = c.Database.GetDbConnection().CreateCommand();
         command.CommandText = sql;
         await command.ExecuteNonQueryAsync();

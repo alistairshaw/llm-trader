@@ -236,6 +236,71 @@ internal sealed class TradeProposalEvidenceReportEntity { public string TradePro
 internal sealed class GuardrailEvaluationEntity : PersistenceEntity { public string TradeProposalId { get; set; } = string.Empty; public int EvaluationSequence { get; set; } public string EvaluationStage { get; set; } = string.Empty; public string PolicyVersion { get; set; } = string.Empty; public string Outcome { get; set; } = string.Empty; public string StateSnapshotId { get; set; } = string.Empty; public string RuleResultsJson { get; set; } = string.Empty; public string ContentHash { get; set; } = string.Empty; public long EvaluatedAt { get; set; } }
 internal sealed class ProposalApprovalEntity : PersistenceEntity { public string TradeProposalId { get; set; } = string.Empty; public string Decision { get; set; } = string.Empty; public string ActorType { get; set; } = string.Empty; public string ActorId { get; set; } = string.Empty; public string? Reason { get; set; } public long DecidedAt { get; set; } public long ProposalVersion { get; set; } public string StateSnapshotId { get; set; } = string.Empty; }
 internal sealed class CapitalReservationEntity : PersistenceEntity { public string PortfolioId { get; set; } = string.Empty; public string TradeProposalId { get; set; } = string.Empty; public string? OrderId { get; set; } public string Amount { get; set; } = string.Empty; public string Currency { get; set; } = string.Empty; public string Status { get; set; } = string.Empty; public long CreatedAt { get; set; } public long ExpiresAt { get; set; } public long? ConsumedAt { get; set; } public long? ReleasedAt { get; set; } public long Version { get; set; } }
+internal sealed class OrderEntity : PersistenceEntity
+{
+    public string ClientOrderId { get; set; } = string.Empty; public string PortfolioId { get; set; } = string.Empty;
+    public string BrokerAccountId { get; set; } = string.Empty; public string TradeProposalId { get; set; } = string.Empty;
+    public string? CapitalReservationId { get; set; }
+    public string InstrumentId { get; set; } = string.Empty;
+    public string Side { get; set; } = string.Empty; public string Quantity { get; set; } = string.Empty;
+    public string OrderType { get; set; } = string.Empty; public string? LimitPrice { get; set; }
+    public string TimeInForce { get; set; } = string.Empty; public string Status { get; set; } = string.Empty;
+    public string? BrokerOrderId { get; set; }
+    public string CorrelationId { get; set; } = string.Empty;
+    public long CreatedAt { get; set; }
+    public long? SubmittedAt { get; set; }
+    public long? CompletedAt { get; set; }
+    public long Version { get; set; }
+}
+internal sealed class OrderTransitionEntity : PersistenceEntity
+{
+    public string OrderId { get; set; } = string.Empty; public int SequenceNumber { get; set; }
+    public string PreviousStatus { get; set; } = string.Empty; public string NewStatus { get; set; } = string.Empty;
+    public string ReasonCode { get; set; } = string.Empty; public string? ReasonDetail { get; set; }
+    public string Source { get; set; } = string.Empty; public long OccurredAt { get; set; }
+    public long ReceivedAt { get; set; }
+    public string CorrelationId { get; set; } = string.Empty;
+}
+internal sealed class FillEntity : PersistenceEntity
+{
+    public string OrderId { get; set; } = string.Empty; public string BrokerAccountId { get; set; } = string.Empty;
+    public string BrokerExecutionId { get; set; } = string.Empty; public string Quantity { get; set; } = string.Empty;
+    public string Price { get; set; } = string.Empty; public string Currency { get; set; } = string.Empty;
+    public string FeeAmount { get; set; } = string.Empty; public string FeeCurrency { get; set; } = string.Empty;
+    public long ExecutedAt { get; set; }
+    public long ReceivedAt { get; set; }
+    public string? RawPayloadReference { get; set; }
+}
+internal sealed class BrokerReconciliationEntity : PersistenceEntity
+{
+    public string BrokerAccountId { get; set; } = string.Empty; public string Status { get; set; } = string.Empty;
+    public long StartedAt { get; set; }
+    public long? CompletedAt { get; set; }
+    public string BrokerSnapshotJson { get; set; } = string.Empty; public string DifferencesJson { get; set; } = string.Empty;
+    public string ResolutionJson { get; set; } = string.Empty; public string CorrelationId { get; set; } = string.Empty;
+    public string ContentHash { get; set; } = string.Empty;
+}
+internal sealed class OutboxMessageEntity : PersistenceEntity
+{
+    public string MessageType { get; set; } = string.Empty; public string AggregateType { get; set; } = string.Empty;
+    public string AggregateId { get; set; } = string.Empty; public string PayloadJson { get; set; } = string.Empty;
+    public string PayloadHash { get; set; } = string.Empty; public long OccurredAt { get; set; }
+    public long AvailableAt { get; set; }
+    public long? ProcessedAt { get; set; }
+    public int AttemptCount { get; set; }
+    public string? LastError { get; set; }
+    public long Version { get; set; }
+}
+internal sealed class InboxMessageEntity : PersistenceEntity
+{
+    public string Source { get; set; } = string.Empty; public string ExternalMessageId { get; set; } = string.Empty;
+    public string MessageType { get; set; } = string.Empty; public long ReceivedAt { get; set; }
+    public long? ProcessedAt { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string PayloadJson { get; set; } = string.Empty; public string PayloadHash { get; set; } = string.Empty;
+    public string? LastError { get; set; }
+    public long Version { get; set; }
+}
 internal sealed class SchemaMetadataEntity
 {
     public string Key { get; set; } = string.Empty; public string Value { get; set; } = string.Empty; public long UpdatedAt { get; set; }

@@ -578,6 +578,13 @@ Constraints:
 - Limit orders require a limit price.
 - Direct-trade proposals create at most one order in the MVP.
 
+The Stage 6 migration names the stable correlation identity `correlation_id` and adds unique indexes
+`IX_orders_client_order_id`, `IX_orders_correlation_id`, and the filtered
+`IX_orders_broker_account_id_broker_order_id`. An insert trigger verifies that the Portfolio owns the Broker Account,
+the Proposal belongs to the same Portfolio and Instrument, and any linked Reservation belongs to the same Proposal and
+Portfolio. Execution identity and order instructions are immutable after insert; only lifecycle, broker identity, and
+timestamps may advance under optimistic concurrency.
+
 Target-allocation proposals may create multiple orders, so the durable relationship is one proposal to many orders; do not impose an unconditional unique index on `trade_proposal_id`.
 
 ### 10.2 `order_transitions`
@@ -585,6 +592,9 @@ Target-allocation proposals may create multiple orders, so the durable relations
 Append-only children with `id`, `order_id`, `sequence_number`, `previous_status`, `new_status`, `reason_code`, `reason_detail`, `source`, `occurred_at`, `received_at`, and `correlation_id`.
 
 Unique `(order_id, sequence_number)`.
+
+Rows are append-only at both the EF change-tracker and SQLite-trigger boundaries. `correlation_id` is indexed for audit
+reconstruction without making distinct transitions in one correlated workflow mutually exclusive.
 
 ### 10.3 `fills`
 
@@ -604,22 +614,37 @@ Unique `(order_id, sequence_number)`.
 | `raw_payload_reference` | Nullable redacted artifact reference |
 
 Unique `(broker_account_id, broker_execution_id)`. The denormalized account ID is validated against the parent order.
+Fill quantity, price, and fee use canonical exact-decimal `TEXT`; quantity and price must be positive and fee must be
+non-negative. Insert triggers enforce parent-account consistency, and update/delete triggers make every Fill immutable.
+
+### 10.4 `broker_reconciliations`
+
+Stage 6 persists append-only reconciliation attempts with `broker_account_id`, constrained `status`, UTC start/completion
+times, bounded canonical `broker_snapshot_json`, `differences_json`, and `resolution_json`, a unique `correlation_id`, and
+a lowercase SHA-256 `content_hash`. Every relationship uses `ON DELETE RESTRICT`.
 
 ## 11. Infrastructure Tables
 
 ### 11.1 `outbox_messages`
 
-Columns: `id`, `message_type`, `aggregate_type`, `aggregate_id`, `payload_json`, `occurred_at`, `available_at`, nullable `processed_at`, `attempt_count`, and nullable `last_error`.
+Columns: `id`, `message_type`, `aggregate_type`, `aggregate_id`, canonical `payload_json`, lowercase SHA-256
+`payload_hash`, `occurred_at`, `available_at`, nullable `processed_at`, `attempt_count`, nullable bounded `last_error`, and
+concurrency `version`.
 
 The same transaction that changes an aggregate inserts its outgoing message. A background worker processes it with bounded retries. Examples include starting research, notifying report subscribers, submitting an order, and scheduling a follow-up run.
 
 Index `(processed_at, available_at)`.
+Unique `(aggregate_type, aggregate_id, message_type)` identifies one durable operation. A trigger prevents mutation of
+the source identity, payload, hash, and occurrence time while permitting bounded retry state to advance.
 
 ### 11.2 `inbox_messages`
 
-Columns: `id`, `source`, `external_message_id`, `message_type`, `received_at`, nullable `processed_at`, `status`, `payload_hash`, and nullable `last_error`.
+Columns: `id`, `source`, `external_message_id`, `message_type`, `received_at`, nullable `processed_at`, constrained
+`status`, canonical `payload_json`, lowercase SHA-256 `payload_hash`, nullable bounded `last_error`, and concurrency
+`version`.
 
 Unique `(source, external_message_id)`. This deduplicates broker events, fills, callbacks, and internal durable notifications.
+The source identity, received payload, and hash are immutable after insertion; processing state advances independently.
 
 ### 11.3 `schema_metadata`
 

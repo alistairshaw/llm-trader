@@ -391,7 +391,52 @@ internal sealed class ProposalApprovalConfiguration : EntityConfiguration<Propos
 internal sealed class CapitalReservationConfiguration : EntityConfiguration<CapitalReservationEntity>
 {
     public CapitalReservationConfiguration() : base("capital_reservations") { }
-    protected override void ConfigureEntity(EntityTypeBuilder<CapitalReservationEntity> b) { b.Property(x => x.PortfolioId).IsRequired(); b.Property(x => x.TradeProposalId).IsRequired(); b.Property(x => x.Amount).IsRequired().HasColumnType("TEXT"); b.Property(x => x.Currency).IsRequired(); b.Property(x => x.Status).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken(); b.HasIndex(x => x.TradeProposalId).IsUnique().HasFilter("status = 'Active'"); b.HasIndex(x => new { x.PortfolioId, x.Status, x.ExpiresAt }); b.HasOne<PortfolioEntity>().WithMany().HasForeignKey(x => x.PortfolioId).OnDelete(DeleteBehavior.Restrict); b.HasOne<TradeProposalEntity>().WithMany().HasForeignKey(x => x.TradeProposalId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_capital_reservations_amount", "CAST(amount AS NUMERIC) > 0"); t.HasCheckConstraint("ck_capital_reservations_status", "status IN ('Active','Consumed','Released','Expired')"); t.HasCheckConstraint("ck_capital_reservations_time", "expires_at > created_at"); t.HasCheckConstraint("ck_capital_reservations_terminal", "(status='Active' AND consumed_at IS NULL AND released_at IS NULL) OR (status='Consumed' AND consumed_at IS NOT NULL AND released_at IS NULL) OR (status IN ('Released','Expired') AND released_at IS NOT NULL AND consumed_at IS NULL)"); t.HasCheckConstraint("ck_capital_reservations_version", "version > 0"); }); }
+    protected override void ConfigureEntity(EntityTypeBuilder<CapitalReservationEntity> b) { b.Property(x => x.PortfolioId).IsRequired(); b.Property(x => x.TradeProposalId).IsRequired(); b.Property(x => x.Amount).IsRequired().HasColumnType("TEXT"); b.Property(x => x.Currency).IsRequired(); b.Property(x => x.Status).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken(); b.HasIndex(x => x.TradeProposalId).IsUnique().HasFilter("status = 'Active'"); b.HasIndex(x => new { x.PortfolioId, x.Status, x.ExpiresAt }); b.HasOne<PortfolioEntity>().WithMany().HasForeignKey(x => x.PortfolioId).OnDelete(DeleteBehavior.Restrict); b.HasOne<TradeProposalEntity>().WithMany().HasForeignKey(x => x.TradeProposalId).OnDelete(DeleteBehavior.Restrict); b.HasOne<OrderEntity>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_capital_reservations_amount", "CAST(amount AS NUMERIC) > 0"); t.HasCheckConstraint("ck_capital_reservations_status", "status IN ('Active','Consumed','Released','Expired')"); t.HasCheckConstraint("ck_capital_reservations_time", "expires_at > created_at"); t.HasCheckConstraint("ck_capital_reservations_terminal", "(status='Active' AND consumed_at IS NULL AND released_at IS NULL) OR (status='Consumed' AND consumed_at IS NOT NULL AND released_at IS NULL) OR (status IN ('Released','Expired') AND released_at IS NOT NULL AND consumed_at IS NULL)"); t.HasCheckConstraint("ck_capital_reservations_version", "version > 0"); }); }
+}
+
+internal sealed class OrderConfiguration : EntityConfiguration<OrderEntity>
+{
+    public OrderConfiguration() : base("orders") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<OrderEntity> b)
+    {
+        b.Property(x => x.ClientOrderId).IsRequired(); b.Property(x => x.PortfolioId).IsRequired(); b.Property(x => x.BrokerAccountId).IsRequired();
+        b.Property(x => x.TradeProposalId).IsRequired(); b.Property(x => x.InstrumentId).IsRequired(); b.Property(x => x.Side).IsRequired();
+        b.Property(x => x.Quantity).IsRequired().HasColumnType("TEXT"); b.Property(x => x.LimitPrice).HasColumnType("TEXT");
+        b.Property(x => x.OrderType).IsRequired(); b.Property(x => x.TimeInForce).IsRequired(); b.Property(x => x.Status).IsRequired();
+        b.Property(x => x.CorrelationId).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken();
+        b.HasIndex(x => x.ClientOrderId).IsUnique(); b.HasIndex(x => new { x.BrokerAccountId, x.BrokerOrderId }).IsUnique().HasFilter("broker_order_id IS NOT NULL");
+        b.HasIndex(x => new { x.PortfolioId, x.Status, x.CreatedAt }); b.HasIndex(x => x.TradeProposalId); b.HasIndex(x => x.CorrelationId).IsUnique();
+        b.HasOne<PortfolioEntity>().WithMany().HasForeignKey(x => x.PortfolioId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne<BrokerAccountEntity>().WithMany().HasForeignKey(x => x.BrokerAccountId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne<TradeProposalEntity>().WithMany().HasForeignKey(x => x.TradeProposalId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne<InstrumentEntity>().WithMany().HasForeignKey(x => x.InstrumentId).OnDelete(DeleteBehavior.Restrict);
+        b.ToTable(t => { t.HasCheckConstraint("ck_orders_side", "side IN ('Buy','Sell')"); t.HasCheckConstraint("ck_orders_quantity", "CAST(quantity AS NUMERIC) > 0"); t.HasCheckConstraint("ck_orders_type", "order_type IN ('Market','Limit')"); t.HasCheckConstraint("ck_orders_limit", "(order_type='Market' AND limit_price IS NULL) OR (order_type='Limit' AND CAST(limit_price AS NUMERIC) > 0)"); t.HasCheckConstraint("ck_orders_time_in_force", "time_in_force IN ('Day','GoodTilCancelled')"); t.HasCheckConstraint("ck_orders_status", "status IN ('PendingSubmission','Submitting','SubmissionUnknown','Submitted','PartiallyFilled','Filled','Rejected','CancelPending','Cancelled','Expired','Failed')"); t.HasCheckConstraint("ck_orders_version", "version > 0"); });
+    }
+}
+internal sealed class OrderTransitionConfiguration : EntityConfiguration<OrderTransitionEntity>
+{
+    public OrderTransitionConfiguration() : base("order_transitions") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<OrderTransitionEntity> b) { b.Property(x => x.OrderId).IsRequired(); b.Property(x => x.PreviousStatus).IsRequired(); b.Property(x => x.NewStatus).IsRequired(); b.Property(x => x.ReasonCode).IsRequired(); b.Property(x => x.Source).IsRequired(); b.Property(x => x.CorrelationId).IsRequired(); b.HasIndex(x => new { x.OrderId, x.SequenceNumber }).IsUnique(); b.HasIndex(x => x.CorrelationId); b.HasOne<OrderEntity>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => t.HasCheckConstraint("ck_order_transitions_sequence", "sequence_number > 0")); }
+}
+internal sealed class FillConfiguration : EntityConfiguration<FillEntity>
+{
+    public FillConfiguration() : base("fills") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<FillEntity> b) { b.Property(x => x.OrderId).IsRequired(); b.Property(x => x.BrokerAccountId).IsRequired(); b.Property(x => x.BrokerExecutionId).IsRequired(); b.Property(x => x.Quantity).IsRequired().HasColumnType("TEXT"); b.Property(x => x.Price).IsRequired().HasColumnType("TEXT"); b.Property(x => x.Currency).IsRequired(); b.Property(x => x.FeeAmount).IsRequired().HasColumnType("TEXT"); b.Property(x => x.FeeCurrency).IsRequired(); b.HasIndex(x => new { x.BrokerAccountId, x.BrokerExecutionId }).IsUnique(); b.HasIndex(x => new { x.OrderId, x.ExecutedAt }); b.HasOne<OrderEntity>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict); b.HasOne<BrokerAccountEntity>().WithMany().HasForeignKey(x => x.BrokerAccountId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_fills_quantity", "CAST(quantity AS NUMERIC) > 0"); t.HasCheckConstraint("ck_fills_price", "CAST(price AS NUMERIC) > 0"); t.HasCheckConstraint("ck_fills_fee", "CAST(fee_amount AS NUMERIC) >= 0"); }); }
+}
+internal sealed class BrokerReconciliationConfiguration : EntityConfiguration<BrokerReconciliationEntity>
+{
+    public BrokerReconciliationConfiguration() : base("broker_reconciliations") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<BrokerReconciliationEntity> b) { b.Property(x => x.BrokerAccountId).IsRequired(); b.Property(x => x.Status).IsRequired(); b.Property(x => x.BrokerSnapshotJson).IsRequired(); b.Property(x => x.DifferencesJson).IsRequired(); b.Property(x => x.ResolutionJson).IsRequired(); b.Property(x => x.CorrelationId).IsRequired(); b.Property(x => x.ContentHash).IsRequired(); b.HasIndex(x => new { x.BrokerAccountId, x.StartedAt }); b.HasIndex(x => x.CorrelationId).IsUnique(); b.HasOne<BrokerAccountEntity>().WithMany().HasForeignKey(x => x.BrokerAccountId).OnDelete(DeleteBehavior.Restrict); b.ToTable(t => { t.HasCheckConstraint("ck_broker_reconciliations_status", "status IN ('Pending','Matched','Discrepancy','Failed')"); t.HasCheckConstraint("ck_broker_reconciliations_hash", "length(content_hash)=64 AND content_hash=lower(content_hash)"); }); }
+}
+internal sealed class OutboxMessageConfiguration : EntityConfiguration<OutboxMessageEntity>
+{
+    public OutboxMessageConfiguration() : base("outbox_messages") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<OutboxMessageEntity> b) { b.Property(x => x.MessageType).IsRequired(); b.Property(x => x.AggregateType).IsRequired(); b.Property(x => x.AggregateId).IsRequired(); b.Property(x => x.PayloadJson).IsRequired(); b.Property(x => x.PayloadHash).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken(); b.HasIndex(x => new { x.ProcessedAt, x.AvailableAt }); b.HasIndex(x => new { x.AggregateType, x.AggregateId, x.MessageType }).IsUnique(); b.ToTable(t => { t.HasCheckConstraint("ck_outbox_attempt_count", "attempt_count >= 0"); t.HasCheckConstraint("ck_outbox_hash", "length(payload_hash)=64 AND payload_hash=lower(payload_hash)"); t.HasCheckConstraint("ck_outbox_version", "version > 0"); }); }
+}
+internal sealed class InboxMessageConfiguration : EntityConfiguration<InboxMessageEntity>
+{
+    public InboxMessageConfiguration() : base("inbox_messages") { }
+    protected override void ConfigureEntity(EntityTypeBuilder<InboxMessageEntity> b) { b.Property(x => x.Source).IsRequired(); b.Property(x => x.ExternalMessageId).IsRequired(); b.Property(x => x.MessageType).IsRequired(); b.Property(x => x.Status).IsRequired(); b.Property(x => x.PayloadJson).IsRequired(); b.Property(x => x.PayloadHash).IsRequired(); b.Property(x => x.Version).IsConcurrencyToken(); b.HasIndex(x => new { x.Source, x.ExternalMessageId }).IsUnique(); b.HasIndex(x => new { x.Status, x.ReceivedAt }); b.ToTable(t => { t.HasCheckConstraint("ck_inbox_status", "status IN ('Pending','Processing','Processed','Deferred','Failed')"); t.HasCheckConstraint("ck_inbox_hash", "length(payload_hash)=64 AND payload_hash=lower(payload_hash)"); t.HasCheckConstraint("ck_inbox_version", "version > 0"); }); }
 }
 
 internal sealed class SchemaMetadataConfiguration : IEntityTypeConfiguration<SchemaMetadataEntity>
@@ -401,6 +446,6 @@ internal sealed class SchemaMetadataConfiguration : IEntityTypeConfiguration<Sch
         builder.ToTable("schema_metadata"); builder.HasKey(x => x.Key);
         builder.Property(x => x.Key).HasColumnName("key"); builder.Property(x => x.Value).HasColumnName("value").IsRequired();
         builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
-        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "5", UpdatedAt = 0 });
+        builder.HasData(new SchemaMetadataEntity { Key = "application_data_format_version", Value = "6", UpdatedAt = 0 });
     }
 }
