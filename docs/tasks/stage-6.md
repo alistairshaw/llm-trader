@@ -6,7 +6,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S6-016`](stage-6/S6-016-stage-6-review.md) is the next ready task.
+No Stage 6 task is ready while `S6-016` awaits its exact-revision hosted gate.
 
 ## Ordered Backlog
 
@@ -31,7 +31,7 @@ Task workflow and priority rules: [Task Management](../task-management.md).
 | [`S6-014`](stage-6/S6-014-headless-paper-demo.md) | Demonstrate the complete paper workflow in the headless host | Done | 720 | `S6-012`, `S6-013` |
 | [`S6-020`](stage-6/S6-020-align-order-conversion-rejection-codes.md) | Align Proposal-to-Order rejection codes with the execution contract | Done | 980 | `S6-014` |
 | [`S6-015`](stage-6/S6-015-stage-6-acceptance.md) | Complete production-backed Stage 6 acceptance bindings | Done | 700 | `S6-014`, `S6-020` |
-| [`S6-016`](stage-6/S6-016-stage-6-review.md) | Complete Stage 6 acceptance and review | Ready | 1000 | `S6-001`–`S6-015` |
+| [`S6-016`](stage-6/S6-016-stage-6-review.md) | Complete Stage 6 acceptance and review | Review | 1000 | All Stage 6 implementation tasks |
 
 ## Stage Exit Gate
 
