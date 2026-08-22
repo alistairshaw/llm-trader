@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using Trading.Core.Bots;
 using Trading.Core.Identifiers;
 using Trading.Core.Orders;
+using Trading.Core.Policies;
 using Trading.Core.Proposals;
 using Trading.Core.Research;
 
@@ -109,6 +110,16 @@ public sealed record PortfolioSummary(PortfolioId Id, TradingBotId TradingBotId,
     string Currency, decimal Cash, decimal ReservedCapital, int PositionCount);
 public sealed record RunSummary(BotRunId Id, TradingBotId TradingBotId, BotRunStatus Status, DateTimeOffset StartedAt,
     DateTimeOffset? CompletedAt, int ToolCalls, decimal Cost);
+public sealed record QueuedRunTriggerSummary(BotRunTriggerId Id, TradingBotId TradingBotId,
+    BotRunTriggerType TriggerType, string Reason, DateTimeOffset OccurredAt, string? SourceId);
+public sealed record RunTriggerSummary(BotRunTriggerId Id, BotRunTriggerType TriggerType, string Reason,
+    DateTimeOffset OccurredAt, string? SourceId);
+public sealed record RunBudgetSummary(string Name, string Limit, string Used);
+public sealed record RunDetail(RunSummary Summary, TradingBotConfigurationVersionId ConfigurationVersionId,
+    PortfolioDecisionSnapshotId PortfolioSnapshotId, ImmutableArray<RunTriggerSummary> Triggers,
+    ImmutableArray<RunBudgetSummary> Budgets, Usage Usage, FinishResult? FinishResult,
+    DateTimeOffset? RequestedNextRunAt, DateTimeOffset? AcceptedNextRunAt, string? FailureCode,
+    bool WasRecovered);
 public sealed record ResearchSummary(ResearchReportId Id, string SeriesId, int Version, string Subject,
     ResearchReportStatus Status, DateTimeOffset PublishedAt);
 public sealed record ResearchDetail(ResearchSummary Summary, string ContentHash, string Content,

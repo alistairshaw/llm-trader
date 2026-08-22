@@ -33,9 +33,12 @@ public partial class App : Application, IAsyncDisposable
             await lifecycle.StartAsync(CancellationToken.None);
             var queries = lifecycle.Services.GetService<IOperatorQueries>();
             var botService = lifecycle.Services.GetService<IBotOperatorService>();
+            var runService = lifecycle.Services.GetService<IRunOperatorService>();
             var principal = lifecycle.Services.GetService<OperatorPrincipal>();
-            var window = queries is not null && botService is not null && principal is not null
-                ? new MainWindow(new WpfNavigationPageFactory(() => new BotManagementViewModel(queries, botService, principal)))
+            var window = queries is not null && botService is not null && runService is not null && principal is not null
+                ? new MainWindow(new WpfNavigationPageFactory(
+                    () => new BotManagementViewModel(queries, botService, principal),
+                    () => new BotRunsViewModel(queries, runService, principal)))
                 : new MainWindow();
             window.Closing += OnMainWindowClosing;
             MainWindow = window;

@@ -6,8 +6,8 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-008`](stage-7/S7-008-bot-run-operations.md), [`S7-009`](stage-7/S7-009-research-catalog.md),
-[`S7-010`](stage-7/S7-010-proposal-review.md), and [`S7-011`](stage-7/S7-011-execution-risk-audit.md) are ready and may run in parallel.
+[`S7-009`](stage-7/S7-009-research-catalog.md), [`S7-010`](stage-7/S7-010-proposal-review.md), and
+[`S7-011`](stage-7/S7-011-execution-risk-audit.md) are ready and may run in parallel.
 
 ## Ordered Backlog
 
@@ -20,7 +20,7 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-005`](stage-7/S7-005-shell-navigation-accessibility.md) | Build shell, navigation, and accessibility foundations | Done | 900 | `S7-004` |
 | [`S7-006`](stage-7/S7-006-bot-management.md) | Build Trading Bot management | Done | 860 | `S7-002`, `S7-005` |
 | [`S7-007`](stage-7/S7-007-portfolio-broker-status.md) | Build Portfolio and broker status | Done | 860 | `S7-002`, `S7-005` |
-| [`S7-008`](stage-7/S7-008-bot-run-operations.md) | Build Bot Run operations and status | Ready | 850 | `S7-002`, `S7-005` |
+| [`S7-008`](stage-7/S7-008-bot-run-operations.md) | Build Bot Run operations and status | Done | 850 | `S7-002`, `S7-005` |
 | [`S7-009`](stage-7/S7-009-research-catalog.md) | Build Research catalog and Report viewer | Ready | 850 | `S7-002`, `S7-005` |
 | [`S7-010`](stage-7/S7-010-proposal-review.md) | Build Proposal review and human decisions | Ready | 840 | `S7-002`, `S7-005` |
 | [`S7-011`](stage-7/S7-011-execution-risk-audit.md) | Build execution, Fill, and risk audit views | Ready | 840 | `S7-002`, `S7-005` |

@@ -1,0 +1,55 @@
+<UserControl x:Class="Trading.UI.Wpf.Views.BotRunsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.AutomationId="Runs.Workspace"
+             AutomationProperties.Name="Bot Run operations and status">
+    <Grid KeyboardNavigation.TabNavigation="Cycle">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <TextBlock Text="Bot Runs" FontSize="22" FontWeight="Bold"
+                   AutomationProperties.AutomationId="Runs.Heading" AutomationProperties.HeadingLevel="Level1" />
+        <WrapPanel Grid.Row="1" Margin="0,12">
+            <TextBox Width="240" Text="{Binding TradingBotId, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.AutomationId="Runs.TradingBotId" AutomationProperties.Name="Trading Bot identity" />
+            <TextBox Width="320" Margin="8,0" Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.AutomationId="Runs.Reason" AutomationProperties.Name="Manual run reason" />
+            <Button Content="Trigger run" Command="{Binding TriggerCommand}" CommandParameter="trigger"
+                    AutomationProperties.AutomationId="Runs.Trigger" AutomationProperties.Name="Trigger manual Bot Run" />
+            <Button Content="Refresh" Margin="8,0" Command="{Binding RefreshCommand}" CommandParameter="refresh"
+                    AutomationProperties.AutomationId="Runs.Refresh" AutomationProperties.Name="Refresh Bot Runs" />
+        </WrapPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
+            <StackPanel><TextBlock Text="Active" FontSize="18" AutomationProperties.HeadingLevel="Level2" />
+                <ListBox ItemsSource="{Binding ActiveRuns}" SelectedItem="{Binding SelectedRun}" DisplayMemberPath="Status"
+                         AutomationProperties.AutomationId="Runs.Active" AutomationProperties.Name="Active Bot Runs" /></StackPanel>
+            <StackPanel Grid.Column="1"><TextBlock Text="Queued" FontSize="18" AutomationProperties.HeadingLevel="Level2" />
+                <ListBox ItemsSource="{Binding QueuedTriggers}" DisplayMemberPath="Reason"
+                         AutomationProperties.AutomationId="Runs.Queued" AutomationProperties.Name="Queued Bot Run triggers" /></StackPanel>
+            <StackPanel Grid.Column="2"><TextBlock Text="History" FontSize="18" AutomationProperties.HeadingLevel="Level2" />
+                <ListBox ItemsSource="{Binding History}" SelectedItem="{Binding SelectedRun}" DisplayMemberPath="Status"
+                         AutomationProperties.AutomationId="Runs.History" AutomationProperties.Name="Bot Run history" /></StackPanel>
+            <ScrollViewer Grid.Column="3" Margin="16,0,0,0" VerticalScrollBarVisibility="Auto">
+                <StackPanel><TextBlock Text="Run audit" FontSize="18" AutomationProperties.HeadingLevel="Level2" />
+                    <Button Content="Inspect selected run" Command="{Binding LoadDetailCommand}" CommandParameter="detail"
+                            AutomationProperties.AutomationId="Runs.Inspect" AutomationProperties.Name="Inspect selected Bot Run" />
+                    <TextBlock Text="{Binding Detail.Summary.Status}" AutomationProperties.AutomationId="Runs.Status" AutomationProperties.Name="Authoritative run status" />
+                    <TextBlock Text="{Binding Detail.FailureCode}" Foreground="DarkRed" AutomationProperties.AutomationId="Runs.FailureCode" AutomationProperties.Name="Run failure code" />
+                    <TextBlock Text="{Binding Detail.ConfigurationVersionId}" AutomationProperties.AutomationId="Runs.Configuration" AutomationProperties.Name="Pinned configuration identity" />
+                    <TextBlock Text="{Binding Detail.PortfolioSnapshotId}" AutomationProperties.AutomationId="Runs.Snapshot" AutomationProperties.Name="Pinned Portfolio snapshot identity" />
+                    <ItemsControl ItemsSource="{Binding Detail.Triggers}" AutomationProperties.AutomationId="Runs.Triggers" AutomationProperties.Name="Run trigger provenance" />
+                    <ItemsControl ItemsSource="{Binding Detail.Budgets}" AutomationProperties.AutomationId="Runs.Budgets" AutomationProperties.Name="Run budgets and usage" />
+                    <TextBlock Text="{Binding Detail.Usage}" AutomationProperties.AutomationId="Runs.Usage" AutomationProperties.Name="Run usage" />
+                    <TextBlock Text="{Binding Detail.FinishResult}" AutomationProperties.AutomationId="Runs.Finish" AutomationProperties.Name="Run finish outcome" />
+                    <TextBlock Text="{Binding Detail.RequestedNextRunAt}" AutomationProperties.AutomationId="Runs.RequestedSchedule" AutomationProperties.Name="Requested next run time" />
+                    <TextBlock Text="{Binding Detail.AcceptedNextRunAt}" AutomationProperties.AutomationId="Runs.AcceptedSchedule" AutomationProperties.Name="Accepted next run time" />
+                    <TextBlock Text="{Binding Detail.WasRecovered}" AutomationProperties.AutomationId="Runs.Recovered" AutomationProperties.Name="Recovered run state" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <StackPanel Grid.Row="3" AutomationProperties.LiveSetting="Assertive">
+            <TextBlock Text="{Binding SubmissionCode}" AutomationProperties.AutomationId="Runs.Submission" AutomationProperties.Name="Manual run submission result" />
+            <TextBlock Text="{Binding ErrorCode}" Foreground="DarkRed" AutomationProperties.AutomationId="Runs.Error" AutomationProperties.Name="Bot Run error" />
+            <TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Runs.Busy" AutomationProperties.Name="Bot Runs busy state" />
+        </StackPanel>
+    </Grid>
+</UserControl>
