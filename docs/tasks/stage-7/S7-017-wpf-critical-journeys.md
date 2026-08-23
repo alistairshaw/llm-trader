@@ -102,6 +102,21 @@ tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format pa
 publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
 local UI pass is claimed.
 
+Hosted candidate `920e41486cfd9ef08d45e3c9ea7e4e85664de54e` passed Linux and the Windows complete
+cross-platform suite, native build, self-contained publish, and harness smoke in CI run `32609403237`. Eighteen of
+nineteen journeys again passed its first interactive Stage 7 execution. The retained screenshot and UIA tree proved
+that the authorized Research command ran and its outcome was published correctly as
+`operator.requestresearch.succeeded`; the journey was waiting for the obsolete unit-substitute code
+`operator.research.requested`. The journey and focused substitute now use the actual production-composed stable code.
+The focused view-model test additionally records the RequestOutcome PropertyChanged event and proves it occurs after
+the catalog refresh query, while the static XAML test verifies the outcome's exact ItemStatus binding. The version-1
+business assertion remains unchanged.
+
+Revalidation after aligning the UIA contract with the production outcome: Release build passed with zero warnings and
+errors; WPF unit tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format passed; and the final
+self-contained WPF publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7
+passes complete. No local UI pass is claimed.
+
 Hosted candidate `464b918d7e5a82beb95edfb54eaf493e459b53fa` passed Linux and the Windows complete
 cross-platform suite, native build, self-contained publish, and harness smoke in CI run `32608648397`. Eighteen of
 nineteen journeys passed its first interactive Stage 7 execution; the remaining Research journey could observe the old

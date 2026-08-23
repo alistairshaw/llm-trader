@@ -100,11 +100,19 @@ public sealed class ResearchCatalogViewModelTests
 
         model.RequestingBotId = "01HF7YAT00S8K1M3Q5V7X9ZA02";
         model.RequestSubject = "  Assess durable free cash flow  ";
+        var refreshCountWhenOutcomePublished = -1;
+        model.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(ResearchCatalogViewModel.RequestOutcome))
+                refreshCountWhenOutcomePublished = gateway.Requests.Count;
+        };
         await model.RequestAsync();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(gateway.ExecutedResearchSubjects, Is.EqualTo(ExpectedRequestSubjects));
-            Assert.That(model.RequestOutcome, Is.EqualTo("operator.research.requested"));
+            Assert.That(model.RequestOutcome, Is.EqualTo("operator.requestresearch.succeeded"));
+            Assert.That(refreshCountWhenOutcomePublished, Is.EqualTo(1),
+                "the outcome PropertyChanged event must follow the catalog refresh query");
         }
     }
 
@@ -117,6 +125,7 @@ public sealed class ResearchCatalogViewModelTests
         var content = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Research.InertContent"));
         var openExact = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Research.OpenExact"));
         var exactIdentity = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Research.ExactIdentity"));
+        var requestOutcome = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Research.RequestOutcome"));
         using (Assert.EnterMultipleScope())
         {
             Assert.That(ids, Does.Contain("Research.Workspace").And.Contain("Research.ExactIdentity")
@@ -133,6 +142,8 @@ public sealed class ResearchCatalogViewModelTests
                 Is.EqualTo("{Binding SelectedReport.Id}"));
             Assert.That(exactIdentity.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
                 Is.EqualTo("{Binding ExactIdentity}"));
+            Assert.That(requestOutcome.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
+                Is.EqualTo("{Binding RequestOutcome}"));
         }
     }
 
@@ -171,7 +182,7 @@ public sealed class ResearchCatalogViewModelTests
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested(); ExecutedResearchSubjects.Add(subject);
-            return Task.FromResult(new OperatorCommandResult(OperatorResultStatus.Succeeded, "operator.research.requested"));
+            return Task.FromResult(new OperatorCommandResult(OperatorResultStatus.Succeeded, "operator.requestresearch.succeeded"));
         }
     }
 }
