@@ -14,6 +14,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
     private readonly IResearchOperatorService research;
     private readonly OperatorPrincipal principal;
     private readonly CancellationTokenSource lifetime = new();
+    private readonly AsyncCommand<ResearchSummary?> loadReportCommand;
     private ResearchSummary? selectedReport;
     private ResearchDetail? detail;
     private bool isBusy;
@@ -30,7 +31,9 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
         this.research = research ?? throw new ArgumentNullException(nameof(research));
         this.principal = principal ?? throw new ArgumentNullException(nameof(principal));
         RefreshCommand = new AsyncCommand<object?>((_, token) => RefreshAsync(token));
-        LoadReportCommand = new AsyncCommand<object?>((_, token) => LoadReportAsync(token));
+        loadReportCommand = new AsyncCommand<ResearchSummary?>((report, token) => LoadReportAsync(report, token),
+            report => report is not null);
+        LoadReportCommand = loadReportCommand;
         RequestCommand = new AsyncCommand<object?>((_, token) => RequestAsync(token));
         NextPageCommand = new AsyncCommand<object?>((_, token) => ChangePageAsync(PageSize, token));
         PreviousPageCommand = new AsyncCommand<object?>((_, token) => ChangePageAsync(-PageSize, token));
@@ -59,6 +62,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
         set
         {
             if (!SetProperty(ref selectedReport, value)) return;
+            loadReportCommand.NotifyCanExecuteChanged();
             Detail = null;
             Versions.Clear();
             Provenance.Clear();
@@ -93,10 +97,13 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
         SelectedReport = selectedId is null ? null : Items.SingleOrDefault(x => x.Id == selectedId);
     }, cancellationToken);
 
-    public Task LoadReportAsync(CancellationToken cancellationToken = default) => RunAsync(async token =>
+    public Task LoadReportAsync(CancellationToken cancellationToken = default) =>
+        LoadReportAsync(SelectedReport, cancellationToken);
+
+    public Task LoadReportAsync(ResearchSummary? report, CancellationToken cancellationToken = default) => RunAsync(async token =>
     {
-        if (SelectedReport is null) { ErrorCode = "research_catalog.selection_required"; return; }
-        var selected = SelectedReport;
+        if (report is null) { ErrorCode = "research_catalog.selection_required"; return; }
+        var selected = report;
         var exactResource = new OperatorResource(OperatorResourceKind.ResearchReport, selected.Id.ToString());
         var detailResult = await queries.GetPageAsync<ResearchDetail>(principal, OperatorPageKind.Research,
             exactResource, new(Status: $"exact:{selected.SeriesId}:{selected.Version.ToString(CultureInfo.InvariantCulture)}"),

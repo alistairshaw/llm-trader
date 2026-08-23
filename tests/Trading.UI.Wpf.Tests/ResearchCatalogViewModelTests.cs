@@ -117,6 +117,26 @@ public sealed class ResearchCatalogViewModelTests
     }
 
     [Test]
+    public async Task RequestRefreshThenSelectedImmutableReportOpensByCommandParameter()
+    {
+        var report = Summary(1);
+        var gateway = new Gateway { Catalog = Page(report), Detail = Page(Detail(report)), Versions = Page(report) };
+        await using var model = new ResearchCatalogViewModel(gateway, gateway, Principal)
+        {
+            RequestingBotId = "01HF7YAT00S8K1M3Q5V7X9ZA02",
+            RequestSubject = "Assess durable free cash flow",
+        };
+
+        await model.RequestAsync();
+        var refreshedReport = model.Items.Single();
+        model.SelectedReport = refreshedReport;
+        Assert.That(model.LoadReportCommand.CanExecute(refreshedReport), Is.True);
+        await model.LoadReportAsync(refreshedReport);
+
+        Assert.That(model.ExactIdentity, Does.Contain(refreshedReport.Id.ToString()).And.Contain("version 1"));
+    }
+
+    [Test]
     public void ViewUsesStableAccessibilityMetadataAndOnlyPlainReadOnlyEvidenceControls()
     {
         var document = XDocument.Load(Path.Combine(TestContext.CurrentContext.TestDirectory, "ResearchCatalogView.xaml"));
@@ -144,6 +164,7 @@ public sealed class ResearchCatalogViewModelTests
                 Is.EqualTo("{Binding ExactIdentity}"));
             Assert.That(requestOutcome.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
                 Is.EqualTo("{Binding RequestOutcome}"));
+            Assert.That(openExact.Attribute("CommandParameter")?.Value, Is.EqualTo("{Binding SelectedReport}"));
         }
     }
 

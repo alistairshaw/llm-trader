@@ -102,6 +102,21 @@ tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format pa
 publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
 local UI pass is claimed.
 
+Hosted candidate `782cf89734d62a0cadafaaef6e99dee6e70ed89e` passed Linux/security and the Windows
+complete cross-platform suite, native build, self-contained publish, and harness smoke in CI run `32610006784`.
+Eighteen of nineteen journeys passed its first interactive Stage 7 execution, including observation of the exact
+production Research request outcome. The remaining failure was isolated to handing the post-refresh grid selection to
+the exact-version command. The Open Exact button now passes the selected immutable `ResearchSummary` as its explicit
+command parameter; command enablement follows that parameter, and the loader uses the captured summary rather than
+rereading mutable selection state after invocation. A focused view-model test reproduces request, catalog refresh,
+selection, and exact version-1 loading, while static XAML coverage enforces the command-parameter binding. The
+version-1 business assertion remains unchanged.
+
+Revalidation after the immutable command-parameter repair: Release build passed with zero warnings and errors; WPF
+unit tests passed 41/41; the full suite passed 1,231/1,231 with zero skips; format passed; and the final self-contained
+WPF publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
+local UI pass is claimed.
+
 Hosted candidate `920e41486cfd9ef08d45e3c9ea7e4e85664de54e` passed Linux and the Windows complete
 cross-platform suite, native build, self-contained publish, and harness smoke in CI run `32609403237`. Eighteen of
 nineteen journeys again passed its first interactive Stage 7 execution. The retained screenshot and UIA tree proved
