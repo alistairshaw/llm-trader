@@ -6,7 +6,7 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-018`](stage-7/S7-018-stage-7-review.md) is ready.
+[`S7-018`](stage-7/S7-018-stage-7-review.md) is in review pending exact-revision hosted validation.
 
 ## Ordered Backlog
 
@@ -33,7 +33,7 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-021`](stage-7/S7-021-complete-wpf-deterministic-readiness.md) | Complete deterministic WPF paper journey before readiness | Done | 985 | `S7-019` |
 | [`S7-022`](stage-7/S7-022-authorize-wpf-research-fixture.md) | Authorize deterministic WPF Research fixture identities | Done | 988 | `S7-019`, `S7-021` |
 | [`S7-017`](stage-7/S7-017-wpf-critical-journeys.md) | Automate critical WPF operator journeys | Done | 740 | `S7-015`, `S7-016`, `S7-019`, `S7-020`, `S7-021`, `S7-022` |
-| [`S7-018`](stage-7/S7-018-stage-7-review.md) | Complete Stage 7 acceptance and review | Ready | 1000 | All implementation tasks |
+| [`S7-018`](stage-7/S7-018-stage-7-review.md) | Complete Stage 7 acceptance and review | Review | 1000 | All implementation tasks |
 
 ## Stage Exit Gate
 

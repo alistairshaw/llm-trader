@@ -3,10 +3,10 @@ schema_version: 1
 id: S7-018
 title: Complete Stage 7 acceptance and review
 stage: 7
-status: ready
+status: review
 priority: 1000
 type: test
-depends_on: [S7-001, S7-002, S7-003, S7-004, S7-005, S7-006, S7-007, S7-008, S7-009, S7-010, S7-011, S7-012, S7-013, S7-014, S7-015, S7-016, S7-017]
+depends_on: [S7-001, S7-002, S7-003, S7-004, S7-005, S7-006, S7-007, S7-008, S7-009, S7-010, S7-011, S7-012, S7-013, S7-014, S7-015, S7-016, S7-017, S7-019, S7-020, S7-021, S7-022]
 labels: [review, ci, windows, security]
 created: 2026-08-22
 updated: 2026-08-22
@@ -38,4 +38,14 @@ None.
 Locked restore; build; format; full tests; Stage7 non-UI twice; publish-wpf; Stage7 WPF twice; EF drift; hosted Windows/Linux/security.
 
 ## Completion Notes
-Pending implementation.
+Audited every Stage 7 task and criterion against production code, production-backed acceptance, migrated SQLite,
+deterministic WPF composition, accessibility contracts, hosted UI automation design, documentation, and the headless
+demonstration. The local gate passed on implementation revision `56276a58396292d0a081f4c97b8700190b48dfaa`:
+locked restore; Release build with zero warnings and errors; Architecture 25/25; WPF view-model/accessibility 41/41;
+Stage 7 migrations 2/2; Stage 7 non-UI acceptance twice at 4/4 with zero pending or skipped cases; full suite
+1,233/1,233 with zero skips; format; WPF publish; clean EF model drift; and deterministic headless smoke.
+
+The [Stage 7 Review Record](../../stage-7-review.md) contains the exact commands, scope audit, migration identity,
+demonstration evidence, limitations, and decision. No local UI pass is claimed. S7-018 remains in review, and Stage 8
+is not approved, until the exact review candidate passes hosted Linux, interactive Windows (including all 19 WPF
+journeys twice), and security validation. No defect, deviation, ADR, or follow-up task was identified locally.
