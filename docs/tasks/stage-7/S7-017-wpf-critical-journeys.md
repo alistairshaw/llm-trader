@@ -73,3 +73,17 @@ warnings and errors; `TestCategory=WpfHostLifecycle` passed 5/5; `TestCategory=P
 suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained WPF publish passed. S7-017 is in
 review pending the exact hosted Windows lifecycle result and both interactive Stage 7 WPF executions. No local UI pass
 is claimed.
+
+Hosted candidate `ebeb2934ff63550640300c4942158660095d11da` passed Linux and the Windows complete
+cross-platform suite, native build, self-contained publish, and harness smoke in CI run `32607116964`. Its first
+interactive Stage 7 pass exposed five deterministic harness defects: three busy indicators published their accessible
+names instead of their bound state, the operational-warning Given expression also matched the Portfolio-assignment
+precondition, and the virtualized Fills grid was queried before its tab was selected. Busy indicators now publish the
+bound state through UIA ItemStatus, the page object reads that property, the warning binding accepts only its four
+specified conditions, and stable execution tab Automation IDs allow the journey to select Fills before bounded
+polling. Static accessibility tests cover the new UIA contract.
+
+Revalidation after those repairs: Release build passed with zero warnings and errors; WPF unit tests passed 40/40; the
+full suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained WPF publish passed. S7-017
+remains in review pending a new hosted run in which both interactive Stage 7 passes complete. No local UI pass is
+claimed.

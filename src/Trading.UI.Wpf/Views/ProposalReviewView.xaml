@@ -51,6 +51,6 @@
                 </StackPanel>
             </ScrollViewer>
         </Grid>
-        <StackPanel Grid.Row="4" AutomationProperties.LiveSetting="Polite"><TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Proposals.Busy"/><TextBlock Text="{Binding ErrorCode}" AutomationProperties.AutomationId="Proposals.Error"/></StackPanel>
+        <StackPanel Grid.Row="4" AutomationProperties.LiveSetting="Polite"><TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Proposals.Busy" AutomationProperties.ItemStatus="{Binding IsBusy}"/><TextBlock Text="{Binding ErrorCode}" AutomationProperties.AutomationId="Proposals.Error"/></StackPanel>
     </Grid>
 </UserControl>

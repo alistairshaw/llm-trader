@@ -20,6 +20,7 @@ public sealed class BotManagementAccessibilityTests
             Assert.That(ids, Does.Contain("Bots.ConfigurationIdentity"));
             Assert.That(ids, Does.Contain("Bots.Retire"));
             Assert.That(attributes.Any(x => x.Name.LocalName.EndsWith(".LiveSetting", StringComparison.Ordinal) && x.Value == "Polite"), Is.True);
+            Assert.That(attributes.Any(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal) && x.Value == "{Binding IsBusy}"), Is.True);
             Assert.That(document.ToString(), Does.Contain("ResearchOnly"));
             Assert.That(document.ToString(), Does.Contain("HumanApproval"));
             Assert.That(document.ToString(), Does.Contain("PaperTrading"));

@@ -17,7 +17,7 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
     }
 
     private async Task WaitIdleAsync(string busyId) =>
-        await Driver.WaitUntilAsync(page => page.Text(busyId) == "False", $"'{busyId}' to report idle");
+        await Driver.WaitUntilAsync(page => page.State(busyId) == "False", $"'{busyId}' to report idle");
 
     [Given("I am authorized to manage Trading Bots")]
     [Given("Portfolio Alpha has no active Trading Bot")]
@@ -193,7 +193,11 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
         await Driver.WaitUntilAsync(page => page.ItemCount("ExecutionRisk.Orders") > 0, "a fixture paper Order");
         Driver.Shell.SelectFirst("ExecutionRisk.Orders");
         Driver.Shell.Invoke("ExecutionRisk.LoadDetail");
-        await Driver.WaitUntilAsync(page => page.ItemCount("ExecutionRisk.Fills") >= 2, "partial and final Fills");
+        await Driver.WaitUntilAsync(page => page.Text("ExecutionRisk.Financials")
+            .Contains("Filled 70", StringComparison.Ordinal), "the exact Filled Order financials");
+        Driver.Shell.Select("ExecutionRisk.Tab.Fills");
+        await Driver.WaitUntilAsync(page => page.HasWorkspace("ExecutionRisk.Fills") &&
+            page.ItemCount("ExecutionRisk.Fills") >= 2, "partial and final Fills");
     }
 
     [Then("both Fills and the Filled Order should appear without restarting the application")]
@@ -229,7 +233,7 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
         Driver.Shell.AssertAccessible("Bots.ExecutionMode", "Bots.ModeExplanation");
     }
 
-    [Given(@"Portfolio Alpha has (.*)")]
+    [Given(@"Portfolio Alpha has (stale decision data|failed reconciliation|a disconnected broker|a failed Bot Run)")]
     public async Task GivenWarningAsync(string condition)
     {
         await OpenAsync("Nav.Portfolios", "PortfolioBroker.View");

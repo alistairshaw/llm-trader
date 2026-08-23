@@ -32,7 +32,7 @@
             <Button Content="Next" Command="{Binding NextPageCommand}" AutomationProperties.AutomationId="ExecutionRisk.Next" />
         </StackPanel>
         <TabControl AutomationProperties.AutomationId="ExecutionRisk.Tabs">
-            <TabItem Header="Orders">
+            <TabItem Header="Orders" AutomationProperties.AutomationId="ExecutionRisk.Tab.Orders">
                 <DataGrid ItemsSource="{Binding Orders}" SelectedItem="{Binding SelectedOrder}" AutoGenerateColumns="False" IsReadOnly="True"
                           AutomationProperties.AutomationId="ExecutionRisk.Orders" AutomationProperties.Name="Authorized Order queue">
                     <DataGrid.Columns>
@@ -44,15 +44,15 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
-            <TabItem Header="Fills">
+            <TabItem Header="Fills" AutomationProperties.AutomationId="ExecutionRisk.Tab.Fills">
                 <DataGrid ItemsSource="{Binding Fills}" AutoGenerateColumns="True" IsReadOnly="True"
                           AutomationProperties.AutomationId="ExecutionRisk.Fills" AutomationProperties.Name="Exact deduplicated Fill facts" />
             </TabItem>
-            <TabItem Header="Position and ledger effects">
+            <TabItem Header="Position and ledger effects" AutomationProperties.AutomationId="ExecutionRisk.Tab.Effects">
                 <DataGrid ItemsSource="{Binding Effects}" AutoGenerateColumns="True" IsReadOnly="True"
                           AutomationProperties.AutomationId="ExecutionRisk.Effects" AutomationProperties.Name="Exact Position and ledger effects" />
             </TabItem>
-            <TabItem Header="Chronology">
+            <TabItem Header="Chronology" AutomationProperties.AutomationId="ExecutionRisk.Tab.Audit">
                 <DataGrid ItemsSource="{Binding Audit}" AutoGenerateColumns="True" IsReadOnly="True"
                           AutomationProperties.AutomationId="ExecutionRisk.Audit" AutomationProperties.Name="Correlated execution and risk chronology" />
             </TabItem>

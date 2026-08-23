@@ -25,6 +25,7 @@ public sealed class BotRunsAccessibilityTests
             Assert.That(ids, Does.Contain("Runs.Configuration"));
             Assert.That(ids, Does.Contain("Runs.Snapshot"));
             Assert.That(attributes.Any(x => x.Name.LocalName.EndsWith(".LiveSetting", StringComparison.Ordinal) && x.Value == "Assertive"), Is.True);
+            Assert.That(attributes.Any(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal) && x.Value == "{Binding IsBusy}"), Is.True);
             Assert.That(attributes.Where(x => x.Name.LocalName.EndsWith(".Name", StringComparison.Ordinal)).All(x => !string.IsNullOrWhiteSpace(x.Value)), Is.True);
         }
     }

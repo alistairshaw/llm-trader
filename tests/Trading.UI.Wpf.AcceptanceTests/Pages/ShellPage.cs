@@ -26,6 +26,8 @@ internal sealed class ShellPage(Window window)
         return element.Patterns.Value.IsSupported ? element.Patterns.Value.Pattern.Value : element.Name ?? string.Empty;
     }
 
+    public string State(string automationId) => Require(automationId).Properties.ItemStatus.Value;
+
     public void SetText(string automationId, string value) => Require(automationId).AsTextBox().Text = value;
 
     public void Invoke(string automationId) => Require(automationId).AsButton().Invoke();
@@ -40,6 +42,8 @@ internal sealed class ShellPage(Window window)
     }
 
     public void SelectComboIndex(string automationId, int index) => Require(automationId).AsComboBox().Select(index);
+
+    public void Select(string automationId) => Require(automationId).Patterns.SelectionItem.Pattern.Select();
 
     public void Confirm(string automationId)
     {

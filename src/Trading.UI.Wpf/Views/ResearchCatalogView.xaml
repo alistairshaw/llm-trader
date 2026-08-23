@@ -71,7 +71,8 @@
             </ScrollViewer>
         </Grid>
         <StackPanel Grid.Row="4" AutomationProperties.LiveSetting="Polite">
-            <TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Research.Busy" AutomationProperties.Name="Research busy state" />
+            <TextBlock Text="{Binding IsBusy}" AutomationProperties.AutomationId="Research.Busy" AutomationProperties.Name="Research busy state"
+                       AutomationProperties.ItemStatus="{Binding IsBusy}" />
             <TextBlock Text="{Binding ErrorCode}" AutomationProperties.AutomationId="Research.Error" AutomationProperties.Name="Research error" />
         </StackPanel>
     </Grid>

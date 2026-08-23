@@ -88,7 +88,8 @@ public sealed class ExecutionRiskAuditViewModelTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(ids, Does.Contain("ExecutionRisk.Workspace").And.Contain("ExecutionRisk.Fills")
-                .And.Contain("ExecutionRisk.Effects").And.Contain("ExecutionRisk.Audit").And.Contain("ExecutionRisk.Reservation"));
+                .And.Contain("ExecutionRisk.Effects").And.Contain("ExecutionRisk.Audit").And.Contain("ExecutionRisk.Reservation")
+                .And.Contain("ExecutionRisk.Tab.Orders").And.Contain("ExecutionRisk.Tab.Fills"));
             Assert.That(document.Descendants().Count(x => x.Name.LocalName == "Label" && x.Attribute("Target") is not null), Is.EqualTo(2));
             Assert.That(document.Descendants().Any(x => x.Attributes().Any(a => a.Name.LocalName.EndsWith(".LiveSetting", StringComparison.Ordinal) && a.Value == "Assertive")), Is.True);
             Assert.That(document.Descendants().Any(x => x.Attributes().Any(a => a.Name.LocalName.EndsWith(".HeadingLevel", StringComparison.Ordinal))), Is.True);

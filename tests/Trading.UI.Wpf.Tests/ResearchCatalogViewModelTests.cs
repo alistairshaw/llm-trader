@@ -120,6 +120,8 @@ public sealed class ResearchCatalogViewModelTests
             Assert.That(content.Name.LocalName, Is.EqualTo("TextBox"));
             Assert.That(content.Attribute("IsReadOnly")?.Value, Is.EqualTo("True"));
             Assert.That(document.Descendants().Any(x => x.Attributes().Any(a => a.Name.LocalName.EndsWith(".HeadingLevel", StringComparison.Ordinal))), Is.True);
+            Assert.That(document.Descendants().Any(x => x.Attributes().Any(a =>
+                a.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal) && a.Value == "{Binding IsBusy}")), Is.True);
         }
     }
 
