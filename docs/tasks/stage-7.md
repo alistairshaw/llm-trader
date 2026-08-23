@@ -6,8 +6,8 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-020`](stage-7/S7-020-release-wpf-sqlite-ownership.md) and
-[`S7-017`](stage-7/S7-017-wpf-critical-journeys.md) are in review pending hosted Windows evidence.
+[`S7-022`](stage-7/S7-022-authorize-wpf-research-fixture.md) is ready. [`S7-017`](stage-7/S7-017-wpf-critical-journeys.md)
+is blocked on it; [`S7-020`](stage-7/S7-020-release-wpf-sqlite-ownership.md) remains in review.
 
 ## Ordered Backlog
 
@@ -32,7 +32,8 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-019`](stage-7/S7-019-compose-operator-wpf-workspaces.md) | Compose authorized operator workflows and every WPF workspace | Done | 970 | `S7-015`, `S7-016` |
 | [`S7-020`](stage-7/S7-020-release-wpf-sqlite-ownership.md) | Release WPF SQLite ownership on lifecycle stop | Review | 990 | `S7-019` |
 | [`S7-021`](stage-7/S7-021-complete-wpf-deterministic-readiness.md) | Complete deterministic WPF paper journey before readiness | Done | 985 | `S7-019` |
-| [`S7-017`](stage-7/S7-017-wpf-critical-journeys.md) | Automate critical WPF operator journeys | Review | 740 | `S7-015`, `S7-016`, `S7-019`, `S7-020`, `S7-021` |
+| [`S7-022`](stage-7/S7-022-authorize-wpf-research-fixture.md) | Authorize deterministic WPF Research fixture identities | Ready | 988 | `S7-019`, `S7-021` |
+| [`S7-017`](stage-7/S7-017-wpf-critical-journeys.md) | Automate critical WPF operator journeys | Blocked | 740 | `S7-015`, `S7-016`, `S7-019`, `S7-020`, `S7-021`, `S7-022` |
 | [`S7-018`](stage-7/S7-018-stage-7-review.md) | Complete Stage 7 acceptance and review | Planned | 1000 | All implementation tasks |
 
 ## Stage Exit Gate

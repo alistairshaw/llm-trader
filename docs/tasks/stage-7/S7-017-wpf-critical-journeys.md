@@ -3,10 +3,10 @@ schema_version: 1
 id: S7-017
 title: Automate critical WPF operator journeys
 stage: 7
-status: review
+status: blocked
 priority: 740
 type: test
-depends_on: [S7-015, S7-016, S7-019, S7-020, S7-021]
+depends_on: [S7-015, S7-016, S7-019, S7-020, S7-021, S7-022]
 labels: [wpf, flaui, acceptance]
 created: 2026-08-22
 updated: 2026-08-22
@@ -101,6 +101,13 @@ Revalidation after the selection synchronization repair: Release build passed wi
 tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained WPF
 publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
 local UI pass is claimed.
+
+Hosted candidate `70764b0fd9c2d2b2c83786e052bb8a824d904105` passed Linux and the Windows complete
+suite, native build, self-contained publish, and harness smoke in CI run `32612100996`. Its first Stage 7 execution
+published the stable `operator.unavailable` exact-open outcome. Production test-profile authorization omits the
+deterministic Research Report ID and series identity required by the exact-detail and version-history queries. S7-022
+owns that production authorization/fixture repair. S7-017 is blocked until S7-022 passes its focused
+production-composed tests and is integrated; no additional harness timing or assertion change is warranted.
 
 Hosted candidate `d3e8e352a8af1cb51424b266f537fd80cccf33b7` passed the Windows complete suite, native
 build, self-contained publish, and harness smoke in CI run `32611361432`, but its first Stage 7 execution retained the
