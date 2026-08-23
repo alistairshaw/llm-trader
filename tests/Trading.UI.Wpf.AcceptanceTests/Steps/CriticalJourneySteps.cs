@@ -86,9 +86,13 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
     public async Task ObserveTerminalRunAsync()
     {
         Driver.Shell.SelectFirst("Runs.History");
+        await Driver.WaitUntilAsync(page => !string.IsNullOrWhiteSpace(page.State("Runs.Inspect")),
+            "the authoritative Bot Run selection to synchronize");
         Driver.Shell.Invoke("Runs.Inspect");
         await WaitIdleAsync("Runs.Busy");
-        Assert.That(Driver.Shell.Text("Runs.Status"), Is.EqualTo("Completed"));
+        await Driver.WaitUntilAsync(page => page.State("Runs.Status") == "Completed",
+            "the selected Bot Run detail to report Completed");
+        Assert.That(Driver.Shell.State("Runs.Status"), Is.EqualTo("Completed"));
     }
 
     [Then("every critical Bot control should expose a stable Automation ID")]
@@ -110,14 +114,18 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
         Driver.Shell.Invoke("Research.Request");
         await WaitIdleAsync("Research.Busy");
         Driver.Shell.SelectFirst("Research.Catalog");
+        await Driver.WaitUntilAsync(page => !string.IsNullOrWhiteSpace(page.State("Research.OpenExact")),
+            "the exact Research Report selection to synchronize");
         Driver.Shell.Invoke("Research.OpenExact");
         await WaitIdleAsync("Research.Busy");
+        await Driver.WaitUntilAsync(page => page.State("Research.ExactIdentity").Contains("version 1", StringComparison.Ordinal),
+            "the exact Research Report detail to publish version 1");
     }
 
     [Then("I should be able to read the published Report version and its provenance")]
     public void ResearchDetailIsVisible()
     {
-        Assert.That(Driver.Shell.Text("Research.ExactIdentity"), Does.Contain("version 1"));
+        Assert.That(Driver.Shell.State("Research.ExactIdentity"), Does.Contain("version 1"));
         Assert.That(Driver.Shell.ItemCount("Research.Provenance"), Is.GreaterThan(0));
     }
 

@@ -111,6 +111,8 @@ public sealed class ResearchCatalogViewModelTests
         var ids = document.Descendants().SelectMany(x => x.Attributes())
             .Where(x => x.Name.LocalName.EndsWith(".AutomationId", StringComparison.Ordinal)).Select(x => x.Value).ToArray();
         var content = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Research.InertContent"));
+        var openExact = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Research.OpenExact"));
+        var exactIdentity = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Research.ExactIdentity"));
         using (Assert.EnterMultipleScope())
         {
             Assert.That(ids, Does.Contain("Research.Workspace").And.Contain("Research.ExactIdentity")
@@ -122,6 +124,10 @@ public sealed class ResearchCatalogViewModelTests
             Assert.That(document.Descendants().Any(x => x.Attributes().Any(a => a.Name.LocalName.EndsWith(".HeadingLevel", StringComparison.Ordinal))), Is.True);
             Assert.That(document.Descendants().Any(x => x.Attributes().Any(a =>
                 a.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal) && a.Value == "{Binding IsBusy}")), Is.True);
+            Assert.That(openExact.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
+                Is.EqualTo("{Binding SelectedReport.Id}"));
+            Assert.That(exactIdentity.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
+                Is.EqualTo("{Binding ExactIdentity}"));
         }
     }
 

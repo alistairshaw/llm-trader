@@ -31,8 +31,10 @@
             <ScrollViewer Grid.Column="3" Margin="16,0,0,0" VerticalScrollBarVisibility="Auto">
                 <StackPanel><TextBlock Text="Run audit" FontSize="18" AutomationProperties.HeadingLevel="Level2" />
                     <Button Content="Inspect selected run" Command="{Binding LoadDetailCommand}" CommandParameter="detail"
-                            AutomationProperties.AutomationId="Runs.Inspect" AutomationProperties.Name="Inspect selected Bot Run" />
-                    <TextBlock Text="{Binding Detail.Summary.Status}" AutomationProperties.AutomationId="Runs.Status" AutomationProperties.Name="Authoritative run status" />
+                            AutomationProperties.AutomationId="Runs.Inspect" AutomationProperties.Name="Inspect selected Bot Run"
+                            AutomationProperties.ItemStatus="{Binding SelectedRun.Id}" />
+                    <TextBlock Text="{Binding Detail.Summary.Status}" AutomationProperties.AutomationId="Runs.Status"
+                               AutomationProperties.Name="Authoritative run status" AutomationProperties.ItemStatus="{Binding Detail.Summary.Status}" />
                     <TextBlock Text="{Binding Detail.FailureCode}" Foreground="DarkRed" AutomationProperties.AutomationId="Runs.FailureCode" AutomationProperties.Name="Run failure code" />
                     <TextBlock Text="{Binding Detail.ConfigurationVersionId}" AutomationProperties.AutomationId="Runs.Configuration" AutomationProperties.Name="Pinned configuration identity" />
                     <TextBlock Text="{Binding Detail.PortfolioSnapshotId}" AutomationProperties.AutomationId="Runs.Snapshot" AutomationProperties.Name="Pinned Portfolio snapshot identity" />

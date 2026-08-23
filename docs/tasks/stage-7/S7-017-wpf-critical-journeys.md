@@ -87,3 +87,17 @@ Revalidation after those repairs: Release build passed with zero warnings and er
 full suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained WPF publish passed. S7-017
 remains in review pending a new hosted run in which both interactive Stage 7 passes complete. No local UI pass is
 claimed.
+
+Hosted candidate `752e900b9308d507c06774afd29db7934c234cb7` passed Linux and the Windows complete
+cross-platform suite, native build, self-contained publish, and harness smoke in CI run `32608003940`. Its first
+interactive Stage 7 pass reduced the remaining failures to two detail-selection races: the run journey read the
+accessible label instead of authoritative status state, and both run and Research journeys could invoke their detail
+commands before WPF propagated the selected row. The inspect controls now expose the selected immutable identity via
+UIA ItemStatus; the harness waits for that identity before invoking, and the authoritative status and exact Report
+identity are separately exposed and boundedly polled through ItemStatus. Static accessibility tests enforce these
+selection and detail-state contracts.
+
+Revalidation after the selection synchronization repair: Release build passed with zero warnings and errors; WPF unit
+tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained WPF
+publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
+local UI pass is claimed.

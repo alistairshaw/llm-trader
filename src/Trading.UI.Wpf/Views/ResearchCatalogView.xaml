@@ -36,7 +36,8 @@
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /></Grid.ColumnDefinitions>
             <StackPanel Margin="0,0,16,0">
                 <Button Content="Open exact version" Command="{Binding LoadReportCommand}"
-                        AutomationProperties.AutomationId="Research.OpenExact" AutomationProperties.Name="Open selected exact Report version" />
+                        AutomationProperties.AutomationId="Research.OpenExact" AutomationProperties.Name="Open selected exact Report version"
+                        AutomationProperties.ItemStatus="{Binding SelectedReport.Id}" />
                 <TextBlock Text="Version history" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2" />
                 <ListBox ItemsSource="{Binding Versions}" DisplayMemberPath="Version" AutomationProperties.AutomationId="Research.Versions"
                          AutomationProperties.Name="Immutable Report version history" />
@@ -50,7 +51,8 @@
             <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock Text="Exact immutable Report" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2" />
-                    <TextBlock Text="{Binding ExactIdentity}" AutomationProperties.AutomationId="Research.ExactIdentity" />
+                    <TextBlock Text="{Binding ExactIdentity}" AutomationProperties.AutomationId="Research.ExactIdentity"
+                               AutomationProperties.ItemStatus="{Binding ExactIdentity}" />
                     <TextBlock Text="{Binding Detail.ContentHash, StringFormat=SHA-256: {0}}" AutomationProperties.AutomationId="Research.Hash" />
                     <TextBlock Text="{Binding Detail.Summary.Visibility, StringFormat=Visibility: {0}}" AutomationProperties.AutomationId="Research.Visibility" />
                     <TextBlock Text="{Binding Freshness}" AutomationProperties.AutomationId="Research.Freshness" />

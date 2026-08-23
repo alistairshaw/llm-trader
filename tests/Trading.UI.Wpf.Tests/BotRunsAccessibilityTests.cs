@@ -13,6 +13,8 @@ public sealed class BotRunsAccessibilityTests
         var attributes = document.Descendants().SelectMany(x => x.Attributes()).ToArray();
         var ids = attributes.Where(x => x.Name.LocalName.EndsWith(".AutomationId", StringComparison.Ordinal))
             .Select(x => x.Value).ToArray();
+        var inspect = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Runs.Inspect"));
+        var status = document.Descendants().Single(x => x.Attributes().Any(a => a.Value == "Runs.Status"));
 
         using (Assert.EnterMultipleScope())
         {
@@ -26,6 +28,10 @@ public sealed class BotRunsAccessibilityTests
             Assert.That(ids, Does.Contain("Runs.Snapshot"));
             Assert.That(attributes.Any(x => x.Name.LocalName.EndsWith(".LiveSetting", StringComparison.Ordinal) && x.Value == "Assertive"), Is.True);
             Assert.That(attributes.Any(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal) && x.Value == "{Binding IsBusy}"), Is.True);
+            Assert.That(inspect.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
+                Is.EqualTo("{Binding SelectedRun.Id}"));
+            Assert.That(status.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
+                Is.EqualTo("{Binding Detail.Summary.Status}"));
             Assert.That(attributes.Where(x => x.Name.LocalName.EndsWith(".Name", StringComparison.Ordinal)).All(x => !string.IsNullOrWhiteSpace(x.Value)), Is.True);
         }
     }
