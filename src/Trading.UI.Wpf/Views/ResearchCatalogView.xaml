@@ -30,14 +30,20 @@
                 <DataGridTextColumn Header="Visibility" Binding="{Binding Visibility}" />
                 <DataGridTextColumn Header="Generated" Binding="{Binding PublishedAt}" />
                 <DataGridTextColumn Header="Expires" Binding="{Binding ExpiresAt}" />
+                <DataGridTemplateColumn Header="Action">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Open exact" Command="{Binding DataContext.LoadReportCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}" AutomationProperties.AutomationId="{Binding Id, StringFormat=Research.OpenExact.{0}}"
+                                    AutomationProperties.Name="Open exact immutable Report version" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
         <Grid Grid.Row="3" Margin="0,12,0,0">
             <Grid.ColumnDefinitions><ColumnDefinition Width="2*" /><ColumnDefinition Width="3*" /></Grid.ColumnDefinitions>
             <StackPanel Margin="0,0,16,0">
-                <Button Content="Open exact version" Command="{Binding LoadReportCommand}" CommandParameter="{Binding SelectedReport}"
-                        AutomationProperties.AutomationId="Research.OpenExact" AutomationProperties.Name="Open selected exact Report version"
-                        AutomationProperties.ItemStatus="{Binding SelectedReport.Id}" />
                 <TextBlock Text="Version history" FontSize="18" FontWeight="SemiBold" AutomationProperties.HeadingLevel="Level2" />
                 <ListBox ItemsSource="{Binding Versions}" DisplayMemberPath="Version" AutomationProperties.AutomationId="Research.Versions"
                          AutomationProperties.Name="Immutable Report version history" />

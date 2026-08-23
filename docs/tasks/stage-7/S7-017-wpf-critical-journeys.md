@@ -102,6 +102,21 @@ tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format pa
 publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
 local UI pass is claimed.
 
+Hosted candidate `eb18220b0896c1780cf16c5cef174ecf096c57e4` passed the Windows complete suite, native
+build, self-contained publish, and harness smoke in CI run `32610702894`, but its first Stage 7 execution retained the
+single exact-Research-detail failure. The artifact confirmed that UIA row selection did not reliably update WPF's
+`SelectedReport`, even when the external command accepted an immutable parameter. Exact-version opening is now a
+row-scoped action inside each catalog row. Its stable Automation ID contains the immutable Research Report ID, its
+command parameter is the row DataContext itself, and the harness invokes the fixture version-1 row directly by that
+ID. This removes mutable or virtualized DataGrid selection from the exact-version authority path. Focused view-model
+coverage retains request-refresh-exact-load behavior, and static XAML coverage enforces the row-scoped command,
+parameter, and Automation-ID bindings. The version-1 business assertion remains unchanged.
+
+Revalidation after the row-scoped exact-version repair: Release build passed with zero warnings and errors; WPF unit
+tests passed 41/41; the full suite passed 1,231/1,231 with zero skips; format passed; and the final self-contained WPF
+publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
+local UI pass is claimed.
+
 Hosted candidate `782cf89734d62a0cadafaaef6e99dee6e70ed89e` passed Linux/security and the Windows
 complete cross-platform suite, native build, self-contained publish, and harness smoke in CI run `32610006784`.
 Eighteen of nineteen journeys passed its first interactive Stage 7 execution, including observation of the exact

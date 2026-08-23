@@ -8,6 +8,7 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
 {
     private const string BotId = "01J5QH8M000000000000000101";
     private const string PortfolioId = "01J5QH8M000000000000000103";
+    private const string ResearchReportId = "01J5QH8M000000000000000701";
     private WpfApplicationDriver Driver => context.Get<WpfApplicationDriver>();
 
     private async Task OpenAsync(string route, string workspace)
@@ -115,10 +116,7 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
         await Driver.WaitUntilAsync(page => page.State("Research.RequestOutcome") == "operator.requestresearch.succeeded",
             "the authorized Research request and catalog refresh to complete");
         await WaitIdleAsync("Research.Busy");
-        Driver.Shell.SelectFirst("Research.Catalog");
-        await Driver.WaitUntilAsync(page => !string.IsNullOrWhiteSpace(page.State("Research.OpenExact")),
-            "the exact Research Report selection to synchronize");
-        Driver.Shell.Invoke("Research.OpenExact");
+        Driver.Shell.Invoke($"Research.OpenExact.{ResearchReportId}");
         await WaitIdleAsync("Research.Busy");
         await Driver.WaitUntilAsync(page => page.State("Research.ExactIdentity").Contains("version 1", StringComparison.Ordinal),
             "the exact Research Report detail to publish version 1");
