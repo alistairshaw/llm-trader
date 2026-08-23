@@ -117,6 +117,8 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
             "the authorized Research request and catalog refresh to complete");
         await WaitIdleAsync("Research.Busy");
         Driver.Shell.Invoke($"Research.OpenExact.{ResearchReportId}");
+        await Driver.WaitUntilAsync(page => page.State("Research.OpenExactOutcome") == "operator.research.open_exact.succeeded",
+            "the row-scoped exact Research Report action to succeed");
         await WaitIdleAsync("Research.Busy");
         await Driver.WaitUntilAsync(page => page.State("Research.ExactIdentity").Contains("version 1", StringComparison.Ordinal),
             "the exact Research Report detail to publish version 1");

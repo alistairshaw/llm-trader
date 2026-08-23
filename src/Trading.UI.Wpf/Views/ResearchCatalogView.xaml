@@ -33,8 +33,8 @@
                 <DataGridTemplateColumn Header="Action">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Open exact" Command="{Binding DataContext.LoadReportCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}" AutomationProperties.AutomationId="{Binding Id, StringFormat=Research.OpenExact.{0}}"
+                            <Button Content="Open exact" Click="OpenExactReport"
+                                    AutomationProperties.AutomationId="{Binding Id, StringFormat=Research.OpenExact.{0}}"
                                     AutomationProperties.Name="Open exact immutable Report version" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -83,6 +83,8 @@
                        AutomationProperties.ItemStatus="{Binding IsBusy}" />
             <TextBlock Text="{Binding RequestOutcome}" AutomationProperties.AutomationId="Research.RequestOutcome"
                        AutomationProperties.Name="Research request outcome" AutomationProperties.ItemStatus="{Binding RequestOutcome}" />
+            <TextBlock Text="{Binding OpenExactOutcome}" AutomationProperties.AutomationId="Research.OpenExactOutcome"
+                       AutomationProperties.Name="Exact Research Report open outcome" AutomationProperties.ItemStatus="{Binding OpenExactOutcome}" />
             <TextBlock Text="{Binding ErrorCode}" AutomationProperties.AutomationId="Research.Error" AutomationProperties.Name="Research error" />
         </StackPanel>
     </Grid>

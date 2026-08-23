@@ -133,7 +133,11 @@ public sealed class ResearchCatalogViewModelTests
         Assert.That(model.LoadReportCommand.CanExecute(refreshedReport), Is.True);
         await model.LoadReportAsync(refreshedReport);
 
-        Assert.That(model.ExactIdentity, Does.Contain(refreshedReport.Id.ToString()).And.Contain("version 1"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(model.OpenExactOutcome, Is.EqualTo("operator.research.open_exact.succeeded"));
+            Assert.That(model.ExactIdentity, Does.Contain(refreshedReport.Id.ToString()).And.Contain("version 1"));
+        }
     }
 
     [Test]
@@ -160,13 +164,12 @@ public sealed class ResearchCatalogViewModelTests
             Assert.That(document.Descendants().Any(x => x.Attributes().Any(a => a.Name.LocalName.EndsWith(".HeadingLevel", StringComparison.Ordinal))), Is.True);
             Assert.That(document.Descendants().Any(x => x.Attributes().Any(a =>
                 a.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal) && a.Value == "{Binding IsBusy}")), Is.True);
-            Assert.That(openExact.Attribute("Command")?.Value,
-                Is.EqualTo("{Binding DataContext.LoadReportCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"));
+            Assert.That(openExact.Attribute("Click")?.Value, Is.EqualTo("OpenExactReport"));
             Assert.That(exactIdentity.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
                 Is.EqualTo("{Binding ExactIdentity}"));
             Assert.That(requestOutcome.Attributes().Single(x => x.Name.LocalName.EndsWith(".ItemStatus", StringComparison.Ordinal)).Value,
                 Is.EqualTo("{Binding RequestOutcome}"));
-            Assert.That(openExact.Attribute("CommandParameter")?.Value, Is.EqualTo("{Binding}"));
+            Assert.That(ids, Does.Contain("Research.OpenExactOutcome"));
         }
     }
 

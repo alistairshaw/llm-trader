@@ -102,6 +102,21 @@ tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format pa
 publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
 local UI pass is claimed.
 
+Hosted candidate `d3e8e352a8af1cb51424b266f537fd80cccf33b7` passed the Windows complete suite, native
+build, self-contained publish, and harness smoke in CI run `32611361432`, but its first Stage 7 execution retained the
+single exact-detail timeout. The row action was found and invoked, isolating the failure to its template command
+binding or exact-load execution. The row action now uses a thin production WPF click handler that takes the row's own
+immutable `ResearchSummary` DataContext and awaits the production view model exact loader, eliminating template
+ancestor binding resolution. The view model publishes a bounded `OpenExactOutcome` for success and every stable
+failure, and WPF exposes it through UIA ItemStatus. The harness requires the exact success outcome before retaining the
+unchanged version-1 detail assertion. Focused view-model coverage verifies the success outcome, and static XAML
+coverage enforces the row handler, immutable Automation ID, and outcome UIA contract.
+
+Revalidation after the explicit row-handler and outcome repair: Release build passed with zero warnings and errors;
+WPF unit tests passed 41/41; the full suite passed 1,231/1,231 with zero skips; format passed; and the final
+self-contained WPF publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7
+passes complete. No local UI pass is claimed.
+
 Hosted candidate `eb18220b0896c1780cf16c5cef174ecf096c57e4` passed the Windows complete suite, native
 build, self-contained publish, and harness smoke in CI run `32610702894`, but its first Stage 7 execution retained the
 single exact-Research-detail failure. The artifact confirmed that UIA row selection did not reliably update WPF's

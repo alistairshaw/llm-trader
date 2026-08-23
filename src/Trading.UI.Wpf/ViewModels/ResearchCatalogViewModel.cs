@@ -20,6 +20,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
     private bool isBusy;
     private string? errorCode;
     private string? requestOutcome;
+    private string? openExactOutcome;
     private string? search;
     private string? statusFilter;
     private int offset;
@@ -54,6 +55,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
     public bool IsBusy { get => isBusy; private set => SetProperty(ref isBusy, value); }
     public string? ErrorCode { get => errorCode; private set { if (SetProperty(ref errorCode, value)) OnPropertyChanged(nameof(HasError)); } }
     public string? RequestOutcome { get => requestOutcome; private set => SetProperty(ref requestOutcome, value); }
+    public string? OpenExactOutcome { get => openExactOutcome; private set => SetProperty(ref openExactOutcome, value); }
     public bool HasError => ErrorCode is not null;
     public int PageNumber => (offset / PageSize) + 1;
     public ResearchSummary? SelectedReport
@@ -102,7 +104,12 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
 
     public Task LoadReportAsync(ResearchSummary? report, CancellationToken cancellationToken = default) => RunAsync(async token =>
     {
-        if (report is null) { ErrorCode = "research_catalog.selection_required"; return; }
+        OpenExactOutcome = null;
+        if (report is null)
+        {
+            ErrorCode = OpenExactOutcome = "research_catalog.selection_required";
+            return;
+        }
         var selected = report;
         var exactResource = new OperatorResource(OperatorResourceKind.ResearchReport, selected.Id.ToString());
         var detailResult = await queries.GetPageAsync<ResearchDetail>(principal, OperatorPageKind.Research,
@@ -111,7 +118,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
         if (!Succeeded(detailResult, out var detailPage) || detailPage.Items.SingleOrDefault() is not { } loaded ||
             loaded.Summary.Id != selected.Id || loaded.Summary.SeriesId != selected.SeriesId || loaded.Summary.Version != selected.Version)
         {
-            ErrorCode = "operator.unavailable";
+            ErrorCode = OpenExactOutcome = "operator.unavailable";
             return;
         }
         Detail = loaded;
@@ -121,10 +128,17 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
         var versionsResult = await queries.GetPageAsync<ResearchSummary>(principal, OperatorPageKind.Research,
             new(OperatorResourceKind.ResearchReport, selected.SeriesId), new(Status: "versions"),
             new(0, OperatorPageRequest.MaximumSize), token);
-        if (!Succeeded(versionsResult, out var versionsPage)) { Detail = null; Provenance.Clear(); return; }
+        if (!Succeeded(versionsResult, out var versionsPage))
+        {
+            OpenExactOutcome = ErrorCode;
+            Detail = null;
+            Provenance.Clear();
+            return;
+        }
         Versions.Clear();
         foreach (var version in versionsPage.Items.Where(x => x.SeriesId == selected.SeriesId).OrderByDescending(x => x.Version))
             Versions.Add(version);
+        OpenExactOutcome = "operator.research.open_exact.succeeded";
     }, cancellationToken);
 
     public Task RequestAsync(CancellationToken cancellationToken = default) => RunAsync(async token =>
