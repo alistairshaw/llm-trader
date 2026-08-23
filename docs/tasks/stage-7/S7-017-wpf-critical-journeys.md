@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-017
 title: Automate critical WPF operator journeys
 stage: 7
-status: blocked
+status: review
 priority: 740
 type: test
 depends_on: [S7-015, S7-016, S7-019, S7-020, S7-021]
@@ -11,7 +11,6 @@ labels: [wpf, flaui, acceptance]
 created: 2026-08-22
 updated: 2026-08-22
 owner: Codex/s7_017
-blocked_reason: Windows CI requires exact SQLite lifecycle release and deterministic paper-journey readiness repairs recorded by S7-020 and S7-021.
 ---
 # S7-017: Automate Critical WPF Operator Journeys
 
@@ -67,4 +66,10 @@ Hosted evidence: candidate `d2f27d78ba0516531305e001221d6bbd2131f4f5` failed Win
 job `97109412699`. Linux and secret scanning passed. `S7-020` records the exact SQLite ownership failure and `S7-021`
 records the deterministic readiness/fixture failures. The S7-017 harness repair now waits by owned process identity
 instead of a disposed `Process` object and makes screenshot/UIA-tree artifact capture non-throwing for stale elements.
-S7-017 remains blocked until both repair tasks are done and a new hosted candidate passes both Windows WPF executions.
+That candidate remained blocked until the two repair implementations were integrated.
+
+Candidate revalidation after integrating `S7-020` and `S7-021`: locked restore passed; Release build passed with zero
+warnings and errors; `TestCategory=WpfHostLifecycle` passed 5/5; `TestCategory=ProposalReview` passed 4/4; the full
+suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained WPF publish passed. S7-017 is in
+review pending the exact hosted Windows lifecycle result and both interactive Stage 7 WPF executions. No local UI pass
+is claimed.
