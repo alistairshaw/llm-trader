@@ -2,9 +2,9 @@
 
 ## Decision
 
-Stage 7 has passed its complete locally applicable review gate. Stage 8 is not yet approved: the exact review
-candidate must still pass hosted Linux, interactive Windows, and security validation, including both executions of
-all 19 Stage 7 WPF journeys.
+Stage 7 is complete. Exact reviewed revision `c36f6df89b0985340ad6b5a328a9283ee3c07acb` passed the complete local gate
+and hosted Linux, interactive Windows, and security validation, including both executions of all 19 Stage 7 WPF
+journeys. Stage 8 commencement is approved.
 
 ## Reviewed Scope
 
@@ -40,8 +40,8 @@ repository Docker workflow on 2026-08-22 unless explicitly identified as a hoste
 | `.\dev.ps1 run` | Passed the deterministic research-to-final-paper-Fill demonstration with zero live submissions and recoverable shutdown. |
 
 Interactive WPF automation was not run locally because the repository intentionally has no host .NET test runner.
-No local UI pass is claimed. The exact candidate's Windows CI job must natively build and publish WPF, pass the harness
-smoke, and pass all Stage 7 WPF journeys twice before this review can close.
+No local UI pass is claimed. The exact candidate's Windows CI job natively built and published WPF, passed the harness
+smoke, and passed all Stage 7 WPF journeys twice.
 
 ## Deterministic Demonstration Evidence
 
@@ -66,7 +66,15 @@ gate pass. No ADR, exception, or follow-up task was created by the local audit.
 
 ## Hosted Exact-Revision Gate
 
-Pending for the review candidate. Required evidence is successful Linux and interactive Windows CI, retained Linux and
-Windows test artifacts, both Stage 7 WPF executions with zero failures or skips, and a successful security secret scan.
-Dependency review is expected to skip on a direct push because that job applies only to pull requests.
+Exact reviewed revision `c36f6df89b0985340ad6b5a328a9283ee3c07acb` passed:
 
+- [CI run 32614250744](https://github.com/alistairshaw/llm-trader/actions/runs/32614250744): successful.
+- Linux job `97132211484`: successful; `test-results-Linux` artifact `9486486843`, 356250 bytes, not expired.
+- Windows job `97132211367`: successful; full suite, native WPF build, self-contained publish, harness smoke, and both
+  Stage 7 WPF executions passed; `test-results-Windows` artifact `9486586098`, 933080 bytes, not expired.
+- [Security run 32614250721](https://github.com/alistairshaw/llm-trader/actions/runs/32614250721): successful.
+- Secret scan job `97132211264`: successful; gitleaks artifact `9486441286`, 6772 bytes, not expired.
+- Dependency review job `97132211679`: skipped as expected for a direct push because it applies only to pull requests.
+
+Every Stage 7 exit criterion is satisfied with zero unresolved critical or high-severity defects. No exception, ADR,
+or deferred Stage 7 follow-up remains. Stage 8 commencement is approved.

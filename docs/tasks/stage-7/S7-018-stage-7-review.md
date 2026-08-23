@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-018
 title: Complete Stage 7 acceptance and review
 stage: 7
-status: review
+status: done
 priority: 1000
 type: test
 depends_on: [S7-001, S7-002, S7-003, S7-004, S7-005, S7-006, S7-007, S7-008, S7-009, S7-010, S7-011, S7-012, S7-013, S7-014, S7-015, S7-016, S7-017, S7-019, S7-020, S7-021, S7-022]
@@ -46,6 +46,9 @@ Stage 7 migrations 2/2; Stage 7 non-UI acceptance twice at 4/4 with zero pending
 1,233/1,233 with zero skips; format; WPF publish; clean EF model drift; and deterministic headless smoke.
 
 The [Stage 7 Review Record](../../stage-7-review.md) contains the exact commands, scope audit, migration identity,
-demonstration evidence, limitations, and decision. No local UI pass is claimed. S7-018 remains in review, and Stage 8
-is not approved, until the exact review candidate passes hosted Linux, interactive Windows (including all 19 WPF
-journeys twice), and security validation. No defect, deviation, ADR, or follow-up task was identified locally.
+demonstration evidence, limitations, and decision. No local UI pass is claimed. Exact review candidate
+`c36f6df89b0985340ad6b5a328a9283ee3c07acb` passed hosted CI run `32614250744` on Linux and interactive Windows,
+including the full suite, native WPF build, self-contained publish, harness smoke, and all 19 Stage 7 WPF journeys
+twice. Security run `32614250721` and its secret scan passed; dependency review skipped as expected for a direct push.
+No defect, deviation, ADR, or follow-up task remains. Every criterion is satisfied, S7-018 is done, Stage 7 is closed,
+and Stage 8 commencement is approved.

@@ -6,7 +6,7 @@ Task workflow: [Task Management](../task-management.md).
 
 ## Current Next Task
 
-[`S7-018`](stage-7/S7-018-stage-7-review.md) is in review pending exact-revision hosted validation.
+Stage 7 is complete. Stage 8 planning may begin.
 
 ## Ordered Backlog
 
@@ -33,7 +33,7 @@ Task workflow: [Task Management](../task-management.md).
 | [`S7-021`](stage-7/S7-021-complete-wpf-deterministic-readiness.md) | Complete deterministic WPF paper journey before readiness | Done | 985 | `S7-019` |
 | [`S7-022`](stage-7/S7-022-authorize-wpf-research-fixture.md) | Authorize deterministic WPF Research fixture identities | Done | 988 | `S7-019`, `S7-021` |
 | [`S7-017`](stage-7/S7-017-wpf-critical-journeys.md) | Automate critical WPF operator journeys | Done | 740 | `S7-015`, `S7-016`, `S7-019`, `S7-020`, `S7-021`, `S7-022` |
-| [`S7-018`](stage-7/S7-018-stage-7-review.md) | Complete Stage 7 acceptance and review | Review | 1000 | All implementation tasks |
+| [`S7-018`](stage-7/S7-018-stage-7-review.md) | Complete Stage 7 acceptance and review | Done | 1000 | All implementation tasks |
 
 ## Stage Exit Gate
 
@@ -43,3 +43,12 @@ Task workflow: [Task Management](../task-management.md).
 - Operator actions remain authorized, audited, asynchronous, cancellable, and Engine-mediated.
 - Live UI updates, bounded host shutdown, WPF publish, migrations, full tests, and security gates pass.
 - The Stage 7 Review Record approves Stage 8.
+
+## Completion Summary
+
+Stage 7 is complete. All 22 tasks are done; all four production-backed non-UI scenarios passed twice locally and in
+hosted Windows/Linux CI, and all 19 WPF journeys passed twice in interactive Windows CI with zero skipped scenarios.
+The Release build, architecture, view-model/accessibility, migrations, EF drift, full 1,233-test suite, formatting,
+self-contained WPF publish, harness smoke, deterministic demonstration, SQLite cleanup, and security gates passed.
+Exact revision `c36f6df89b0985340ad6b5a328a9283ee3c07acb` and hosted artifacts are recorded in the
+[Stage 7 Review Record](../stage-7-review.md), which approves beginning Stage 8.
