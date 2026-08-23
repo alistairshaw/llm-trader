@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-017
 title: Automate critical WPF operator journeys
 stage: 7
-status: blocked
+status: review
 priority: 740
 type: test
 depends_on: [S7-015, S7-016, S7-019, S7-020, S7-021, S7-022]
@@ -182,3 +182,10 @@ Revalidation after the Research request completion repair: Release build passed 
 unit tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained
 WPF publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
 local UI pass is claimed.
+
+S7-022 was integrated in `4fc5bcb060fef2d11049e7c1069ffec45027079a`. Its production-composed tests prove that
+the typed deterministic WPF profile identities authorize the exact Report ID and series version-history sequence while
+unknown identities, insufficient principals, and non-test profiles remain denied. Candidate revalidation passed:
+Release build with zero warnings and errors; focused production composition tests 4/4; focused Research operator tests
+2/2; full suite 1,233/1,233 with zero skips; format; and final self-contained WPF publish. S7-017 returns to review
+pending Linux/security and two successful interactive Windows Stage 7 executions. No local UI pass is claimed.
