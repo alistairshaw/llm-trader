@@ -3,14 +3,14 @@ schema_version: 1
 id: S7-022
 title: Authorize deterministic WPF Research fixture identities
 stage: 7
-status: ready
+status: done
 priority: 988
 type: defect
 depends_on: [S7-019, S7-021]
 labels: [wpf, research, authorization, test-profile]
 created: 2026-08-22
 updated: 2026-08-22
-owner: null
+owner: s7-022
 ---
 # S7-022: Authorize Deterministic WPF Research Fixture Identities
 
@@ -45,4 +45,20 @@ series identity `fixture-series`.
 Build; focused production composition and Research operator tests; full tests; format; publish-wpf.
 
 ## Completion Notes
-Not completed.
+Completed on 2026-08-22.
+
+- Added the deterministic Report ID and series ID to the bounded production authorization resource set used only by
+  the WPF test profile. Default and non-test profiles retain no Research Report authority.
+- Added production-composed coverage for the catalog, exact immutable Report, and series version-history sequence,
+  including exact identity assertions and stable unavailable results for missing permissions, unknown identities, and
+  the default profile.
+- Validation passed:
+  - `.\dev.ps1 build` — Release build succeeded with zero warnings and zero errors.
+  - `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter
+    "FullyQualifiedName~OperatorProductionCompositionTests"` — 4 passed, zero failed or skipped.
+  - `.\dev.ps1 test -Project tests/Trading.IntegrationTests -Filter
+    "FullyQualifiedName~OperatorResearchTests"` — 2 passed, zero failed or skipped.
+  - `.\dev.ps1 test` — 1,233 passed, zero failed or skipped.
+  - `.\dev.ps1 format` — passed with no changes required.
+  - `.\dev.ps1 publish-wpf` — self-contained `win-x64` publish succeeded.
+- No deviations, follow-up tasks, or ADR changes.

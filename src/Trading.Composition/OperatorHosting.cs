@@ -12,11 +12,19 @@ namespace Trading.Host;
 
 public sealed class ProductionOperatorAuthorization(TradingHostOptions options) : IOperatorAuthorization
 {
-    private static readonly string[] ProfileResources =
+    private static readonly OperatorResource[] ProfileResources =
     [
-        SmokeFixture.BotId.ToString(), SmokeFixture.BotTwoId.ToString(), SmokeFixture.PortfolioId.ToString(),
-        SmokeFixture.PortfolioTwoId.ToString(), SmokeFixture.AccountId.ToString(), SmokeFixture.AccountTwoId.ToString(),
-        ProposalSmoke.ValidId.ToString(), ProposalSmoke.UiReviewId.ToString(), "platform",
+        OperatorResource.Platform,
+        new(OperatorResourceKind.TradingBot, SmokeFixture.BotId.ToString()),
+        new(OperatorResourceKind.TradingBot, SmokeFixture.BotTwoId.ToString()),
+        new(OperatorResourceKind.Portfolio, SmokeFixture.PortfolioId.ToString()),
+        new(OperatorResourceKind.Portfolio, SmokeFixture.PortfolioTwoId.ToString()),
+        new(OperatorResourceKind.BrokerAccount, SmokeFixture.AccountId.ToString()),
+        new(OperatorResourceKind.BrokerAccount, SmokeFixture.AccountTwoId.ToString()),
+        new(OperatorResourceKind.TradeProposal, ProposalSmoke.ValidId.ToString()),
+        new(OperatorResourceKind.TradeProposal, ProposalSmoke.UiReviewId.ToString()),
+        new(OperatorResourceKind.ResearchReport, "01J5QH8M000000000000000701"),
+        new(OperatorResourceKind.ResearchReport, "fixture-series"),
     ];
 
     public Task<bool> IsAuthorizedAsync(OperatorPrincipal principal, OperatorAuthority permission,
@@ -24,8 +32,7 @@ public sealed class ProductionOperatorAuthorization(TradingHostOptions options) 
     {
         cancellationToken.ThrowIfCancellationRequested();
         var permitted = principal.Permissions.Contains(permission);
-        var scoped = resource == OperatorResource.Platform || options.WpfTestProfile &&
-            ProfileResources.Contains(resource.Id, StringComparer.Ordinal);
+        var scoped = resource == OperatorResource.Platform || options.WpfTestProfile && ProfileResources.Contains(resource);
         return Task.FromResult(permitted && scoped);
     }
 

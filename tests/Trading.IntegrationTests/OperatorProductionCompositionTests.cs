@@ -9,6 +9,9 @@ namespace Trading.IntegrationTests;
 [TestFixture]
 public sealed class OperatorProductionCompositionTests
 {
+    private const string ResearchReportId = "01J5QH8M000000000000000701";
+    private const string ResearchSeriesId = "fixture-series";
+
     [Test]
     public async Task HostResolvesOneAuthorizedBoundaryForEveryOperatorContract()
     {
@@ -75,6 +78,85 @@ public sealed class OperatorProductionCompositionTests
             Assert.That(missingPermission.Code, Is.EqualTo("operator.unavailable"));
             Assert.That(outside.Status, Is.EqualTo(OperatorResultStatus.Unavailable));
             Assert.That(outside.Value, Is.Null);
+        });
+    }
+
+    [Test]
+    public async Task WpfTestProfileAuthorizesCatalogExactReportAndSeriesHistory()
+    {
+        var options = new TradingHostOptions
+        {
+            OperatorMode = true,
+            WpfTestProfile = true,
+            DataDirectory = Path.GetTempPath(),
+        };
+        var service = new AuthorizedOperatorService(new ProductionOperatorAuthorization(options),
+            new ProductionOperatorWorkflowPort(options));
+        var principal = ProductionOperatorAuthorization.CreatePrincipal(options);
+
+        var catalog = await service.GetPageAsync<ResearchSummary>(principal, OperatorPageKind.Research,
+            OperatorResource.Platform, new(), new(0, 20), CancellationToken.None);
+        var exact = await service.GetPageAsync<ResearchDetail>(principal, OperatorPageKind.Research,
+            new(OperatorResourceKind.ResearchReport, ResearchReportId),
+            new(Status: $"exact:{ResearchSeriesId}:1"), new(0, 1), CancellationToken.None);
+        var versions = await service.GetPageAsync<ResearchSummary>(principal, OperatorPageKind.Research,
+            new(OperatorResourceKind.ResearchReport, ResearchSeriesId), new(Status: "versions"), new(0, 20),
+            CancellationToken.None);
+
+        var summary = exact.Value?.Items.Single().Summary;
+        Assert.Multiple(() =>
+        {
+            Assert.That(catalog.Status, Is.EqualTo(OperatorResultStatus.Succeeded));
+            Assert.That(catalog.Value?.Items.Single().Id.ToString(), Is.EqualTo(ResearchReportId));
+            Assert.That(exact.Status, Is.EqualTo(OperatorResultStatus.Succeeded));
+            Assert.That(summary?.Id.ToString(), Is.EqualTo(ResearchReportId));
+            Assert.That(summary?.SeriesId, Is.EqualTo(ResearchSeriesId));
+            Assert.That(summary?.Version, Is.EqualTo(1));
+            Assert.That(versions.Status, Is.EqualTo(OperatorResultStatus.Succeeded));
+            Assert.That(versions.Value?.Items.Single().SeriesId, Is.EqualTo(ResearchSeriesId));
+            Assert.That(versions.Value?.Items.Single().Version, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task ResearchFixtureAuthorityRemainsProfileBoundedAndNonDisclosing()
+    {
+        var testOptions = new TradingHostOptions { OperatorMode = true, WpfTestProfile = true };
+        var testService = new AuthorizedOperatorService(new ProductionOperatorAuthorization(testOptions),
+            new ProductionOperatorWorkflowPort(testOptions));
+        var operatorPrincipal = ProductionOperatorAuthorization.CreatePrincipal(testOptions);
+        var readerWithoutPermission = new OperatorPrincipal("reader", []);
+        var unknownIdentity = new OperatorResource(OperatorResourceKind.ResearchReport,
+            "01J5QH8M000000000000009999");
+        var exactResource = new OperatorResource(OperatorResourceKind.ResearchReport, ResearchReportId);
+
+        var missingPermission = await testService.GetPageAsync<ResearchDetail>(readerWithoutPermission,
+            OperatorPageKind.Research, exactResource, new(Status: $"exact:{ResearchSeriesId}:1"), new(0, 1),
+            CancellationToken.None);
+        var outsideScope = await testService.GetPageAsync<ResearchDetail>(operatorPrincipal,
+            OperatorPageKind.Research, unknownIdentity, new(Status: "exact:unknown:1"), new(0, 1),
+            CancellationToken.None);
+        var wrongResourceKind = await testService.GetPageAsync<ResearchDetail>(operatorPrincipal,
+            OperatorPageKind.Research, new(OperatorResourceKind.Order, ResearchReportId),
+            new(Status: $"exact:{ResearchSeriesId}:1"), new(0, 1), CancellationToken.None);
+
+        var defaultOptions = new TradingHostOptions { OperatorMode = true, WpfTestProfile = false };
+        var defaultService = new AuthorizedOperatorService(new ProductionOperatorAuthorization(defaultOptions),
+            new ProductionOperatorWorkflowPort(defaultOptions));
+        var defaultResult = await defaultService.GetPageAsync<ResearchDetail>(
+            ProductionOperatorAuthorization.CreatePrincipal(defaultOptions), OperatorPageKind.Research,
+            exactResource, new(Status: $"exact:{ResearchSeriesId}:1"), new(0, 1), CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(missingPermission.Status, Is.EqualTo(OperatorResultStatus.Unavailable));
+            Assert.That(missingPermission.Value, Is.Null);
+            Assert.That(outsideScope.Status, Is.EqualTo(OperatorResultStatus.Unavailable));
+            Assert.That(outsideScope.Value, Is.Null);
+            Assert.That(wrongResourceKind.Status, Is.EqualTo(OperatorResultStatus.Unavailable));
+            Assert.That(wrongResourceKind.Value, Is.Null);
+            Assert.That(defaultResult.Status, Is.EqualTo(OperatorResultStatus.Unavailable));
+            Assert.That(defaultResult.Value, Is.Null);
         });
     }
 
