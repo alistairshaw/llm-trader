@@ -18,6 +18,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
     private ResearchDetail? detail;
     private bool isBusy;
     private string? errorCode;
+    private string? requestOutcome;
     private string? search;
     private string? statusFilter;
     private int offset;
@@ -49,6 +50,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
     public string RequestSubject { get; set; } = string.Empty;
     public bool IsBusy { get => isBusy; private set => SetProperty(ref isBusy, value); }
     public string? ErrorCode { get => errorCode; private set { if (SetProperty(ref errorCode, value)) OnPropertyChanged(nameof(HasError)); } }
+    public string? RequestOutcome { get => requestOutcome; private set => SetProperty(ref requestOutcome, value); }
     public bool HasError => ErrorCode is not null;
     public int PageNumber => (offset / PageSize) + 1;
     public ResearchSummary? SelectedReport
@@ -120,6 +122,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
 
     public Task RequestAsync(CancellationToken cancellationToken = default) => RunAsync(async token =>
     {
+        RequestOutcome = null;
         TradingBotId botId;
         try { botId = TradingBotId.Parse(RequestingBotId); }
         catch (ArgumentException) { ErrorCode = "research_catalog.bot_id_invalid"; return; }
@@ -127,6 +130,7 @@ public sealed class ResearchCatalogViewModel : ObservableViewModel, IAsyncDispos
         var result = await research.RequestAsync(principal, botId, RequestSubject.Trim(), token);
         if (result.Status != OperatorResultStatus.Succeeded) { ErrorCode = result.Code; return; }
         await RefreshCoreAsync(token);
+        if (ErrorCode is null) RequestOutcome = result.Code;
     }, cancellationToken);
 
     private async Task ChangePageAsync(int delta, CancellationToken token)

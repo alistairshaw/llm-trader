@@ -101,7 +101,11 @@ public sealed class ResearchCatalogViewModelTests
         model.RequestingBotId = "01HF7YAT00S8K1M3Q5V7X9ZA02";
         model.RequestSubject = "  Assess durable free cash flow  ";
         await model.RequestAsync();
-        Assert.That(gateway.ExecutedResearchSubjects, Is.EqualTo(ExpectedRequestSubjects));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(gateway.ExecutedResearchSubjects, Is.EqualTo(ExpectedRequestSubjects));
+            Assert.That(model.RequestOutcome, Is.EqualTo("operator.research.requested"));
+        }
     }
 
     [Test]
@@ -116,7 +120,8 @@ public sealed class ResearchCatalogViewModelTests
         using (Assert.EnterMultipleScope())
         {
             Assert.That(ids, Does.Contain("Research.Workspace").And.Contain("Research.ExactIdentity")
-                .And.Contain("Research.UntrustedBoundary").And.Contain("Research.Provenance"));
+                .And.Contain("Research.UntrustedBoundary").And.Contain("Research.Provenance")
+                .And.Contain("Research.RequestOutcome"));
             Assert.That(document.Descendants().Count(x => x.Name.LocalName == "Label" && x.Attribute("Target") is not null), Is.EqualTo(4));
             Assert.That(document.Descendants().Count(x => x.Name.LocalName == "Hyperlink"), Is.Zero);
             Assert.That(content.Name.LocalName, Is.EqualTo("TextBox"));

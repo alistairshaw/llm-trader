@@ -101,3 +101,17 @@ Revalidation after the selection synchronization repair: Release build passed wi
 tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained WPF
 publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
 local UI pass is claimed.
+
+Hosted candidate `464b918d7e5a82beb95edfb54eaf493e459b53fa` passed Linux and the Windows complete
+cross-platform suite, native build, self-contained publish, and harness smoke in CI run `32608648397`. Eighteen of
+nineteen journeys passed its first interactive Stage 7 execution; the remaining Research journey could observe the old
+idle state immediately after UIA invocation, then select a catalog row while the completed request replaced the
+catalog contents. Research request completion is now an explicit operator-visible outcome published only after its
+catalog refresh succeeds. The journey waits boundedly for that exact success outcome before selecting and opening the
+immutable version; the version-1 business assertion is unchanged. Focused view-model and accessibility coverage
+enforces the outcome timing and stable UIA identity.
+
+Revalidation after the Research request completion repair: Release build passed with zero warnings and errors; WPF
+unit tests passed 40/40; the full suite passed 1,230/1,230 with zero skips; format passed; and the final self-contained
+WPF publish passed. S7-017 remains in review pending a hosted run in which both interactive Stage 7 passes complete. No
+local UI pass is claimed.

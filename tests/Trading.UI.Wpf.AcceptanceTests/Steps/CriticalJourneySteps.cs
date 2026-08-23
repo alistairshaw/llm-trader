@@ -112,6 +112,8 @@ internal sealed class CriticalJourneySteps(ScenarioContext context)
         Driver.Shell.SetText("Research.RequestBot", BotId);
         Driver.Shell.SetText("Research.RequestSubject", "ACME bounded fixture report");
         Driver.Shell.Invoke("Research.Request");
+        await Driver.WaitUntilAsync(page => page.State("Research.RequestOutcome") == "operator.research.requested",
+            "the authorized Research request and catalog refresh to complete");
         await WaitIdleAsync("Research.Busy");
         Driver.Shell.SelectFirst("Research.Catalog");
         await Driver.WaitUntilAsync(page => !string.IsNullOrWhiteSpace(page.State("Research.OpenExact")),
