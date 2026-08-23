@@ -16,7 +16,7 @@ public sealed class ProductionOperatorAuthorization(TradingHostOptions options) 
     [
         SmokeFixture.BotId.ToString(), SmokeFixture.BotTwoId.ToString(), SmokeFixture.PortfolioId.ToString(),
         SmokeFixture.PortfolioTwoId.ToString(), SmokeFixture.AccountId.ToString(), SmokeFixture.AccountTwoId.ToString(),
-        ProposalSmoke.ValidId.ToString(), "platform",
+        ProposalSmoke.ValidId.ToString(), ProposalSmoke.UiReviewId.ToString(), "platform",
     ];
 
     public Task<bool> IsAuthorizedAsync(OperatorPrincipal principal, OperatorAuthority permission,
@@ -128,7 +128,7 @@ public sealed class ProductionOperatorWorkflowPort(TradingHostOptions options) :
             [new("approved-fixtures", "fixture://regulatory/acme", now.AddDays(-1), now.AddHours(-2), new string('b', 64))]);
     }
 
-    private ProposalSummary Proposal(DateTimeOffset now) => new(ProposalSmoke.ValidId, SmokeFixture.BotTwoId,
+    private ProposalSummary Proposal(DateTimeOffset now) => new(ProposalSmoke.UiReviewId, SmokeFixture.BotTwoId,
         SmokeFixture.PortfolioTwoId, proposalStatus, now.AddDays(1), proposalStatus == ProposalStatus.AwaitingHumanApproval ? 0 : 1);
 
     private ProposalDetail ProposalDetail(DateTimeOffset now)

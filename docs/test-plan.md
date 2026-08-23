@@ -209,6 +209,9 @@ Production startup must not use `EnsureCreated`.
 Stage 7 production-composition tests resolve the real operator authorization and workflow adapters, verify that all
 query and command interfaces share `AuthorizedOperatorService`, and require missing permissions and out-of-scope
 resources to return the same non-disclosing unavailable result.
+WPF profile readiness tests use the production host and migrated SQLite store to require an eligible evaluated Proposal,
+a Filled paper Order with exactly two deduplicated Fills and consumed reservation, the fixed eligibility clock, and an
+idempotent restart before the ready signal can be observed.
 
 Core workflows:
 

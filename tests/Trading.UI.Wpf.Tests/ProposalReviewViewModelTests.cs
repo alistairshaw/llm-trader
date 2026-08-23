@@ -30,7 +30,11 @@ public sealed class ProposalReviewViewModelTests
             Assert.That(model.Evidence.Single().ContentHash, Is.EqualTo(new string('c', 64)));
             Assert.That(model.Guardrails.Single().PolicyVersion, Is.EqualTo("risk-v5"));
             Assert.That(model.DecisionEligibility, Does.StartWith("Awaiting"));
+            Assert.That(model.ApproveCommand.CanExecute(null), Is.False);
         }
+        model.ConfirmDecision = true;
+        Assert.That(model.ApproveCommand.CanExecute(null), Is.True,
+            "The authoritative exact Proposal and injected clock make a confirmed decision actionable.");
     }
 
     [Test]

@@ -16,12 +16,13 @@ internal static partial class ProposalSmoke
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 20, 23, 0, 0, TimeSpan.Zero);
     internal static readonly TradeProposalId ValidId = TradeProposalId.Parse("01J5QH8M000000000000000401");
+    internal static readonly TradeProposalId UiReviewId = TradeProposalId.Parse("01J5QH8M000000000000000405");
     private static readonly TradeProposalId CompetingId = TradeProposalId.Parse("01J5QH8M000000000000000402");
     private static readonly TradeProposalId InvalidId = TradeProposalId.Parse("01J5QH8M000000000000000403");
     private static readonly TradeProposalId ResearchOnlyId = TradeProposalId.Parse("01J5QH8M000000000000000404");
 
     public static async Task<CapitalReservation> RunAsync(IServiceProvider services, IReadOnlyList<BotRunExecutionResult> runs,
-        ILogger logger, CancellationToken token)
+        ILogger logger, bool includeOperatorReview, CancellationToken token)
     {
         var repository = services.GetRequiredService<ITradeProposalRepository>();
         var state = services.GetRequiredService<ProposalSmokeState>();
@@ -44,11 +45,17 @@ internal static partial class ProposalSmoke
             SmokeFixture.SnapshotId, ExecutionMode.ResearchOnly,
             new DirectTradeAction(TradeSide.Buy, new Quantity(1, "shares"), ProposedOrderType.Limit,
                 new Price(10, Currency.USD), ProposedTimeInForce.Day), 'd', "research-only proposal"), token);
+        if (includeOperatorReview)
+            await RecordAsync(repository, Proposal(UiReviewId, humanRun, SmokeFixture.PortfolioTwoId,
+                SmokeFixture.SnapshotTwoId, ExecutionMode.HumanApproval,
+                new DirectTradeAction(TradeSide.Buy, new Quantity(5, "shares"), ProposedOrderType.Limit,
+                    new Price(10, Currency.USD), ProposedTimeInForce.Day), 'e', "operator review fixture"), token);
 
         var orchestrator = services.GetRequiredService<IProposalGovernanceOrchestrator>();
         var valid = await orchestrator.ValidateAsync(ValidId, token);
         var invalid = await orchestrator.ValidateAsync(InvalidId, token);
         var researchOnly = await orchestrator.ValidateAsync(ResearchOnlyId, token);
+        var uiReview = includeOperatorReview ? await orchestrator.ValidateAsync(UiReviewId, token) : null;
         var reserved = await orchestrator.DecideAndReserveAsync(Approve(valid), TimeSpan.FromMinutes(20), token);
         var competing = await orchestrator.ValidateAsync(CompetingId, token);
         var denied = await orchestrator.DecideAndReserveAsync(Approve(competing), TimeSpan.FromMinutes(20), token);
@@ -64,6 +71,7 @@ internal static partial class ProposalSmoke
         if (valid.Outcome != ProposalOrchestrationOutcome.AwaitingHumanApproval ||
             invalid.Outcome != ProposalOrchestrationOutcome.Rejected ||
             researchOnly.Outcome != ProposalOrchestrationOutcome.ResearchOnly ||
+            includeOperatorReview && uiReview!.Outcome != ProposalOrchestrationOutcome.AwaitingHumanApproval ||
             reserved.Outcome != ProposalOrchestrationOutcome.Reserved ||
             denied is not
             {
@@ -71,7 +79,7 @@ internal static partial class ProposalSmoke
                 Code: ProposalGovernanceCodes.InsufficientCapital
             } ||
             detail.Evaluations.Count != 2 || detail.Decisions.Count != 1 || active.Count != 1 ||
-            queue.Count != 4)
+            queue.Count != (includeOperatorReview ? 5 : 4))
             throw new InvalidOperationException("The Stage 5 proposal-governance smoke produced an unexpected durable outcome.");
 
         Result(logger, ValidId.ToString(), detail.ContentVersion.ContentHash, detail.Evaluations[0].ContentHash,

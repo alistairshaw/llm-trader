@@ -135,6 +135,11 @@ configuration surface for credentials or network providers. It atomically writes
 `shutdown.json` documents inside its isolated run directory. Startup failures expose only a bounded alphanumeric phase
 and exception code. These signals are automation seams, not an external control or authorization channel.
 
+The ready signal is published only after both deterministic Bot runs, Research publication, Proposal governance, the
+approved paper Order, its partial and final Fills, and the awaiting operator-review Proposal are durable and queryable.
+The profile then remains running until the operator closes it. A restart recognizes and verifies those exact durable
+facts instead of replaying the fixture workflow, and all time-dependent desktop eligibility uses the fixed host clock.
+
 The profile also composes every desktop workspace through the production authorized operator boundary. Its manifest
 enumerates the stable lifecycle, Portfolio, terminal run, published Research, Proposal, paper execution, warning,
 execution-mode, kill-switch, and recoverable-shutdown fixture states available to Windows automation.

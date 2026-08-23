@@ -368,21 +368,23 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
             var ids = options.SmokeMode || options.WpfTestProfile ? [SmokeFixture.BotId, SmokeFixture.BotTwoId] : options.BotIds.Select(TradingBotId.Parse).ToArray();
             foreach (var id in ids) await ValidateBotAsync(services, id, stoppingToken);
             supervisor = new MultiBotSupervisor(new MultiBotSupervisorOptions { GlobalRunConcurrency = options.GlobalRunConcurrency, QueueCapacity = options.QueueCapacity }, services.GetRequiredService<BotRunOrchestrationService>());
-            readiness.MarkReady();
-            RuntimeLogs.Ready(logger, Environment.MachineName, recovery.RecoveredRuns, recovery.FaultedRuns, researchRecovery);
+            var fixtureReady = options.WpfTestProfile && await IsWpfFixtureReadyAsync(services, clock.UtcNow, stoppingToken);
             var completions = new List<Task<BotRunExecutionResult>>();
-            foreach (var id in ids)
+            if (!fixtureReady)
             {
-                if (options.SmokeMode) await services.GetRequiredService<BotTriggerIngestionService>().IngestAsync(
-                    new(id, BotRunTriggerType.Manual, "deterministic smoke", clock.UtcNow), stoppingToken);
-                var queued = await supervisor.QueueAsync(new(id, Environment.MachineName, TimeSpan.FromSeconds(options.LeaseSeconds), SmokeSession()), stoppingToken);
-                if (queued.Completion is not null)
+                foreach (var id in ids)
                 {
-                    completions.Add(queued.Completion);
-                    if (options.SmokeMode) _ = await queued.Completion;
+                    if (options.SmokeMode || options.WpfTestProfile) await services.GetRequiredService<BotTriggerIngestionService>().IngestAsync(
+                        new(id, BotRunTriggerType.Manual, "deterministic smoke", clock.UtcNow), stoppingToken);
+                    var queued = await supervisor.QueueAsync(new(id, Environment.MachineName, TimeSpan.FromSeconds(options.LeaseSeconds), SmokeSession()), stoppingToken);
+                    if (queued.Completion is not null)
+                    {
+                        completions.Add(queued.Completion);
+                        if (options.SmokeMode || options.WpfTestProfile) _ = await queued.Completion;
+                    }
                 }
             }
-            if (options.SmokeMode)
+            if ((options.SmokeMode || options.WpfTestProfile) && !fixtureReady)
             {
                 var results = await Task.WhenAll(completions);
                 foreach (var result in results) RuntimeLogs.SmokeResult(logger, result.RunId?.ToString() ?? "none", result.Outcome.ToString());
@@ -392,11 +394,14 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
                     throw new InvalidOperationException("One or more smoke Bots did not complete.");
                 }
                 await ResearchSmoke.RunAsync(services, logger, stoppingToken);
-                var reservation = await ProposalSmoke.RunAsync(services, results, logger, stoppingToken);
+                var reservation = await ProposalSmoke.RunAsync(services, results, logger,
+                    includeOperatorReview: options.WpfTestProfile, stoppingToken);
                 if (options.ExecutePaperSmoke)
                     await PaperSmoke.RunAsync(services, reservation, logger, stoppingToken);
-                lifetime.StopApplication();
             }
+            readiness.MarkReady();
+            RuntimeLogs.Ready(logger, Environment.MachineName, recovery.RecoveredRuns, recovery.FaultedRuns, researchRecovery);
+            if (options.SmokeMode) lifetime.StopApplication();
             else await Task.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
         }
         catch (Exception exception) when (exception is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
@@ -431,6 +436,22 @@ internal sealed class TradingRuntimeHostedService(IServiceScopeFactory scopes, T
         if (bot.Status != TradingBotStatus.Enabled || bot.ActiveConfigurationVersionId is null || portfolios.Count == 0) throw new InvalidOperationException($"Configured Bot '{id}' must be enabled with an active configuration and Portfolio.");
         var snapshots = await queries.GetDecisionSnapshotsAsync(new PortfolioDecisionSnapshotQueryFilter(TradingBotId: id), new PageRequest(0, 1), token);
         if (snapshots.Count == 0) throw new InvalidOperationException($"Configured Bot '{id}' has no decision snapshot.");
+    }
+
+    private static async Task<bool> IsWpfFixtureReadyAsync(IServiceProvider services, DateTimeOffset now,
+        CancellationToken token)
+    {
+        var proposals = await services.GetRequiredService<IProposalQueries>().GetQueueAsync(
+            new("wpf-readiness", true), new(), new(0, 10), now, token);
+        if (proposals.SingleOrDefault(x => x.Id == ProposalSmoke.UiReviewId) is not
+            { Status: ProposalStatus.AwaitingHumanApproval, IsExpired: false, EvaluationCount: > 0 }) return false;
+        var execution = services.GetRequiredService<IOrderExecutionQueries>();
+        var principal = new ExecutionQueryPrincipal("wpf-readiness", true, [], [], []);
+        var orders = await execution.GetOrdersAsync(principal, new(ProposalId: ProposalSmoke.ValidId),
+            new(0, 10), token);
+        if (orders.SingleOrDefault() is not { Status: OrderStatus.Filled } order) return false;
+        var detail = await execution.GetOrderAsync(principal, order.Id, token);
+        return detail is { FilledQuantity: 70, ReservationStatus: "Consumed" } && detail.Fills.Count == 2;
     }
     private sealed class ImmediateDelay : IAsyncDelay { public Task DelayAsync(TimeSpan duration, CancellationToken token) => Task.CompletedTask; }
 }

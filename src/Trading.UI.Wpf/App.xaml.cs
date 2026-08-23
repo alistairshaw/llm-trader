@@ -6,6 +6,7 @@ using Trading.Core.Identifiers;
 using Trading.Core.Orders;
 using Trading.Core.Persistence;
 using Trading.Engine.Operators;
+using Trading.Engine.Runtime;
 using Trading.Host;
 using Trading.UI.Wpf.Navigation;
 using Trading.UI.Wpf.Services;
@@ -48,24 +49,26 @@ public partial class App : Application, IAsyncDisposable
             var portfolioQueries = lifecycle.Services.GetService<IOperatorPortfolioBrokerQueries>();
             var executionQueries = lifecycle.Services.GetService<IOrderExecutionQueries>();
             var principal = lifecycle.Services.GetService<OperatorPrincipal>();
+            var clock = lifecycle.Services.GetService<IUtcClock>();
             var updates = new PollingOperatorUpdateSource(TimeSpan.FromSeconds(2));
             var dispatcher = new WpfUiDispatcher(Dispatcher);
             startupPhase = "window-construction";
-            var window = queries is not null && botService is not null && runService is not null && researchService is not null && proposalService is not null && killSwitchService is not null && portfolioQueries is not null && executionQueries is not null && principal is not null
+            var window = queries is not null && botService is not null && runService is not null && researchService is not null && proposalService is not null && killSwitchService is not null && portfolioQueries is not null && executionQueries is not null && principal is not null && clock is not null
                 ? new MainWindow(new WpfNavigationPageFactory(
                     () => new BotManagementViewModel(queries, botService, principal),
                     () => new BotRunsViewModel(queries, runService, principal),
                     () => new PortfolioBrokerViewModel(new AuthorizedPortfolioBrokerViewSource(portfolioQueries,
                         TradingBotId.Parse("01J5QH8M000000000000000101"),
                         BrokerAccountId.Parse("01J5QH8M000000000000000302")),
-                        TimeProvider.System),
+                        new ClockTimeProvider(clock)),
                     () => new ResearchCatalogViewModel(queries, researchService, principal),
                     () => new ExecutionRiskAuditViewModel(executionQueries,
                         new ExecutionQueryPrincipal(principal.ActorId, false,
                             [TradingBotId.Parse("01J5QH8M000000000000000101"), TradingBotId.Parse("01J5QH8M000000000000000201")],
                             [PortfolioId.Parse("01J5QH8M000000000000000103"), PortfolioId.Parse("01J5QH8M000000000000000203")],
                             [BrokerAccountId.Parse("01J5QH8M000000000000000302"), BrokerAccountId.Parse("01J5QH8M000000000000000303")])),
-                    createProposals: () => new ProposalReviewViewModel(queries, proposalService, principal),
+                    createProposals: () => new ProposalReviewViewModel(queries, proposalService, principal,
+                        () => clock.UtcNow),
                     createKillSwitches: () => new KillSwitchViewModel(queries, killSwitchService, principal),
                     updates: updates,
                     dispatcher: dispatcher))
@@ -111,5 +114,10 @@ public partial class App : Application, IAsyncDisposable
     {
         if (lifecycle is not null) await lifecycle.DisposeAsync();
         GC.SuppressFinalize(this);
+    }
+
+    private sealed class ClockTimeProvider(IUtcClock clock) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => clock.UtcNow;
     }
 }

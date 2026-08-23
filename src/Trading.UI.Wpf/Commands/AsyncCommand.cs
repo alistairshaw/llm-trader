@@ -12,11 +12,12 @@ public sealed class AsyncCommand<T>(
     public event EventHandler? CanExecuteChanged;
 
     public bool CanExecute(object? parameter) =>
-        (allowConcurrentExecutions || !executing) && parameter is T value && (canExecute?.Invoke(value) ?? true);
+        (allowConcurrentExecutions || !executing) && TryParameter(parameter, out var value) &&
+        (canExecute?.Invoke(value) ?? true);
 
     public async void Execute(object? parameter)
     {
-        if (!CanExecute(parameter) || parameter is not T value) return;
+        if (!CanExecute(parameter) || !TryParameter(parameter, out var value)) return;
         executing = true;
         CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         try { await execute(value, CancellationToken.None); }
@@ -25,5 +26,15 @@ public sealed class AsyncCommand<T>(
             executing = false;
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    public void NotifyCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+
+    private static bool TryParameter(object? parameter, out T value)
+    {
+        if (parameter is T typed) { value = typed; return true; }
+        if (parameter is null && default(T) is null) { value = default!; return true; }
+        value = default!;
+        return false;
     }
 }

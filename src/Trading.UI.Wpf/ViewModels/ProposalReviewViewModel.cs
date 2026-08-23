@@ -21,6 +21,9 @@ public sealed class ProposalReviewViewModel : ObservableViewModel, IAsyncDisposa
     private string? errorCode;
     private string? statusFilter = ProposalStatus.AwaitingHumanApproval.ToString();
     private int offset;
+    private readonly AsyncCommand<object?> loadProposalCommand;
+    private readonly AsyncCommand<object?> approveCommand;
+    private readonly AsyncCommand<object?> rejectCommand;
 
     public ProposalReviewViewModel(IOperatorQueries queries, IProposalOperatorService decisions,
         OperatorPrincipal principal, Func<DateTimeOffset>? utcNow = null)
@@ -30,9 +33,12 @@ public sealed class ProposalReviewViewModel : ObservableViewModel, IAsyncDisposa
         this.principal = principal ?? throw new ArgumentNullException(nameof(principal));
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         RefreshCommand = new AsyncCommand<object?>((_, token) => RefreshAsync(token));
-        LoadProposalCommand = new AsyncCommand<object?>((_, token) => LoadProposalAsync(token));
-        ApproveCommand = new AsyncCommand<object?>((_, token) => DecideAsync(true, token));
-        RejectCommand = new AsyncCommand<object?>((_, token) => DecideAsync(false, token));
+        loadProposalCommand = new AsyncCommand<object?>((_, token) => LoadProposalAsync(token), _ => SelectedProposal is not null);
+        approveCommand = new AsyncCommand<object?>((_, token) => DecideAsync(true, token), _ => CanDecide());
+        rejectCommand = new AsyncCommand<object?>((_, token) => DecideAsync(false, token), _ => CanDecide());
+        LoadProposalCommand = loadProposalCommand;
+        ApproveCommand = approveCommand;
+        RejectCommand = rejectCommand;
         NextPageCommand = new AsyncCommand<object?>((_, token) => ChangePageAsync(PageSize, token));
         PreviousPageCommand = new AsyncCommand<object?>((_, token) => ChangePageAsync(-PageSize, token));
     }
@@ -49,8 +55,16 @@ public sealed class ProposalReviewViewModel : ObservableViewModel, IAsyncDisposa
     public ICommand PreviousPageCommand { get; }
     public string? StatusFilter { get => statusFilter; set => SetProperty(ref statusFilter, value); }
     public string DecisionReason { get; set; } = string.Empty;
-    public bool ConfirmDecision { get => confirmDecision; set => SetProperty(ref confirmDecision, value); }
-    public bool IsBusy { get => isBusy; private set => SetProperty(ref isBusy, value); }
+    public bool ConfirmDecision
+    {
+        get => confirmDecision;
+        set { if (SetProperty(ref confirmDecision, value)) NotifyDecisionCommands(); }
+    }
+    public bool IsBusy
+    {
+        get => isBusy;
+        private set { if (SetProperty(ref isBusy, value)) NotifyDecisionCommands(); }
+    }
     public string? ErrorCode { get => errorCode; private set => SetProperty(ref errorCode, value); }
     public int PageNumber => (offset / PageSize) + 1;
     public ProposalSummary? SelectedProposal
@@ -60,6 +74,7 @@ public sealed class ProposalReviewViewModel : ObservableViewModel, IAsyncDisposa
         {
             if (!SetProperty(ref selectedProposal, value)) return;
             SetDetail(null);
+            loadProposalCommand.NotifyCanExecuteChanged();
         }
     }
     public ProposalDetail? Detail { get => detail; private set => SetProperty(ref detail, value); }
@@ -136,6 +151,7 @@ public sealed class ProposalReviewViewModel : ObservableViewModel, IAsyncDisposa
             foreach (var item in value.Decisions) DecisionHistory.Add(item);
         }
         OnPropertyChanged(nameof(DecisionEligibility));
+        NotifyDecisionCommands();
     }
 
     private async Task ChangePageAsync(int delta, CancellationToken token)
@@ -171,6 +187,13 @@ public sealed class ProposalReviewViewModel : ObservableViewModel, IAsyncDisposa
         finally { IsBusy = false; }
     }
     private static string? NullIfWhiteSpace(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private bool CanDecide() => !IsBusy && ConfirmDecision &&
+        Detail is { Summary.Status: ProposalStatus.AwaitingHumanApproval } && Detail.Summary.ValidUntil > utcNow();
+    private void NotifyDecisionCommands()
+    {
+        approveCommand.NotifyCanExecuteChanged();
+        rejectCommand.NotifyCanExecuteChanged();
+    }
     public ValueTask DisposeAsync()
     {
         lifetime.Cancel();

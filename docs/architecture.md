@@ -267,7 +267,8 @@ The Research Bot cannot propose or place trades. Detailed behavior is defined in
 Responsibilities:
 
 - Register Engine, Data, Research, paper-broker, logging, migration, recovery, and hosted runtime services once.
-- Publish awaitable readiness only after migrations and recovery complete.
+- Publish awaitable readiness only after migrations and recovery complete; the deterministic WPF profile additionally
+  verifies its complete Research-to-Proposal-to-paper-Fill fixture and awaiting review state before readiness.
 - Own bounded, idempotent host shutdown and disposal.
 
 ### 6.7 Trading.Host

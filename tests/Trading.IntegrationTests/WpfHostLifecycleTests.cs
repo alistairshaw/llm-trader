@@ -2,7 +2,10 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Trading.Core.Identifiers;
+using Trading.Core.Orders;
 using Trading.Core.Persistence;
+using Trading.Core.Proposals;
 using Trading.Engine.Runtime;
 using Trading.Host;
 
@@ -41,9 +44,50 @@ public sealed class WpfHostLifecycleTests
                 Assert.That(portfolios.Select(x => x.Name), Is.EquivalentTo(ExpectedProfilePortfolios));
                 Assert.That(host.Services.GetRequiredService<IUtcClock>().UtcNow,
                     Is.EqualTo(new DateTimeOffset(2026, 8, 20, 23, 0, 0, TimeSpan.Zero)));
+
+                var now = host.Services.GetRequiredService<IUtcClock>().UtcNow;
+                var proposals = await scope.ServiceProvider.GetRequiredService<IProposalQueries>()
+                    .GetQueueAsync(new("fixture-operator", true), new(), new(0, 10), now, default);
+                var execution = scope.ServiceProvider.GetRequiredService<IOrderExecutionQueries>();
+                var orders = await execution.GetOrdersAsync(new("fixture-operator", true, [], [], []),
+                    new(Status: OrderStatus.Filled), new(0, 10), default);
+                var order = await execution.GetOrderAsync(new("fixture-operator", true, [], [], []),
+                    orders.Single().Id, default);
+                var proposal = proposals.SingleOrDefault();
+                Assert.Multiple(() =>
+                {
+                    Assert.That(proposals, Has.Count.EqualTo(1));
+                    Assert.That(proposal, Is.Not.Null);
+                    Assert.That(proposal!.Status, Is.EqualTo(ProposalStatus.AwaitingHumanApproval));
+                    Assert.That(proposal.IsExpired, Is.False);
+                    Assert.That(proposal.EvaluationCount, Is.GreaterThan(0));
+                    Assert.That(orders, Has.Count.EqualTo(1));
+                    Assert.That(order, Is.Not.Null);
+                    Assert.That(order!.Order.Status, Is.EqualTo(OrderStatus.Filled));
+                    Assert.That(order.Fills, Has.Count.EqualTo(2));
+                    Assert.That(order.FilledQuantity, Is.EqualTo(70));
+                    Assert.That(order.ReservationStatus, Is.EqualTo("Consumed"));
+                });
             }
 
             await lifecycle.StopAsync();
+            await lifecycle.DisposeAsync();
+
+            var restartedHost = HostBootstrap.Build([], builder => builder.Configuration.AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["Trading:Mode"] = "Simulated",
+                    ["Trading:DataDirectory"] = directory,
+                    ["Trading:OperatorMode"] = "true",
+                    ["Trading:WpfTestProfile"] = "true",
+                    ["Research:Mode"] = "Fixture",
+                }));
+            await using (var restarted = new TradingApplicationLifecycle(restartedHost, TimeSpan.FromSeconds(10)))
+            {
+                await restarted.StartAsync(default);
+                Assert.That(restartedHost.Services.GetRequiredService<RuntimeReadiness>().IsReady, Is.True);
+                await restarted.StopAsync();
+            }
             Directory.Delete(directory, recursive: true);
             Assert.That(Directory.Exists(directory), Is.False);
         }
