@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-018
 title: Complete Stage 7 acceptance and review
 stage: 7
-status: planned
+status: ready
 priority: 1000
 type: test
 depends_on: [S7-001, S7-002, S7-003, S7-004, S7-005, S7-006, S7-007, S7-008, S7-009, S7-010, S7-011, S7-012, S7-013, S7-014, S7-015, S7-016, S7-017]
@@ -39,4 +39,3 @@ Locked restore; build; format; full tests; Stage7 non-UI twice; publish-wpf; Sta
 
 ## Completion Notes
 Pending implementation.
-

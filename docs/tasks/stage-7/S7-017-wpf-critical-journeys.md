@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-017
 title: Automate critical WPF operator journeys
 stage: 7
-status: review
+status: done
 priority: 740
 type: test
 depends_on: [S7-015, S7-016, S7-019, S7-020, S7-021, S7-022]
@@ -189,3 +189,11 @@ unknown identities, insufficient principals, and non-test profiles remain denied
 Release build with zero warnings and errors; focused production composition tests 4/4; focused Research operator tests
 2/2; full suite 1,233/1,233 with zero skips; format; and final self-contained WPF publish. S7-017 returns to review
 pending Linux/security and two successful interactive Windows Stage 7 executions. No local UI pass is claimed.
+
+Final hosted evidence for exact candidate `f2fa4910d1fb65fa61f76bc92c02a36bead08a64` is fully green. CI run
+`32613237194` passed Linux job `97129535577` with artifact `test-results-Linux` (`9486180160`, 356786 bytes) and
+Windows job `97129535659` with artifact `test-results-Windows` (`9486286803`, 941693 bytes). Windows passed the full
+suite, native build, self-contained publish, harness smoke, and all Stage 7 WPF journeys twice. Security run
+`32613237136` passed secret job `97129535018` with gitleaks artifact `9486122003` (6772 bytes); dependency review job
+`97129535742` was expectedly skipped for the push event. All evidence was unexpired when reviewed. Every acceptance
+criterion is satisfied, so S7-017 is done.

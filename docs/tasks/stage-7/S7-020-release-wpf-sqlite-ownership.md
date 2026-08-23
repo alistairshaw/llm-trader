@@ -3,7 +3,7 @@ schema_version: 1
 id: S7-020
 title: Release WPF SQLite ownership on lifecycle stop
 stage: 7
-status: review
+status: done
 priority: 990
 type: defect
 depends_on: [S7-019]
@@ -50,4 +50,10 @@ Implemented on 2026-08-22. `TradingApplicationLifecycle` now captures the canoni
 
 The two original lifecycle tests now delete the complete owned directory immediately after awaited stop. A new regression keeps an unrelated pooled SQLite connection open and usable while the lifecycle releases and deletes only its owned database directory. No sleeps, retries, garbage collection, swallowed deletion failures, or process-wide pool clearing were added.
 
-Validation passed in Linux Docker: `./dev.ps1 restore`; `./dev.ps1 build` (zero warnings and errors); `./dev.ps1 test -Project tests/Trading.IntegrationTests/Trading.IntegrationTests.csproj -Filter "TestCategory=WpfHostLifecycle"` (5/5); `./dev.ps1 test` (1,230/1,230, zero skipped); `./dev.ps1 format`; and `docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null && dotnet ef migrations has-pending-model-changes --project src/Trading.Data"` (no pending model changes). The exact Windows lifecycle selection remains delegated to hosted CI, so the task is in review rather than done. No scope deviations, follow-up tasks, or ADR changes.
+Validation passed in Linux Docker: `./dev.ps1 restore`; `./dev.ps1 build` (zero warnings and errors); `./dev.ps1 test -Project tests/Trading.IntegrationTests/Trading.IntegrationTests.csproj -Filter "TestCategory=WpfHostLifecycle"` (5/5); `./dev.ps1 test` (1,230/1,230, zero skipped); `./dev.ps1 format`; and `docker compose run --rm --no-deps dev bash -lc "dotnet tool restore >/dev/null && dotnet ef migrations has-pending-model-changes --project src/Trading.Data"` (no pending model changes). No scope deviations, follow-up tasks, or ADR changes.
+
+Final hosted evidence for exact candidate `f2fa4910d1fb65fa61f76bc92c02a36bead08a64`: CI run `32613237194`
+passed Windows job `97129535659`, including the complete suite, native build, self-contained publish, harness smoke, and
+both Stage 7 WPF executions. Artifact `test-results-Windows` was retained as `9486286803` (941693 bytes). Linux job
+`97129535577` also passed with artifact `9486180160`. This confirms the exact lifecycle deletion coverage on Windows
+and Linux; S7-020 is done.
